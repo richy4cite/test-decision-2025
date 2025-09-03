@@ -1643,8 +1643,148 @@ function setupAutoRefresh(){
   // Initial run + every 5 minutes
   setInterval(() => updateSidebars(window.electionData || []), 30000);
   window.addEventListener("load", () => updateSidebars(window.electionData || []));
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision 2025 Sidebars</title>
+  <style>
+    :root {
+      --jlp-color: #009b3a;
+      --pnp-color: #ff7300;
+      --jpp-color: #8e24aa;
+      --uic-color: #1e88e5;
+      --other-color: #999;
+      --bg-dark: #1e1e2f;
+      --text-dark: #ffffff;
+    }
 
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: row;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    #main-content {
+      flex-grow: 1;
+      padding: 1rem;
+    }
+
+    .sidebar-container {
+      width: 30vw;
+      min-width: 280px;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar {
+      background-color: #2c2f3f;
+      border-left: 2px solid #444;
+      padding: 10px;
+      max-height: 48vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .sidebar h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.1rem;
+      border-bottom: 1px solid #555;
+      padding-bottom: 4px;
+    }
+
+    .sidebar .item {
+      padding: 8px;
+      margin-bottom: 6px;
+      border: 1px solid #444;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #34384e;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sidebar .item:hover {
+      background: #3e435b;
+    }
+
+    .party-icon {
+      height: 20px;
+      margin-right: 6px;
+    }
+
+    .race-name {
+      font-weight: bold;
+    }
+
+    .vote-info {
+      text-align: right;
+      font-size: 0.9em;
+    }
+
+    .race-name.pnp { color: var(--pnp-color); }
+    .race-name.jlp { color: var(--jlp-color); }
+    .race-name.jpp { color: var(--jpp-color); }
+    .race-name.uic { color: var(--uic-color); }
+    .race-name.other { color: var(--other-color); }
+
+    .item.pinned {
+      border: 2px solid gold;
+      background: #4a4e6b;
+    }
+
+    .item .pin-button {
+      margin-left: 10px;
+      cursor: pointer;
+      color: gold;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div id="main-content">
+    <h1>Decision 2025 — Main Area</h1>
+    <p>Map, Results, or Content goes here...</p>
+  </div>
+
+  <div class="sidebar-container">
+    <!-- Recently Updated -->
+    <div class="sidebar" id="recently-updated">
+      <h3>Recently Updated</h3>
+      <div class="item"><span><strong>12</strong> - Kingston West</span><span>⏱ 02:31</span></div>
+      <div class="item"><span><strong>7</strong> - St. James North</span><span>⏱ 03:12</span></div>
+      <!-- Add more dynamically -->
+    </div>
+
+    <!-- Closest Races -->
+    <div class="sidebar" id="closest-races">
+      <h3>Top 10 Closest Races</h3>
+      <div class="item">
+        <div>
+          <div class="race-name pnp">
+            <img class="party-icon" src="https://ecj.com.jm/wp-content/uploads/2025/03/PNP_symbol.png" alt="PNP" /> J. Brown
+          </div>
+          <div class="race-name jlp">
+            <img class="party-icon" src="https://ecj.com.jm/wp-content/uploads/2025/03/JLP_symbol.png" alt="JLP" /> D. Grant
+          </div>
+        </div>
+        <div class="vote-info">
+          8205 - 8050<br />
+          50.5% - 49.5%
+        </div>
+        <div class="pin-button" title="Pin Race">📌</div>
+      </div>
+      <!-- More races dynamically -->
+    </div>
+  </div>
 </script>
 </body>
 </html>
