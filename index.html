@@ -31,7 +31,7 @@
   body{margin:0; background:var(--bg); color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
   body.modal-open{overflow:hidden}
 
-  /* Header (raise z-index so maps stay underneath) */
+  /* Header */
   .header{position:sticky; top:0; z-index:1500; background:var(--card); border-bottom:1px solid var(--border)}
   .header-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
   .brand{font-weight:800; font-size:1.25rem; letter-spacing:.2px}
@@ -53,7 +53,7 @@
   .dot{width:10px; height:10px; border-radius:50%; animation:pulse 1.8s infinite; background:#10b981}
   .dot.ok{ background:#10b981 } .dot.warn{ background:#f59e0b } .dot.bad{ background:#ef4444 }
 
-  /* Tabs — sticky (below header), with higher z-index than maps */
+  /* Tabs */
   .tabs{position:sticky; top:var(--hdrh); z-index:1400; background:var(--card); border-bottom:1px solid var(--border)}
   .tabs-inner{max-width:1800px; margin:0 auto; padding:0 24px; display:flex; gap:24px}
   .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
@@ -69,88 +69,41 @@
   .delta{font-weight:800; margin-left:6px} .delta.up{color:#16a34a} .delta.down{color:#ef4444}
 
   /* Page grid */
-  .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 320px 1fr; gap:16px}
+  .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 360px 1fr; gap:16px}
   .page > .main{grid-column:2}
-  .page > .rightbar{grid-column:3}
-  @media (max-width:1300px){ .page{display:block} .rightbar{position:relative; width:auto; max-width:none} }
 
-  /* Sidebar (z under tabs/header) */
-  .rightbar{position:sticky; top:calc(var(--hdrh) + var(--tabh) + 12px); align-self:start; height:calc(100vh - (var(--hdrh) + var(--tabh) + 28px)); overflow:auto;
-    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; z-index:1}
-  .rightbar h3{margin:2px 0 8px 0; font-size:1rem}
+  /* RIGHT COLUMN with two stacked panels */
+  .rightcol{grid-column:3; position:sticky; top:calc(var(--hdrh) + var(--tabh) + 12px); align-self:start;
+    height:calc(100vh - (var(--hdrh) + var(--tabh) + 28px));
+    display:grid; grid-template-rows:1fr 1fr; gap:12px; z-index:1}
+  .sidepanel{
+    display:flex; flex-direction:column; min-height:0; /* allows the inner to shrink and scroll */
+    background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  }
+  .sidepanel h3{margin:10px 12px; font-size:1rem}
+  .panel-body{min-height:0; overflow:auto; padding:8px 10px}
+  .panel-body:has(.empty){display:flex; align-items:center; justify-content:center; color:var(--muted)}
+
+  /* common side rows */
   .sideitem{position:relative; display:flex; justify-content:space-between; align-items:center;
-    border:2px solid var(--border); border-radius:12px; padding:6px 8px; margin:8px 0; font-weight:800; cursor:pointer; background:var(--card)}
+    border:2px solid var(--border); border-radius:12px; padding:6px 8px; margin:8px 0; font-weight:800; cursor:pointer; background:var(--card);
+    transition:transform .06s ease, background .12s ease}
+  .sideitem:hover{background:color-mix(in oklab, var(--card) 90%, var(--bg)); transform:translateY(-1px)}
   .sideitem small{color:var(--muted); font-weight:700; font-size:.88em; font-variant-numeric:tabular-nums}
-  .sideitem::before{content:""; position:absolute; inset:-2px; border-radius:14px; padding:2px; background:
-    conic-gradient(from var(--angle,0deg), rgba(22,163,74,.9), rgba(245,158,11,.9), rgba(239,68,68,.9), rgba(22,163,74,.9));
-    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.18; animation:spin 12s linear infinite}
-  @keyframes spin{to{--angle:360deg}}
+  .sideitem .pin-btn{border:1px solid var(--border); background:var(--card); border-radius:8px; padding:2px 6px; font-size:.8rem; margin-left:8px; cursor:pointer}
   .age-good{border-color:var(--good)} .age-warn{border-color:var(--warn)} .age-bad{border-color:var(--bad)}
 
-  /* Sections / cards */
-  .container{max-width:1600px; margin:14px auto; padding:0 24px}
-  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
-
-  /* Controls */
-  .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
-  .controls input, .controls select{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:var(--card); color:var(--text)}
-  .controls input#searchBar{width:360px; max-width:90vw}
-  .controls input#cnoFilter{width:120px}
-
-  /* Parish -> constituency blocks */
-  .parish{margin:12px 0 22px}
-  .parish h2{font-size:1.1rem; border-left:4px solid var(--accent); padding-left:10px; margin:0 0 12px}
-  .const-grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-  .const{background:var(--card); border:2px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer}
-  .const-head{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, var(--bg)), color-mix(in oklab, var(--card) 75%, var(--bg))); border-bottom:1px solid var(--border);
-    padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px}
-  .const-name{font-weight:900; font-size:1rem; line-height:1.2; background:var(--bg); padding:3px 8px; border:1px solid var(--border); border-radius:8px}
-  .updated{font-size:.85rem; color:var(--muted); display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:4px; white-space:nowrap}
-  .pulse{display:inline-block; width:10px; height:10px; border-radius:50%; background:currentColor; animation:pulseSoft 1.8s infinite}
-  @keyframes pulseSoft{0%{box-shadow:0 0 0 0 rgba(0,0,0,.2)}70%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
-  .const-body{padding:12px; display:flex; flex-direction:column; gap:8px}
-  .winner-badge{display:inline-flex; align-items:center; gap:6px; font-weight:800; padding:2px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.08)}
-  html[data-theme="dark"] .winner-badge{border-color:#00000040}
-  .winner-badge .check{font-weight:900}
-  .boxline{font-size:.9rem; color:var(--muted); margin-top:2px}
-
-  /* Rows (5 columns) */
-  .rows{margin-top:6px; border-top:1px solid var(--border)}
-  .row{
-    display:grid;
-    grid-template-columns:35px 1fr 40px 70px 52px;
-    gap:12px; padding:10px 4px;
-    align-items:start;
-    border-bottom:1px solid var(--border);
-    min-height:44px;
-    background:var(--card-alt);
-  }
-  .row:last-child{border-bottom:none}
-  .nm{font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.15}
-  .party{ text-align:center; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.3px; }
-  .votes{font-weight:800; text-align:right}
-  .pct{color:var(--muted); text-align:right}
-  .party-icon{height:18px; width:auto; display:block; margin-top:2px; filter:none}
-  html[data-theme="dark"] .party-icon{filter:brightness(1.1)}
-
-  /* Scoreboard + charts */
-  .scoreboard{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
-  .pcard{border:1px solid var(--border); border-radius:10px; padding:14px; background:var(--card)}
-  .phead{display:flex; align-items:center; justify-content:space-between; gap:12px}
-  .pbrand{display:flex; align-items:center; gap:10px; font-weight:800}
-  .plogo{height:22px; width:auto; filter:none}
-  html[data-theme="dark"] .plogo{filter:brightness(1.2) contrast(1.1)}
-  .pmain{font-size:1.6rem; font-weight:800}
-  .bar{height:8px; border-radius:999px; background:var(--border); overflow:hidden; margin-top:8px}
-  .bar>span{display:block; height:100%}
-
-  .charts{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
-  .chart-wrap{position:relative; height:300px}
-  canvas{position:absolute; inset:0}
-
-  .closelist{list-style:none; padding:0; margin:0; display:grid; gap:8px}
-  .closelist li{display:flex; justify-content:space-between; gap:10px; border:1px solid var(--border); background:var(--card); border-radius:10px; padding:10px 12px; cursor:pointer}
+  /* Closest items */
+  .closest-item{border:2px solid var(--border); border-radius:12px; margin:8px 0; overflow:hidden; background:var(--card); cursor:pointer}
+  .closest-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; background:var(--card-alt); border-bottom:1px solid var(--border)}
+  .closest-head .cname{font-weight:900; font-size:.98rem}
+  .closest-body{padding:8px 10px}
+  .closerow{display:grid; grid-template-columns:26px 1fr 70px 60px; gap:10px; align-items:center; padding:6px 0}
+  .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800}
+  .closerow img{height:18px; width:auto}
+  .closest-foot{padding:6px 10px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center}
+  .closest-item:hover{background:color-mix(in oklab, var(--card) 94%, var(--bg))}
+  .closest-pin{border:1px solid var(--border); border-radius:8px; background:var(--card); padding:4px 8px; font-weight:800}
 
   /* Maps */
   .map-wrap{position:relative; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--card-alt); z-index:1}
@@ -166,7 +119,7 @@
   .leaflet-container{background:var(--card-alt)}
   .leaflet-control-attribution{display:none}
 
-  /* Bottom ticker — ensure above maps too */
+  /* Bottom ticker */
   .ticker{position:sticky; bottom:0; z-index:1600; background:#0b1220; color:#fff; border-top:1px solid #0f172a}
   html[data-theme="dark"] .ticker{background:#0b1220}
   .ticker-inner{max-width:1600px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:12px; overflow:hidden}
@@ -178,7 +131,7 @@
   .hidden{display:none !important}
   .toast{position:fixed; right:12px; bottom:72px; background:#111827; color:#fff; padding:10px 12px; border-radius:10px; box-shadow:var(--shadow); z-index:2000; font-weight:700}
 
-  /* ================== PREVIEW MODAL ================== */
+  /* Preview modal (unchanged structure) */
   .modal{position:fixed; inset:0; background:rgba(15,23,42,.5); display:none; align-items:center; justify-content:center; z-index:2000; backdrop-filter:blur(2px)}
   .modal.show{display:flex}
   .modal-content{
@@ -204,7 +157,7 @@
   .btn-primary{background:var(--accent); border:1px solid color-mix(in oklab, var(--accent) 70%, black); color:white}
   .close-x{border-radius:10px; padding:6px 10px; background:var(--card); border:1px solid var(--border); cursor:pointer}
 
-  /* Preview loading shimmer */
+  /* Loading shimmer */
   .shimmer{
     position:absolute; inset:0; pointer-events:none;
     background:linear-gradient(100deg, rgba(0,0,0,0) 0%, rgba(148,163,184,.22) 40%, rgba(0,0,0,0) 80%);
@@ -214,8 +167,19 @@
   }
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-  /* Ensure Leaflet panes don’t exceed sticky UI */
-  .leaflet-pane{z-index:400}
+  /* Floating pinned race */
+  .pin-float{position:fixed; right:12px; bottom:110px; z-index:2000; width:min(380px, 92vw);
+    background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); overflow:hidden}
+  .pin-float .head{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--card-alt); border-bottom:1px solid var(--border); font-weight:900}
+  .pin-float .body{padding:8px 10px}
+  .pin-float .close{border:1px solid var(--border); border-radius:8px; padding:4px 8px; background:var(--card); cursor:pointer}
+  .pin-float .row{display:grid; grid-template-columns:26px 1fr 70px 60px; gap:10px; padding:6px 0; align-items:center}
+  .pin-float img{height:18px}
+
+  @media (max-width:1300px){
+    .page{display:block}
+    .rightcol{position:relative; top:auto; height:auto; grid-template-rows:auto auto}
+  }
 </style>
 </head>
 <body>
@@ -241,7 +205,6 @@
             <button id="btnForceRefresh" class="btn">Refresh now</button>
           </div>
 
-          <!-- Parity pills (now indicate local file) -->
           <div class="status-group" id="sourceStatus">
             <div class="status-pill" id="pillMain" title="Using local 2025-data.json">
               <span class="dot ok" aria-hidden="true"></span> Data <small id="mainLag">Local file</small>
@@ -252,7 +215,7 @@
         </div>
       </header>
 
-      <!-- Tabs (order: Constituencies, Interactive, National) -->
+      <!-- Tabs -->
       <nav class="tabs" id="siteTabs">
         <div class="tabs-inner">
           <div class="tab active" data-tab="constituencies">Constituencies</div>
@@ -299,7 +262,7 @@
         </div>
       </section>
 
-      <!-- CONSTITUENCIES (default visible) -->
+      <!-- CONSTITUENCIES -->
       <section id="tab-constituencies">
         <div class="container">
           <div class="card">
@@ -350,10 +313,19 @@
       </section>
     </div>
 
-    <!-- RIGHT SIDEBAR -->
-    <aside class="rightbar" aria-label="Recently Updated Constituency Numbers">
-      <h3>Recently Updated (#)</h3>
-      <div id="sidebarList"></div>
+    <!-- RIGHT: Two stacked sidebars -->
+    <aside class="rightcol" aria-label="Right panels">
+      <!-- Recently Updated (top half) -->
+      <section class="sidepanel" id="panelUpdated" aria-label="Recently Updated Constituency Numbers">
+        <h3>Recently Updated (#)</h3>
+        <div class="panel-body"><div id="sidebarList"></div></div>
+      </section>
+
+      <!-- Closest Races (bottom half) -->
+      <section class="sidepanel" id="panelClosest" aria-label="Closest Races">
+        <h3>Closest Races (≤ 200 votes)</h3>
+        <div class="panel-body"><div id="closestSidebar"></div></div>
+      </section>
     </aside>
   </div>
 
@@ -365,7 +337,10 @@
     </div>
   </div>
 
-  <!-- ================== PREVIEW MODAL MARKUP ================== -->
+  <!-- Floating pinned race -->
+  <div id="pinFloat" class="pin-float hidden" aria-live="polite"></div>
+
+  <!-- ================== PREVIEW MODAL ================== -->
   <div class="modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
     <div class="modal-content">
       <div class="modal-header">
@@ -400,8 +375,9 @@ const AUTO_DEFAULT = 60000;
 const ECJ_GEOJSON =
  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=*&f=geojson';
 const JAMAICA_BOUNDS = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
+const CLOSE_VOTE_THRESHOLD = 200; // <= 200 votes difference
 
-/* Party theming (unchanged) */
+/* Party theming */
 const PARTY_COLORS = { JLP:'#2e8b57', PNP:'#ff8c00', JPP:'#6a0dad', UIC:'#008b8b', Other:'#1e90ff' };
 const PARTY_LOGOS = {
   JLP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JLP_logo-300x98.png",
@@ -422,7 +398,7 @@ const TICKER_MAX_AGE = 15*60*1000;
 const SIDEBAR_MAX_AGE = 25*60*1000;
 
 /* ===== Local data source ===== */
-const DATA_URL = './2025-data.json';  // ←————— local file
+const DATA_URL = './2025-data.json';
 
 /* ===== Normalizer + Name Aliases with metadata ===== */
 function norm(s){ return String(s||'').toLowerCase().replace(/[\s\-\u2013\u2014'’.]/g,'').replace(/&/g,'and'); }
@@ -441,8 +417,11 @@ let lastSeats = JSON.parse(localStorage.getItem('lastSeats') || '{}');
 let lastConstHashes = JSON.parse(localStorage.getItem('constituencyHashes')||'{}');
 let lastConstUpdated = JSON.parse(localStorage.getItem('constituencyUpdated')||'{}');
 
+let hoverPreviewLayer=null; // current temp highlight
+let pinnedKey = localStorage.getItem('pinnedRaceKey') || null;
+
 /* ===== Preview modal state ===== */
-let previewMap=null, previewLayer=null, previewKey=null, previewPulseTimer=null;
+let previewMap=null, previewLayer=null, previewKey=null;
 
 /* ===== Utils ===== */
 function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
@@ -605,7 +584,7 @@ function stopPulse(layer){
   }
 }
 
-/* ===== Topline / score / charts / closest ===== */
+/* ===== Topline / score / charts / closest (national card) ===== */
 function buildToplineBar(totals,seats){
   const el=document.getElementById('toplineBar'); el.innerHTML='';
   const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
@@ -653,20 +632,6 @@ function buildCharts(totals,seats){
   voteChart=new Chart(vc,{type:'pie',data:{labels,datasets:[{data:labels.map(k=>totals[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   seatChart=new Chart(sc,{type:'bar',data:{labels,datasets:[{label:'Seats',data:labels.map(k=>seats[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0,grid:{color:'rgba(148,163,184,.3)'}}}}});
 }
-function buildClosestPanel(items){
-  const list=document.getElementById('closestList'), note=document.getElementById('closestNote'); if(!list) return;
-  list.innerHTML='';
-  const top10 = items.filter(x=>!isNaN(x.marginPct)).sort((a,b)=>a.marginPct-b.marginPct).slice(0,10);
-  top10.forEach(item=>{
-    const color=PARTY_COLORS[partyKey(item.winnerParty)]||PARTY_COLORS.Other;
-    const li=document.createElement('li');
-    li.innerHTML = `<span><strong>${item.constituency}</strong> — <span style="color:${color}">${item.winnerFirst} ${item.winnerLast} (${partyKey(item.winnerParty)})</span></span><span><strong>${item.marginPct.toFixed(1)}%</strong></span>`;
-    li.title = item.candidates.map(c=>`${c.name} (${partyKey(c.party)}): ${c.votes.toLocaleString()} • ${c.pct}%`).join(' | ');
-    li.addEventListener('click', ()=> gotoInteractive(item.constituency));
-    list.appendChild(li);
-  });
-  note.textContent='Margin = percentage-point gap between 1st and 2nd.';
-}
 
 /* ===== Map coloring & interactions ===== */
 function paintMap(layer, detailsByConst){
@@ -682,7 +647,7 @@ function paintMap(layer, detailsByConst){
       const strokeColor  = (focusedKey && focusedKey===key) ? '#111827' : '#94a3b8';
       Ly.setStyle({ fillColor: fill, fillOpacity:0.75, color:strokeColor, weight:strokeWeight });
       const disp = `${nm}${constNameToNo[key]?` (#${constNameToNo[key]})`:''}`;
-      const rows = (info.all||[]).map(c=>{
+      const rows = (info.all||[]).slice(0,3).map(c=>{
         const P=partyKey(c.party), col=PARTY_COLORS[P]||PARTY_COLORS.Other;
         return `<div><span style="color:${col}; font-weight:700">${c.name}</span> (${P}) — ${c.votes.toLocaleString()} • ${c.pct}%</div>`;
       }).join('');
@@ -700,46 +665,40 @@ function updateFocusOutline(){
     const key = norm(nm);
     const fill = leaderColors[key] || '#e5e7eb';
     const isFocused = focusedKey && focusedKey===key;
-    l.setStyle({ fillColor: fill, fillOpacity:0.75, color: isFocused? '#111827':'#94a3b8', weight: isFocused? 3:1 });
-    if (isFocused){ try{ l.bringToFront(); }catch(_){}
+    const isHovering = hoverPreviewLayer && hoverPreviewLayer === l;
+    l.setStyle({ fillColor: fill, fillOpacity:isHovering?0.9:0.75, color: (isFocused||isHovering)? '#111827':'#94a3b8', weight: (isFocused||isHovering)? 3:1 });
+    if (isFocused || isHovering){ try{ l.bringToFront(); }catch(_){}
       startPulse(l);
     } else {
       stopPulse(l);
     }
   });
 }
-function wireInteractiveBehaviors(){
-  const hoverTimers = new WeakMap();
-  byParish = {};
+
+/* Hover preview helpers for sidebars */
+function getLayerByKey(key){
+  let target=null;
+  if (!geoLayerInteractive) return null;
   geoLayerInteractive.eachLayer(l=>{
-    const parish = l.feature?.properties?.PARISH_NAM;
-    (byParish[parish] ||= []).push(l);
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    if (norm(nm)===key) target=l;
   });
-  geoLayerInteractive.eachLayer(layer=>{
-    const nm = layer.feature?.properties?.CONST_NAME || '';
-    const parish = layer.feature?.properties?.PARISH_NAM || '';
-    const key = norm(nm);
-    layer.on('click', ()=>{
-      const grp = byParish[parish] || [layer];
-      const group = L.featureGroup(grp);
-      try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
-      focusedKey = key; updateFocusOutline();
-      showConstituencyDetails(key, nm);
-    });
-    layer.on('mouseover', e=>{
-      const t = setTimeout(()=>{ e.target.openTooltip(); }, 800);
-      hoverTimers.set(layer, t);
-      e.target.setStyle({ weight: (focusedKey===key? 3:2), color:'#111827', fillOpacity:0.9 }); e.target.bringToFront();
-    });
-    layer.on('mouseout', e=>{
-      clearTimeout(hoverTimers.get(layer));
-      e.target.closeTooltip();
-      const fill = leaderColors[key] || '#e5e7eb';
-      const wt = (focusedKey===key)? 3 : 1;
-      const col = (focusedKey===key)? '#111827' : '#94a3b8';
-      e.target.setStyle({ fillColor: fill, fillOpacity:0.75, color: col, weight: wt });
-    });
-  });
+  return target;
+}
+function previewHoverStart(key){
+  const layer = getLayerByKey(key);
+  hoverPreviewLayer = layer || null;
+  if (layer){
+    try{ layer.openTooltip(); layer.bringToFront(); }catch(_){}
+    updateFocusOutline();
+  }
+}
+function previewHoverEnd(){
+  if (hoverPreviewLayer){
+    try{ hoverPreviewLayer.closeTooltip(); }catch(_){}
+  }
+  hoverPreviewLayer = null;
+  updateFocusOutline();
 }
 
 /* ===== Details panel ===== */
@@ -928,7 +887,7 @@ function renderParishBlocks(detailsByConst, rawData){
           <div class="rows">${rowsHTML}</div>
         </div>
       `;
-      /* OPEN PREVIEW (first click) */
+      /* OPEN PREVIEW */
       el.addEventListener('click', ()=> openPreviewForKey(key));
       grid.appendChild(el);
     });
@@ -953,13 +912,14 @@ function renderParishBlocks(detailsByConst, rawData){
   sb.oninput = applyTextFilter;
 }
 
-/* ===== Periodic timers + sidebar + ticker ===== */
+/* ===== Periodic timers + RECENT sidebar + ticker ===== */
 function fmtAgeToClass(age){
   if (age <= 5*60*1000) return 'age-good';
   if (age <= 20*60*1000) return 'age-warn';
   return 'age-bad';
 }
 function tickTimersAndRecent(){
+  // Update elapsed timers in constituency cards
   document.querySelectorAll('.const .timer').forEach(t=>{
     const ts = Number(t.dataset.ts||0);
     if (!ts) { t.textContent = '00:00:00'; return; }
@@ -974,6 +934,7 @@ function tickTimersAndRecent(){
     }
   });
 
+  // Build recent items
   const recents = []; const ticker  = [];
   Object.keys(lastConstUpdated).forEach(k=>{
     const ts = lastConstUpdated[k];
@@ -992,8 +953,12 @@ function tickTimersAndRecent(){
     const el=document.createElement('div');
     el.className='sideitem '+fmtAgeToClass(r.age);
     el.dataset.key = r.k;
-    el.innerHTML=`<span>#${r.num||'—'}</span><small>${fmtHHMMSS(r.age)}</small>`;
+    el.innerHTML=`<span>#${r.num||'—'}</span><small>${fmtHHMMSS(r.age)}</small>
+      <button class="pin-btn" title="Pin race" aria-label="Pin race">📌</button>`;
     el.addEventListener('click', ()=> gotoInteractiveKey(r.k));
+    el.addEventListener('mouseenter', ()=> previewHoverStart(r.k));
+    el.addEventListener('mouseleave', previewHoverEnd);
+    el.querySelector('.pin-btn').addEventListener('click', (e)=>{ e.stopPropagation(); pinRace(r.k); });
     side.appendChild(el);
   });
 
@@ -1005,6 +970,7 @@ function tickTimersAndRecent(){
     tick.textContent = '— No constituency updated in the last 15 minutes —';
   }
 
+  // Update interactive panel timer if open
   const imTimer = document.querySelector('#imapContent .updated span[style*="font-variant-numeric"]');
   const imDot   = document.querySelector('#imapContent .updated .pulse');
   const curKey = document.getElementById('imapContent')?.dataset?.currentKey;
@@ -1018,7 +984,7 @@ function tickTimersAndRecent(){
   }
 }
 
-/* ===== Robust fetch helpers ===== */
+/* ===== Robust fetch helper ===== */
 async function fetchOne(url){
   try{
     const r = await fetch(bust(url), {cache:'no-store'});
@@ -1029,6 +995,134 @@ async function fetchOne(url){
     }
     return await r.json();
   }catch(e){ throw new Error(`${url} → ${e.message}`); }
+}
+
+/* ===== CLOSEST sidebar builder (threshold ≤ 200 votes) ===== */
+function buildClosestSidebar(detailsByConst, rawData){
+  const host = document.getElementById('closestSidebar');
+  host.innerHTML='';
+  // Collect all constituencies with top-2 vote gap <= threshold
+  const items = [];
+  Object.keys(detailsByConst).forEach(key=>{
+    const info = detailsByConst[key];
+    const rows = (info.all||[]).slice(0,2);
+    if (rows.length<2) return;
+    const gap = Math.abs((rows[0].votes||0) - (rows[1].votes||0));
+    if (gap <= CLOSE_VOTE_THRESHOLD){
+      const displayName = Object.values(rawData).find(x=> canonKey(norm(x?.Name))===key)?.Name || key;
+      items.push({
+        key, name:displayName, cno: (constNameToNo[key]||''), gap,
+        top: rows[0], second: rows[1]
+      });
+    }
+  });
+  items.sort((a,b)=> a.gap - b.gap);
+  const top10 = items.slice(0,10);
+
+  if (!top10.length){
+    host.innerHTML = `<div class="empty">No close races (≤ ${CLOSE_VOTE_THRESHOLD} votes) yet.</div>`;
+    return;
+  }
+
+  top10.forEach(item=>{
+    const wrap = document.createElement('div');
+    wrap.className='closest-item';
+    wrap.dataset.key = item.key;
+
+    const p1 = partyKey(item.top.party), p2 = partyKey(item.second.party);
+    const cname = `${item.name}${item.cno?` (#${item.cno})`:''}`;
+
+    const rowHTML = (cand, label='')=>{
+      const P = partyKey(cand.party);
+      const icon = PARTY_SYMBOLS[P] || PARTY_SYMBOLS.Other;
+      const nameStyle = `style="color:${PARTY_COLORS[P]||PARTY_COLORS.Other}; font-weight:800"`;
+      const pct = (cand.pct||0);
+      return `
+        <div class="closerow" role="row">
+          <img src="${icon}" alt="${P}" referrerpolicy="no-referrer">
+          <div class="nm" ${nameStyle}>${cand.name}</div>
+          <div class="votes">${Number(cand.votes||0).toLocaleString()}</div>
+          <div class="pct">${pct}%</div>
+        </div>
+      `;
+    };
+
+    wrap.innerHTML = `
+      <div class="closest-head">
+        <div class="cname">${cname}</div>
+        <div>
+          <button class="closest-pin" title="Pin this race">📌 Pin</button>
+        </div>
+      </div>
+      <div class="closest-body">
+        ${rowHTML(item.top)}
+        ${rowHTML(item.second)}
+      </div>
+      <div class="closest-foot">
+        <span>Gap: <b>${item.gap.toLocaleString()}</b> votes</span>
+        <button class="btn btn-secondary small-open">Open</button>
+      </div>
+    `;
+
+    // Click behaviors
+    wrap.addEventListener('click', (e)=>{
+      const isPin = e.target.closest('.closest-pin');
+      const isOpen = e.target.closest('.small-open');
+      if (isPin){ pinRace(item.key); e.stopPropagation(); return; }
+      gotoInteractiveKey(item.key);
+    });
+    wrap.addEventListener('mouseenter', ()=> previewHoverStart(item.key));
+    wrap.addEventListener('mouseleave', previewHoverEnd);
+
+    host.appendChild(wrap);
+  });
+}
+
+/* ===== Pinned floating card ===== */
+function renderPinned(detailsByConst, rawData){
+  const box = document.getElementById('pinFloat');
+  if (!pinnedKey){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  const info = detailsByConst[pinnedKey];
+  const rec  = Object.values(rawData||{}).find(x=> canonKey(norm(x?.Name))===pinnedKey);
+  if (!info || !rec){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  const rows = (info.all||[]).slice(0,2);
+  const cname = `${rec.Name || pinnedKey}${constNameToNo[pinnedKey]?` (#${constNameToNo[pinnedKey]})`:''}`;
+  const rowHTML = cand=>{
+    const P = partyKey(cand.party), icon=PARTY_SYMBOLS[P]||PARTY_SYMBOLS.Other, color=PARTY_COLORS[P]||'#888';
+    return `<div class="row"><img src="${icon}" alt="${P}" referrerpolicy="no-referrer"><div style="font-weight:800;color:${color}">${cand.name}</div><div class="votes">${Number(cand.votes||0).toLocaleString()}</div><div class="pct">${cand.pct||0}%</div></div>`;
+  };
+  box.innerHTML = `
+    <div class="head">
+      <span>📌 ${cname}</span>
+      <div>
+        <button class="close" id="btnPinUnpin">Unpin</button>
+      </div>
+    </div>
+    <div class="body">
+      ${rows.map(rowHTML).join('')}
+      <div style="margin-top:6px; display:flex; gap:6px">
+        <button class="btn btn-secondary" id="btnPinOpen">Open</button>
+      </div>
+    </div>
+  `;
+  box.classList.remove('hidden');
+
+  document.getElementById('btnPinUnpin').onclick = ()=>{ unpinRace(); };
+  document.getElementById('btnPinOpen').onclick  = ()=>{ gotoInteractiveKey(pinnedKey); };
+  box.addEventListener('mouseenter', ()=> previewHoverStart(pinnedKey));
+  box.addEventListener('mouseleave', previewHoverEnd);
+}
+function pinRace(key){
+  pinnedKey = key;
+  localStorage.setItem('pinnedRaceKey', key);
+  toast('Pinned race 📌');
+  // We'll render on next data refresh with context
+}
+function unpinRace(){
+  pinnedKey = null;
+  localStorage.removeItem('pinnedRaceKey');
+  const box = document.getElementById('pinFloat');
+  box.classList.add('hidden'); box.innerHTML='';
 }
 
 /* ===== Data load (local JSON) ===== */
@@ -1065,7 +1159,7 @@ async function loadECJAndData(){
       const safePct  = (x)=> Number(x)||0;
       const safeVote = (x)=> Number(x)||0;
       const winner = cand.reduce((m,x)=> safeVote(x.Votes)>safeVote(m.Votes)? x : m, cand[0]);
-      const sorted = cand.slice().sort((a,b)=> safePct(b.Percentage)-safePct(a.Percentage)).map(k=>({
+      const sorted = cand.slice().sort((a,b)=> safeVote(b.Votes)-safeVote(a.Votes)).map(k=>({
         name:`${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}`.trim(),
         party:partyKey(k.Party),
         votes:safeVote(k.Votes),
@@ -1085,7 +1179,8 @@ async function loadECJAndData(){
       const wParty = partyKey(winner?.Party);
       partySeats[wParty] = (partySeats[wParty] ?? 0) + 1;
 
-      const topPct = sorted[0]?.pct||0, runnerPct=sorted[1]?.pct||0;
+      const topPct = sorted.slice().sort((a,b)=> b.pct-a.pct)[0]?.pct||0;
+      const runnerPct=sorted.slice().sort((a,b)=> b.pct-a.pct)[1]?.pct||0;
       closestArr.push({
         constituency:cname,
         winnerFirst: sorted[0]?.name.split(' ')[0]||'',
@@ -1101,12 +1196,15 @@ async function loadECJAndData(){
     buildToplineBar(groupedTotals, groupedSeats);
     buildScoreboard(groupedTotals, groupedSeats);
     buildCharts(groupedTotals, groupedSeats);
-    buildClosestPanel(closestArr);
+    buildClosestPanel(closestArr);       // national card (unchanged)
     renderParishBlocks(detailsByConst, data);
     paintMap(geoLayerNational, detailsByConst);
     paintMap(geoLayerInteractive, detailsByConst);
-    wireInteractiveBehaviors();
     updateFocusOutline();
+
+    // NEW: sidebars
+    buildClosestSidebar(detailsByConst, data);
+    renderPinned(detailsByConst, data); // refresh floating card if pinned
 
     document.getElementById('lastUpdated').textContent = "Live • " + new Date().toLocaleTimeString();
 
@@ -1204,7 +1302,7 @@ function focusConstituencyByName(nameOrKey, isKey=false){
   }
 }
 
-/* ===== Preview modal logic ===== */
+/* ===== Preview modal logic (unchanged) ===== */
 function initPreviewMap(){
   if (previewMap) return;
   previewMap = L.map('previewMap', { zoomControl:true, attributionControl:false, maxBounds:JAMAICA_BOUNDS, maxBoundsViscosity:1 });
@@ -1266,13 +1364,11 @@ function openPreviewForKey(key){
   const shim = document.getElementById('previewShimmer');
   if (shim) shim.style.display='block';
 
-  // Title = Name (#no)
   const rec = Object.values(window.__rawData||{}).find(x => canonKey(norm(x?.Name))===key);
   const displayName = rec?.Name || key;
   const num = constNameToNo[key] || '';
   document.getElementById('previewTitle').textContent = displayName + (num ? ` (#${num})` : '');
 
-  // Hint aria-live
   let hint = 'Review the area below · Use the button to open the Interactive Map';
   try{
     const block = document.querySelector(`.const[data-key="${key}"]`);
@@ -1286,10 +1382,8 @@ function openPreviewForKey(key){
   }catch(_){}
   document.querySelector('.modal-hint').textContent = hint;
 
-  // Details table + boxes
   populatePreviewDetails(key);
 
-  // Build a fresh layer with pulsing on target, others muted
   if (previewLayer){ previewLayer.remove(); previewLayer=null; }
   previewLayer = L.geoJSON({type:'FeatureCollection', features: arcFeatures}, {
     style:(feat)=>{
@@ -1301,7 +1395,6 @@ function openPreviewForKey(key){
     }
   }).addTo(previewMap);
 
-  // Fit to parish bounds, then zoom in +1
   let target=null, parish=null;
   previewLayer.eachLayer(l=>{
     const nm = l.feature?.properties?.CONST_NAME || '';
@@ -1321,17 +1414,14 @@ function openPreviewForKey(key){
     if (shim) shim.style.display='none';
   }, 120);
 
-  // Map click = go interactive
   previewMap.off('click');
   previewMap.on('click', ()=> {
     const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
   });
 
-  // Focus mgmt
   const goBtn = document.getElementById('btnPreviewGo');
   if (goBtn) goBtn.focus();
 
-  // Deep link hash by number
   if (num) location.hash = '#'+num;
 }
 
@@ -1345,7 +1435,6 @@ document.addEventListener('keydown', (e)=>{
     const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
   }
 });
-// Close if clicking backdrop
 document.getElementById('previewModal').addEventListener('click', (e)=>{
   if (e.target.id === 'previewModal') closePreview();
 });
@@ -1367,7 +1456,7 @@ function setupAutoRefresh(){
   await loadECJAndData();
   setupAutoRefresh();
 
-  // Update the single pill to show local state
+  // Pill init
   const pill = document.getElementById('pillMain');
   if (pill){ pill.title = 'Using local 2025-data.json'; document.getElementById('mainLag').textContent = 'Local file'; }
 })();
