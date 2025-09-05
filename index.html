@@ -42,7 +42,7 @@
   select, .mode-btn{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--text); cursor:pointer; font-weight:700}
   .mode-btn{display:flex; align-items:center; gap:6px}
 
-  /* Source status pill */
+  /* Source pill */
   .status-group{display:flex; align-items:center; gap:12px; margin-left:8px}
   .status-pill{
     display:flex; align-items:center; gap:8px;
@@ -58,13 +58,22 @@
   .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
   .tab.active{border-color:var(--accent); color:var(--text)}
 
-  /* Topline */
+  /* ===== NEW Top Stats (seats + votes) ===== */
   .topline{background:color-mix(in oklab, var(--card) 80%, var(--bg)); border-bottom:1px solid var(--border)}
-  .topline-inner{max-width:1800px; margin:0 auto; padding:12px 24px; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .tcard{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; gap:12px; align-items:center}
-  .tlogo{height:22px; width:auto}
-  .tstats{font-size:.98rem; color:var(--muted)} .tstats b{color:var(--text)}
-  .delta{font-weight:800; margin-left:6px} .delta.up{color:#16a34a} .delta.down{color:#ef4444}
+  .topline-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:grid; gap:14px}
+  .topgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+  .stat{
+    display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px;
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px;
+    box-shadow:var(--shadow)
+  }
+  .stat-logo{height:26px; width:auto}
+  .stat-name{font-weight:900; letter-spacing:.2px}
+  .stat-main{font-weight:900; font-size:1.6rem}
+  .stat-sub{color:var(--muted); font-size:.92rem}
+  .mini-bar{grid-column:1/-1; height:8px; border-radius:999px; background:var(--border); overflow:hidden}
+  .mini-bar > span{display:block; height:100%}
+  .king{border:2px solid color-mix(in oklab, var(--accent) 60%, var(--border));}
 
   /* Page grid (right column is 360px) */
   .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 360px 1fr; gap:16px}
@@ -96,20 +105,19 @@
   .closest-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; background:var(--card-alt); border-bottom:1px solid var(--border)}
   .closest-head .cname{font-weight:900; font-size:.98rem}
   .closest-body{padding:8px 10px}
-  .closerow{display:grid; grid-template-columns:26px 1fr 70px 60px; gap:10px; align-items:center; padding:6px 0}
+  .closerow{display:grid; grid-template-columns:26px 1fr 80px 70px; gap:10px; align-items:center; padding:6px 0}
   .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800}
   .closerow img{height:18px; width:auto}
   .closest-foot{padding:6px 10px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center}
   .closest-item:hover{background:color-mix(in oklab, var(--card) 94%, var(--bg))}
   .closest-pin{border:1px solid var(--border); border-radius:8px; background:var(--card); padding:4px 8px; font-weight:800}
 
-  /* Constituency list styles (from original) */
+  /* Constituency list */
   .container{max-width:1600px; margin:14px auto; padding:0 24px}
   .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
   .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
   .controls input, .controls select{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:var(--card); color:var(--text)}
-  .controls input#searchBar{width:360px; max-width:90vw}
-  .controls input#cnoFilter{width:120px}
+  .controls input#searchBar{width:420px; max-width:95vw}
 
   .parish{margin:12px 0 22px}
   .parish h2{font-size:1.1rem; border-left:4px solid var(--accent); padding-left:10px; margin:0 0 12px}
@@ -129,7 +137,7 @@
   .rows{margin-top:6px; border-top:1px solid var(--border)}
   .row{
     display:grid;
-    grid-template-columns:35px 1fr 40px 70px 52px;
+    grid-template-columns:35px 1fr 50px 90px 60px;
     gap:12px; padding:10px 4px;
     align-items:start;
     border-bottom:1px solid var(--border);
@@ -156,6 +164,11 @@
   .leaflet-tooltip{background:#111827; color:#f9fafb; border:0; border-radius:8px; padding:8px 10px; box-shadow:0 6px 18px rgba(0,0,0,.25)}
   .leaflet-container{background:var(--card-alt)}
   .leaflet-control-attribution{display:none}
+
+  /* National tab chart sizing (fix) */
+  .charts{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+  .chart-wrap{position:relative; height:300px}
+  .chart-wrap canvas{position:absolute; inset:0}
 
   /* Bottom ticker */
   .ticker{position:sticky; bottom:0; z-index:1600; background:#0b1220; color:#fff; border-top:1px solid #0f172a}
@@ -211,7 +224,7 @@
   .pin-float .head{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--card-alt); border-bottom:1px solid var(--border); font-weight:900}
   .pin-float .body{padding:8px 10px}
   .pin-float .close{border:1px solid var(--border); border-radius:8px; padding:4px 8px; background:var(--card); cursor:pointer}
-  .pin-float .row{display:grid; grid-template-columns:26px 1fr 70px 60px; gap:10px; padding:6px 0; align-items:center}
+  .pin-float .row{display:grid; grid-template-columns:26px 1fr 80px 70px; gap:10px; padding:6px 0; align-items:center}
   .pin-float img{height:18px}
 
   @media (max-width:1300px){
@@ -262,9 +275,11 @@
         </div>
       </nav>
 
-      <!-- Topline -->
+      <!-- ===== NEW Top Stats (seats + votes etc.) ===== -->
       <section class="topline">
-        <div class="topline-inner" id="toplineBar"></div>
+        <div class="topline-inner">
+          <div id="topStats" class="topgrid"></div>
+        </div>
       </section>
 
       <!-- NATIONAL -->
@@ -311,20 +326,6 @@
                 <option value="">All Parties</option>
                 <option>JLP</option><option>PNP</option><option>JPP</option><option>UIC</option><option>Other</option>
               </select>
-              <input id="cnoFilter" type="text" inputmode="numeric" placeholder="Const. #">
-              <div class="split">
-                <label for="sortField" style="color:var(--muted); font-weight:700">Sort by</label>
-                <select id="sortField">
-                  <option value="cno">Const #</option>
-                  <option value="name">Const name</option>
-                  <option value="parish">Parish</option>
-                  <option value="party">Leading party</option>
-                </select>
-                <select id="sortDir">
-                  <option value="asc">Asc</option>
-                  <option value="desc">Desc</option>
-                </select>
-              </div>
             </div>
             <h2>Constituencies by Parish</h2>
             <div id="parishContainer"></div>
@@ -455,7 +456,7 @@ let lastSeats = JSON.parse(localStorage.getItem('lastSeats') || '{}');
 let lastConstHashes = JSON.parse(localStorage.getItem('constituencyHashes')||'{}');
 let lastConstUpdated = JSON.parse(localStorage.getItem('constituencyUpdated')||'{}');
 
-let hoverPreviewLayer=null; // current temp highlight
+let hoverPreviewLayer=null;
 let pinnedKey = localStorage.getItem('pinnedRaceKey') || null;
 
 /* ===== Preview modal state ===== */
@@ -501,7 +502,12 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   document.getElementById('tab-'+t.dataset.tab).classList.remove('hidden');
-  if (t.dataset.tab==='national' && mapNational) setTimeout(()=>mapNational.invalidateSize(), 60);
+
+  if (t.dataset.tab==='national'){
+    if (mapNational) setTimeout(()=>mapNational.invalidateSize(), 60);
+    try{ voteChart?.resize(); seatChart?.resize(); }catch(_){}
+  }
+
   if (t.dataset.tab==='interactive' && mapInteractive) {
     setTimeout(()=>mapInteractive.invalidateSize(), 60);
     if (pendingFocusName){ focusConstituencyByName(pendingFocusName, true); pendingFocusName=null; }
@@ -623,19 +629,45 @@ function stopPulse(layer){
 }
 
 /* ===== Topline / score / charts / closest (national card) ===== */
-function buildToplineBar(totals,seats){
-  const el=document.getElementById('toplineBar'); el.innerHTML='';
-  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
-  const deltas={}; ['JLP','PNP','JPP','UIC','Other'].forEach(p=>{ const prev=lastSeats?.[p]||0; const cur=seats[p]||0; deltas[p]=cur-prev; });
-  localStorage.setItem('lastSeats', JSON.stringify(seats)); lastSeats=seats;
-  ['JLP','PNP','JPP','UIC','Other'].forEach(p=>{
-    const votes=totals[p]||0, s=seats[p]||0; const pct=((votes/(totalVotes||1))*100).toFixed(1); const d=deltas[p]||0;
-    const deltaHtml = d?`<span class="delta ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`:'';
-    const card=document.createElement('div'); card.className='tcard';
-    card.innerHTML = `<img class="tlogo" src="${PARTY_LOGOS[p]}" alt="${p} logo" referrerpolicy="no-referrer">
-      <div class="tstats"><b>${s}</b> seats ${deltaHtml} &nbsp;|&nbsp; <b>${votes.toLocaleString()}</b> votes &nbsp;|&nbsp; <b>${pct}%</b></div>`;
-    el.appendChild(card);
+function buildTopStats(totals, seats){
+  const host = document.getElementById('topStats'); if(!host) return;
+  host.innerHTML = '';
+
+  // Compute totals & shares
+  const totalVotes = Object.values(totals).reduce((a,b)=>a+b,0) || 1;
+  const entries = ['JLP','PNP','JPP','UIC','Other'].map(key=>{
+    const votes = totals[key]||0;
+    const votePct = (votes/totalVotes)*100;
+    const s = seats[key]||0;
+    return { key, votes, votePct, seats:s };
   });
+
+  // Determine current seat leader for highlight
+  const maxSeats = Math.max(...entries.map(e=>e.seats));
+  entries.forEach(e=>{
+    const color = PARTY_COLORS[e.key] || PARTY_COLORS.Other;
+    const card = document.createElement('div');
+    card.className = 'stat' + (e.seats===maxSeats && e.seats>0 ? ' king' : '');
+    card.innerHTML = `
+      <img class="stat-logo" src="${PARTY_LOGOS[e.key]}" alt="${e.key} logo" referrerpolicy="no-referrer">
+      <div>
+        <div class="stat-name">${partyFullName(e.key)}</div>
+        <div class="stat-sub">Votes: <b>${e.votes.toLocaleString()}</b> • ${e.votePct.toFixed(1)}%</div>
+      </div>
+      <div class="stat-main" style="color:${color}">${e.seats}</div>
+      <div class="mini-bar"><span style="width:${Math.min(100,e.votePct).toFixed(1)}%; background:${color}"></span></div>
+    `;
+    host.appendChild(card);
+  });
+}
+function partyFullName(k){
+  switch(k){
+    case 'JLP': return 'Jamaica Labour Party';
+    case 'PNP': return 'People’s National Party';
+    case 'JPP': return 'Jamaica Progressive Party';
+    case 'UIC': return 'United Independents\' Congress';
+    default: return 'Other Parties';
+  }
 }
 function buildScoreboard(totals,seats){
   const el=document.getElementById('scoreboard'); if(!el) return; el.innerHTML='';
@@ -816,49 +848,37 @@ function showConstituencyDetails(normKey, featureName){
   cont.innerHTML = html;
 }
 
-/* ===== Render parish blocks + filters + SORT ===== */
+/* ===== Render parish blocks + filters (NO sorting controls, NO cno input) ===== */
 function renderParishBlocks(detailsByConst, rawData){
   const host=document.getElementById('parishContainer'); host.innerHTML='';
   const parishSel = document.getElementById('parishFilter');
   const partySel  = document.getElementById('partyFilter');
-  const cnoInp    = document.getElementById('cnoFilter');
-  const sortField = document.getElementById('sortField').value;
-  const sortDir   = document.getElementById('sortDir').value;
 
   const allKeys = Object.keys(detailsByConst);
   const parishOf = k => constNameToParish[k] || '';
   const cnoOf    = k => (constNameToNo[k] || '');
   const recOf    = k => Object.values(rawData).find(x=> canonKey(norm(x?.Name))===k);
   const nameOf   = k => (recOf(k)?.Name || k);
-  const leadPartyOf = k => detailsByConst[k]?.all?.[0]?.party || 'Other';
 
   const parishSet = new Set(allKeys.map(parishOf));
   let parishes = Array.from(parishSet).sort((a,b)=> a.localeCompare(b));
-  if (sortField==='parish') parishes.sort((a,b)=> sortDir==='asc'? a.localeCompare(b):b.localeCompare(a));
 
   const curParish = parishSel.value;
   parishSel.innerHTML = `<option value="">All Parishes</option>` + parishes.map(p=>`<option ${curParish===p?'selected':''} value="${p}">${p}</option>`).join('');
 
   const filterParish = parishSel.value;
   const filterParty  = partySel.value;
-  const filterCno    = cnoInp.value.trim();
 
   parishes.forEach(parish=>{
     if (filterParish && parish!==filterParish) return;
     let keys = allKeys.filter(k=> parishOf(k)===parish);
 
-    keys.sort((ka,kb)=>{
-      let A,B;
-      switch (sortField){
-        case 'cno':   A=Number(cnoOf(ka)||0); B=Number(cnoOf(kb)||0); break;
-        case 'name':  A=nameOf(ka).toLowerCase(); B=nameOf(kb).toLowerCase(); break;
-        case 'party': A=leadPartyOf(ka); B=leadPartyOf(kb); break;
-        case 'parish':A=parishOf(ka); B=parishOf(kb); break;
-        default: A=nameOf(ka).toLowerCase(); B=nameOf(kb).toLowerCase();
-      }
-      if (A<B) return sortDir==='asc'?-1:1;
-      if (A>B) return sortDir==='asc'? 1:-1;
-      return 0;
+    // Default order: by constituency number, then by name
+    keys.sort((a,b)=>{
+      const A = Number(cnoOf(a)) || 0;
+      const B = Number(cnoOf(b)) || 0;
+      if (A!==B) return A-B;
+      return nameOf(a).localeCompare(nameOf(b));
     });
 
     const wrap=document.createElement('div'); wrap.className='parish';
@@ -872,7 +892,6 @@ function renderParishBlocks(detailsByConst, rawData){
       const cNo = constNameToNo[key] || '';
 
       if (filterParty && !info.all.some(c=> partyKey(c.party)===filterParty)) return;
-      if (filterCno && !String(cNo).startsWith(filterCno)) return;
 
       const winnerParty = partyKey(info.all?.[0]?.party || 'Other');
       const winnerObj = info.all?.[0] || null;
@@ -882,16 +901,12 @@ function renderParishBlocks(detailsByConst, rawData){
       const candidatesPayload = JSON.stringify(info.all || []);
       const updatedTs = lastConstUpdated[key] || '';
 
-      // Boxes declare rule: declare only full or >=95%
-      let boxes = '', boxpct = ''; let fullCounted=false, pctNum=0, canDeclare=false;
+      // Boxes stats if present
+      let boxes = '', boxpct = '';
       if (record?.Data){
         const d = Array.isArray(record.Data)? record.Data[0] : record.Data;
         boxes  = d?.["Boxes Counted"] || '';
         boxpct = (d?.["Box Counted Percentage"]!=null) ? String(d["Box Counted Percentage"]) : '';
-        const m = boxes ? String(boxes).match(/(\d+)\s*of\s*(\d+)/i) : null;
-        if (m){ const counted=+m[1], total=+m[2]; fullCounted = total>0 && counted===total; }
-        pctNum = Number(boxpct)||0;
-        canDeclare = fullCounted || (pctNum>=95);
       }
 
       const el=document.createElement('div'); el.className='const';
@@ -902,10 +917,10 @@ function renderParishBlocks(detailsByConst, rawData){
       el.dataset.boxes = boxes;
       el.dataset.boxpct = boxpct;
 
-      el.dataset.search = [origName, cNo, parish, ...(info.all||[]).map(c=>`${c.name} ${partyKey(c.party)}`)].join(' ').toLowerCase();
+      // General search: candidate names + constituency name + constituency number
+      el.dataset.search = [origName, cNo, ...(info.all||[]).map(c=>`${c.name}`)].join(' ').toLowerCase();
       el.dataset.parish = parish;
       el.dataset.parties = (info.all||[]).map(c=>partyKey(c.party)).join('|');
-      el.dataset.cno = cNo;
 
       el.style.borderColor = bg;
 
@@ -916,15 +931,11 @@ function renderParishBlocks(detailsByConst, rawData){
 
       const niceName = `${origName} ${cNo?`(#${cNo})`:''}`;
 
-      const winnerBadgeHTML = (canDeclare && winnerObj)
-        ? `<div class="winner-badge" style="background:${bg}; color:${textColor}; border-color:${bg}">
-             <span class="check">✓</span> ${winnerObj.name} (${winnerParty})
-           </div>`
-        : (winnerObj
+      const winnerBadgeHTML = (winnerObj)
            ? `<div class="winner-badge" style="background:var(--card); color:var(--text); border-color:var(--border)">
                 Leading: <strong style="color:${PARTY_COLORS[winnerParty]||'#888'}">${winnerObj.name} (${winnerParty})</strong>
               </div>`
-           : ``);
+           : ``;
 
       const rowsHTML = (info.all||[]).map(c=>{
         const P=partyKey(c.party), icon=PARTY_SYMBOLS[P]||PARTY_SYMBOLS.Other;
@@ -956,7 +967,6 @@ function renderParishBlocks(detailsByConst, rawData){
           <div class="rows">${rowsHTML}</div>
         </div>
       `;
-      /* OPEN PREVIEW */
       el.addEventListener('click', ()=> openPreviewForKey(key));
       grid.appendChild(el);
     });
@@ -964,7 +974,7 @@ function renderParishBlocks(detailsByConst, rawData){
     if (grid.children.length) document.getElementById('parishContainer').appendChild(wrap);
   });
 
-  // Text search
+  // General search
   const sb = document.getElementById('searchBar');
   function applyTextFilter(){
     const q = sb.value.trim().toLowerCase();
@@ -988,7 +998,7 @@ function fmtAgeToClass(age){
   return 'age-bad';
 }
 function tickTimersAndRecent(){
-  // Update elapsed timers in constituency cards
+  // Update timers
   document.querySelectorAll('.const .timer').forEach(t=>{
     const ts = Number(t.dataset.ts||0);
     if (!ts) { t.textContent = '00:00:00'; return; }
@@ -1003,7 +1013,7 @@ function tickTimersAndRecent(){
     }
   });
 
-  // Build recent items
+  // Recent items + ticker
   const recents = []; const ticker  = [];
   Object.keys(lastConstUpdated).forEach(k=>{
     const ts = lastConstUpdated[k];
@@ -1070,7 +1080,6 @@ async function fetchOne(url){
 function buildClosestSidebar(detailsByConst, rawData){
   const host = document.getElementById('closestSidebar');
   host.innerHTML='';
-  // Collect all constituencies with top-2 vote gap <= threshold
   const items = [];
   Object.keys(detailsByConst).forEach(key=>{
     const info = detailsByConst[key];
@@ -1132,7 +1141,6 @@ function buildClosestSidebar(detailsByConst, rawData){
       </div>
     `;
 
-    // Click behaviors
     wrap.addEventListener('click', (e)=>{
       const isPin = e.target.closest('.closest-pin');
       const isOpen = e.target.closest('.small-open');
@@ -1159,7 +1167,7 @@ function renderPinned(detailsByConst, rawData){
   const rowHTML = cand=>{
     const P = partyKey(cand.party), icon=PARTY_SYMBOLS[P]||PARTY_SYMBOLS.Other, color=PARTY_COLORS[P]||'#888';
     return `<div class="row"><img src="${icon}" alt="${P}" referrerpolicy="no-referrer"><div style="font-weight:800;color:${color}">${cand.name}</div><div class="votes">${Number(cand.votes||0).toLocaleString()}</div><div class="pct">${cand.pct||0}%</div></div>`;
-  };
+    };
   box.innerHTML = `
     <div class="head">
       <span>📌 ${cname}</span>
@@ -1261,19 +1269,22 @@ async function loadECJAndData(){
     });
 
     const {totals: groupedTotals, seats: groupedSeats} = groupSmallParties(partyTotals, partySeats, 0.02, Object.keys(PARTY_COLORS));
+    localStorage.setItem('lastSeats', JSON.stringify(groupedSeats));
+    // NEW topline
+    buildTopStats(groupedTotals, groupedSeats);
 
-    buildToplineBar(groupedTotals, groupedSeats);
+    // National tab
     buildScoreboard(groupedTotals, groupedSeats);
     buildCharts(groupedTotals, groupedSeats);
-    buildClosestPanel(closestArr);             // National tab widget
+    buildClosestPanel(closestArr);
+
+    // Constituencies + Maps + Right sidebars
     renderParishBlocks(detailsByConst, data);
     paintMap(geoLayerNational, detailsByConst);
     paintMap(geoLayerInteractive, detailsByConst);
     updateFocusOutline();
-
-    // Right sidebars
     buildClosestSidebar(detailsByConst, data);
-    renderPinned(detailsByConst, data);        // refresh floating card if pinned
+    renderPinned(detailsByConst, data);
 
     document.getElementById('lastUpdated').textContent = "Live • " + new Date().toLocaleTimeString();
 
