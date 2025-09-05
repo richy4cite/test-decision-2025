@@ -13,7 +13,7 @@
 <style>
   /* THEME TOKENS */
   :root{
-    --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --accent:#2563eb;
+    --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --accent:#0a58ca;
     --card:#ffffff; --card-alt:#f8fafc; --shadow:0 6px 18px rgba(17,24,39,.06);
     --jlp:#2e8b57; --pnp:#ff8c00; --jpp:#6a0dad; --uic:#008b8b; --other:#1e90ff;
     --good:#16a34a; --warn:#f59e0b; --bad:#ef4444;
@@ -49,21 +49,26 @@
   .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
   .tab.active{border-color:var(--accent); color:var(--text)}
 
-  /* DECISION RIBBON (NEW, not like example) */
-  .ribbon{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 85%, var(--bg)), color-mix(in oklab, var(--card) 70%, var(--bg))); border-bottom:1px solid var(--border)}
-  .ribbon-inner{max-width:1800px; margin:0 auto; padding:12px 24px; display:grid; gap:12px}
-  .ribbon-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-  .ribbon-title{font-weight:900}
-  .capsules{display:flex; gap:4px; flex-wrap:wrap}
-  .cap{width:12px; height:18px; border-radius:6px; background:var(--border)}
-  .cap.jlp{background:color-mix(in oklab, var(--jlp) 92%, black)}
-  .cap.pnp{background:color-mix(in oklab, var(--pnp) 92%, black)}
-  .cap.oth{background:color-mix(in oklab, var(--other) 92%, black)}
-  .ribbon-meta{display:flex; gap:12px; color:var(--muted); font-weight:700}
-  .ribbon-meter{position:relative; height:10px; background:var(--border); border-radius:999px; overflow:hidden}
-  .ribbon-meter>span{position:absolute; top:0; left:0; height:100%}
-  .bar-jlp{background:var(--jlp)}
-  .bar-pnp{background:var(--pnp); opacity:.75}
+  /* Topline (NEW: Majority bar + stat cards) */
+  .topline{background:color-mix(in oklab, var(--card) 80%, var(--bg)); border-bottom:1px solid var(--border)}
+  .topline-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:grid; gap:14px}
+  .majority-wrap{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; box-shadow:var(--shadow)}
+  .majority-title{display:flex; justify-content:space-between; font-weight:900; margin-bottom:8px}
+  .majority-bar{position:relative; height:18px; background:var(--border); border-radius:999px; overflow:hidden}
+  .majority-bar .seg{position:absolute; top:0; left:0; height:100%}
+  .majority-bar .tick{position:absolute; top:-3px; width:2px; height:24px; background:#11182788}
+  html[data-theme="dark"] .majority-bar .tick{background:#e5e7eb88}
+  .majority-note{color:var(--muted); font-size:.9rem; margin-top:6px}
+  .topgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+  .stat{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px;
+        background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow:var(--shadow)}
+  .stat-logo{height:26px; width:auto}
+  .stat-name{font-weight:900; letter-spacing:.2px}
+  .stat-main{font-weight:900; font-size:1.6rem}
+  .stat-sub{color:var(--muted); font-size:.92rem}
+  .mini-bar{grid-column:1/-1; height:8px; border-radius:999px; background:var(--border); overflow:hidden}
+  .mini-bar > span{display:block; height:100%}
+  .king{border:2px solid color-mix(in oklab, var(--accent) 60%, var(--border));}
 
   /* Page grid (right column is 360px) */
   .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 360px 1fr; gap:16px}
@@ -92,14 +97,14 @@
   .closest-head{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; background:var(--card-alt); border-bottom:1px solid var(--border)}
   .closest-head .cname{font-weight:900; font-size:.95rem; line-height:1.1}
   .closest-body{padding:4px 8px}
-  .closerow{display:grid; grid-template-columns:20px 1fr 68px 60px; gap:8px; align-items:center; padding:2px 0; line-height:1.05}
-  .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800; font-size:.9rem}
-  .closerow img{height:14px; width:auto}
-  .closest-foot{padding:4px 8px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center; font-size:.86rem}
+  .closerow{display:grid; grid-template-columns:22px 1fr 72px 62px; gap:8px; align-items:center; padding:3px 0; line-height:1.1}
+  .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800; font-size:.92rem}
+  .closerow img{height:16px; width:auto}
+  .closest-foot{padding:4px 8px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center; font-size:.9rem}
   .closest-item:hover{background:color-mix(in oklab, var(--card) 94%, var(--bg))}
   .closest-pin{border:1px solid var(--border); border-radius:8px; background:var(--card); padding:3px 6px; font-weight:800; font-size:.8rem}
 
-  /* Constituency list (restored) */
+  /* Constituency list (restore original sizing) */
   .container{max-width:1600px; margin:14px auto; padding:0 24px}
   .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
   .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
@@ -122,11 +127,11 @@
   .winner-badge .check{font-weight:900}
   .boxline{font-size:.9rem; color:var(--muted); margin-top:2px}
 
-  /* Rows */
+  /* Rows (restore original grid) */
   .rows{margin-top:6px; border-top:1px solid var(--border)}
   .row{
     display:grid;
-    grid-template-columns:35px 1fr 40px 70px 52px;
+    grid-template-columns:35px 1fr 40px 70px 52px; /* ORIGINAL LAYOUT */
     gap:12px; padding:10px 4px;
     align-items:start;
     border-bottom:1px solid var(--border);
@@ -140,13 +145,13 @@
   .pct{color:var(--muted); text-align:right}
   .party-icon{height:18px; width:auto; display:block; margin-top:2px}
 
-  /* Interactive Map header + map look */
-  .imap-head{display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:8px}
-  .imap-filters{display:flex; gap:8px; align-items:center}
-  .imap-filters .btn{padding:6px 10px; border-radius:8px}
+  /* Maps */
   .map-wrap{position:relative; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--card-alt); z-index:1}
-  #imapMap{height:64vh; min-height:420px; max-height:76vh}
+  #mapContainer{height:460px}
+  #imapMap{height:60vh; min-height:380px; max-height:72vh}
   .mapControls{position:absolute; right:8px; top:8px; z-index:500}
+  .btn{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:700; color:var(--text)}
+  .btn:hover{filter:brightness(0.98)}
   .legend{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px}
   .legend-item{display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); padding:6px 10px; border-radius:999px}
   .swatch{width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.15)}
@@ -154,27 +159,12 @@
   .leaflet-container{background:var(--card-alt)}
   .leaflet-control-attribution{display:none}
 
-  /* Leaflet popup — styled similar vibe */
-  .leaflet-popup-content-wrapper{border-radius:12px; border:1px solid var(--border); box-shadow:0 18px 40px rgba(0,0,0,.25)}
-  .leaflet-popup-content{margin:0}
-  .mpp{min-width:min(380px, 80vw)}
-  .mpp-head{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--card-alt)}
-  .mpp-title{font-weight:900}
-  .mpp-body{padding:10px 12px; display:grid; gap:6px}
-  .mpp-row{display:grid; grid-template-columns:22px 1fr 72px 62px; gap:8px; align-items:center}
-  .mpp-row img{height:16px}
-  .mpp-row .votes,.mpp-row .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800}
-  .mpp-foot{padding:10px 12px; border-top:1px dashed var(--border); display:flex; gap:8px; align-items:center; justify-content:space-between; color:var(--muted)}
-  .mpp-actions{display:flex; gap:8px}
-  .btn{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:700; color:var(--text)}
-  .btn:hover{filter:brightness(0.98)}
-
-  /* National tab sizes */
+  /* National tab chart sizing (fix) */
   .charts{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
   .chart-wrap{position:relative; height:300px}
   .chart-wrap canvas{position:absolute; inset:0}
 
-  /* Ticker + Pinned card */
+  /* Bottom ticker */
   .ticker{position:sticky; bottom:0; z-index:1600; background:#0b1220; color:#fff; border-top:1px solid #0f172a}
   html[data-theme="dark"] .ticker{background:#0b1220}
   .ticker-inner{max-width:1600px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:12px; overflow:hidden}
@@ -182,10 +172,31 @@
   .marquee{white-space:nowrap; overflow:hidden; flex:1}
   .marquee span{display:inline-block; padding-left:100%; animation:scroll 180s linear infinite}
   @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
   .hidden{display:none !important}
   .toast{position:fixed; right:12px; bottom:72px; background:#111827; color:#fff; padding:10px 12px; border-radius:10px; box-shadow:var(--shadow); z-index:2000; font-weight:700}
 
-  /* Pinned floating */
+  /* Preview modal */
+  .modal{position:fixed; inset:0; background:rgba(15,23,42,.5); display:none; align-items:center; justify-content:center; z-index:2000; backdrop-filter:blur(2px)}
+  .modal.show{display:flex}
+  .modal-content{width:min(1100px, 66vw); max-height:86vh; background:var(--card); color:var(--text);
+    border:1px solid var(--border); border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+    display:grid; grid-template-rows:auto auto 1fr auto; overflow:hidden}
+  .modal-header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border)}
+  .modal-title{font-weight:900; font-size:1.05rem}
+  .modal-hint{padding:8px 14px; color:var(--muted); border-bottom:1px solid var(--border)}
+  .modal-body{display:grid; grid-template-columns:1.2fr .8fr; gap:0; min-height:380px}
+  #previewMap{min-height:380px; position:relative}
+  .modal-details{border-left:1px solid var(--border); padding:10px 12px; overflow:auto}
+  .modal-actions{padding:12px 14px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end}
+  .btn-secondary{background:color-mix(in oklab, var(--card) 80%, var(--bg)); border:1px solid var(--border)}
+  .btn-primary{background:var(--accent); border:1px solid color-mix(in oklab, var(--accent) 70%, black); color:white}
+  .close-x{border-radius:10px; padding:6px 10px; background:var(--card); border:1px solid var(--border); cursor:pointer}
+  .shimmer{position:absolute; inset:0; pointer-events:none; background:linear-gradient(100deg, rgba(0,0,0,0) 0%, rgba(148,163,184,.22) 40%, rgba(0,0,0,0) 80%);
+    background-size:200% 100%; animation:shimmer 1.2s linear infinite; z-index:5}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* Floating pinned race */
   .pin-float{position:fixed; right:12px; bottom:110px; z-index:2000; width:min(380px, 92vw);
     background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); overflow:hidden}
   .pin-float .head{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--card-alt); border-bottom:1px solid var(--border); font-weight:900}
@@ -208,7 +219,9 @@
       <header class="header" id="siteHeader">
         <div class="header-inner">
           <div class="brand">Jamaica Decision 2025 — Live Results</div>
+
           <button id="modeBtn" class="mode-btn" title="Toggle light/dark">🌞 Light</button>
+
           <div class="refresh">
             <span style="color:var(--muted)">Auto-refresh:</span>
             <select id="refreshSel">
@@ -220,11 +233,13 @@
             </select>
             <button id="btnForceRefresh" class="btn">Refresh now</button>
           </div>
+
           <div class="status-group" id="sourceStatus">
-            <div class="status-pill" id="pillMain">
+            <div class="status-pill" id="pillMain" title="Using local 2025-data.json">
               <span class="dot" aria-hidden="true"></span> Data <small id="mainLag">Local file</small>
             </div>
           </div>
+
           <div class="live-pill"><span class="live-dot"></span><span id="lastUpdated">Updating…</span></div>
         </div>
       </header>
@@ -238,18 +253,22 @@
         </div>
       </nav>
 
-      <!-- DECISION RIBBON (race to 33) -->
-      <section class="ribbon">
-        <div class="ribbon-inner">
-          <div class="ribbon-row">
-            <div class="ribbon-title">Race to 33</div>
-            <div class="ribbon-meta" id="ribbonMeta">—</div>
+      <!-- ===== Topline: Majority (Race to 33) + Stats ===== -->
+      <section class="topline">
+        <div class="topline-inner">
+          <!-- Race to 33 -->
+          <div class="majority-wrap">
+            <div class="majority-title">
+              <span>Race to 33 (Majority)</span>
+              <span id="majorityStatus" style="color:var(--muted)">Calculating…</span>
+            </div>
+            <div class="majority-bar" id="majorityBar">
+              <div class="tick" style="left:calc(33/33*100%);"></div>
+            </div>
+            <div class="majority-note" id="majorityNote"></div>
           </div>
-          <div class="capsules" id="capsulesRow" aria-label="Progress to majority"></div>
-          <div class="ribbon-meter" title="Vote share meters (not majority)">
-            <span id="meterJLP" class="bar-jlp" style="width:0%"></span>
-            <span id="meterPNP" class="bar-pnp" style="width:0%"></span>
-          </div>
+          <!-- Party stat cards -->
+          <div id="topStats" class="topgrid"></div>
         </div>
       </section>
 
@@ -257,6 +276,7 @@
       <section id="tab-national" class="hidden">
         <div class="container">
           <div class="scoreboard" id="scoreboard"></div>
+
           <div class="charts">
             <div class="card">
               <h2 style="color:var(--muted); font-size:1rem">Total Votes by Party</h2>
@@ -267,11 +287,13 @@
               <div class="chart-wrap"><canvas id="seatChart"></canvas></div>
             </div>
           </div>
+
           <div class="card">
             <h2>Top 10 Closest Seats</h2>
             <ul id="closestList" class="closelist" style="list-style:none; padding:0; margin:0; display:grid; gap:8px"></ul>
             <p id="closestNote" style="color:var(--muted); margin-top:8px"></p>
           </div>
+
           <div class="card">
             <h2>Seats Won Map</h2>
             <div class="map-wrap">
@@ -301,18 +323,14 @@
         </div>
       </section>
 
-      <!-- INTERACTIVE MAP (refreshed look + popup) -->
+      <!-- INTERACTIVE MAP -->
       <section id="tab-interactive" class="hidden">
         <div class="container">
           <div class="card">
-            <div class="imap-head">
-              <h2 style="margin:0">Interactive Map</h2>
-              <div class="imap-filters">
-                <button id="btnResetInteractive" class="btn">Reset view</button>
-              </div>
-            </div>
+            <h2>Interactive Map</h2>
             <div class="map-wrap">
               <div id="imapMap"></div>
+              <div class="mapControls"><button id="btnResetInteractive" class="btn">Reset view</button></div>
             </div>
             <div id="imapLegend" class="legend" style="margin-top:8px"></div>
             <div id="imapDetails" class="card" style="margin-top:12px">
@@ -351,6 +369,35 @@
   <!-- Floating pinned race -->
   <div id="pinFloat" class="pin-float hidden" aria-live="polite"></div>
 
+  <!-- ================== PREVIEW MODAL ================== -->
+  <div class="modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="previewTitle">Constituency</div>
+        <button class="close-x" id="btnPreviewClose" aria-label="Close preview">✕</button>
+      </div>
+      <div class="modal-hint" aria-live="polite">Loading…</div>
+      <div class="modal-body">
+        <div id="previewMap">
+          <div class="shimmer" id="previewShimmer"></div>
+        </div>
+        <div class="modal-details">
+          <div id="previewBoxes" class="boxline" style="margin-top:2px"></div>
+          <table style="width:100%; border-collapse:collapse; margin-top:8px">
+            <thead>
+              <tr><th style="width:28px"></th><th style="text-align:left">Candidate</th><th>Party</th><th style="text-align:right">Votes</th><th style="text-align:right">%</th></tr>
+            </thead>
+            <tbody id="previewTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnPreviewCancel">Close</button>
+        <button class="btn btn-primary" id="btnPreviewGo">Open in Interactive Map</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* ===== Config ===== */
 const AUTO_DEFAULT = 60000;
@@ -359,8 +406,9 @@ const ECJ_GEOJSON =
 const JAMAICA_BOUNDS = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
 const JAMAICA_SEATS = 63;
 const MAJORITY_TARGET = 33;
-const CLOSE_VOTE_THRESHOLD = 200;
+const CLOSE_VOTE_THRESHOLD = 200; // ≤ 200 votes difference
 
+/* Party theming */
 const PARTY_COLORS = { JLP:'#2e8b57', PNP:'#ff8c00', JPP:'#6a0dad', UIC:'#008b8b', Other:'#1e90ff' };
 const PARTY_LOGOS = {
   JLP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JLP_logo-300x98.png",
@@ -379,19 +427,18 @@ const PARTY_SYMBOLS = {
 const CORE_PARTIES = ["JLP","PNP","JPP","UIC"];
 const TICKER_MAX_AGE = 15*60*1000;
 const SIDEBAR_MAX_AGE = 25*60*1000;
+
+/* Local data */
 const DATA_URL = './2025-data.json';
 
+/* ===== Normalizer + Name Aliases ===== */
 function norm(s){ return String(s||'').toLowerCase().replace(/[\s\-\u2013\u2014'’.]/g,'').replace(/&/g,'and'); }
 const NAME_ALIASES = {
   [norm('Kingston East and Port Royal')]: { key: norm('Kingston Eastern and Port Royal'), parish: 'KINGSTON', constno: '3' }
 };
 function canonKey(k){ return NAME_ALIASES[k]?.key || k; }
-function partyKey(p){ const P = String(p||'Other').toUpperCase(); if (P.startsWith('INDA')||P.startsWith('INDB')) return 'Other'; return ['JLP','PNP','JPP','UIC'].includes(P)?P:'Other'; }
-function contrastText(hex){ try{ const c=hex.replace('#',''); const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16); return ((r*299+g*587+b*114)/1000>=140)?'#0b1220':'#ffffff'; }catch{ return '#0b1220'; } }
-function fmtHHMMSS(ms){ const s=Math.max(0,Math.floor(ms/1000)); const hh=String(Math.floor(s/3600)).padStart(2,'0'); const mm=String(Math.floor((s%3600)/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${hh}:${mm}:${ss}`; }
-function makeHash(cands){ return cands.map(k=>`${(k.Party||'Other').toUpperCase()}|${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}|${Number(k.Votes||0)}`).join(';'); }
-const bust = url => url + (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
 
+/* ===== State ===== */
 let voteChart=null, seatChart=null, refreshTimer=null, timerInterval=null;
 let mapNational=null, mapInteractive=null, geoLayerNational=null, geoLayerInteractive=null;
 let baseLightNat=null, baseDarkNat=null, baseLightInt=null, baseDarkInt=null, currentBase='light';
@@ -400,9 +447,22 @@ let leaderColors = {}; let focusedKey = null; let pendingFocusName = null;
 let lastSeats = JSON.parse(localStorage.getItem('lastSeats') || '{}');
 let lastConstHashes = JSON.parse(localStorage.getItem('constituencyHashes')||'{}');
 let lastConstUpdated = JSON.parse(localStorage.getItem('constituencyUpdated')||'{}');
+
+let hoverPreviewLayer=null;
 let pinnedKey = localStorage.getItem('pinnedRaceKey') || null;
 
-function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+/* ===== Preview modal state ===== */
+let previewMap=null, previewLayer=null, previewKey=null;
+
+/* ===== Utils ===== */
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
+function contrastText(hex){ try{ const c=hex.replace('#',''); const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16); return ((r*299+g*587+b*114)/1000>=140)?'#0b1220':'#ffffff'; }catch{ return '#0b1220'; } }
+function fmtHHMMSS(ms){ const s=Math.max(0,Math.floor(ms/1000)); const hh=String(Math.floor(s/3600)).padStart(2,'0'); const mm=String(Math.floor((s%3600)/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${hh}:${mm}:${ss}`; }
+function makeHash(cands){ return cands.map(k=>`${(k.Party||'Other').toUpperCase()}|${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}|${Number(k.Votes||0)}`).join(';'); }
+const partyKey = p => { const P = String(p||'Other').toUpperCase(); if (P.startsWith('INDA') || P.startsWith('INDB')) return 'Other'; return ['JLP','PNP','JPP','UIC'].includes(P) ? P : 'Other'; };
+const bust = url => url + (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+
+/* ===== Theme ===== */
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('modeBtn').textContent = theme==='dark' ? '🌙 Dark' : '🌞 Light';
@@ -427,15 +487,8 @@ function initTheme(){
     applyTheme(next);
   });
 }
-function updateStickyOffsets(){
-  const hdr = document.getElementById('siteHeader');
-  const tabs = document.getElementById('siteTabs');
-  if (hdr){ document.documentElement.style.setProperty('--hdrh', hdr.offsetHeight+'px'); }
-  if (tabs){ document.documentElement.style.setProperty('--tabh', tabs.offsetHeight+'px'); }
-}
-window.addEventListener('resize', updateStickyOffsets);
 
-/* Tabs */
+/* ===== Tabs ===== */
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -446,18 +499,33 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
     if (mapNational) setTimeout(()=>mapNational.invalidateSize(), 60);
     try{ voteChart?.resize(); seatChart?.resize(); }catch(_){}
   }
-  if (t.dataset.tab==='interactive' && mapInteractive){
+
+  if (t.dataset.tab==='interactive' && mapInteractive) {
     setTimeout(()=>mapInteractive.invalidateSize(), 60);
+    if (pendingFocusName){ focusConstituencyByName(pendingFocusName, true); pendingFocusName=null; }
+    else {
+      const cur = document.getElementById('imapContent')?.dataset?.currentKey;
+      if (cur) focusConstituencyByName(cur, true);
+    }
   }
 }));
 
-/* Auto refresh */
+/* ===== Sticky offsets ===== */
+function updateStickyOffsets(){
+  const hdr = document.getElementById('siteHeader');
+  const tabs = document.getElementById('siteTabs');
+  if (hdr){ document.documentElement.style.setProperty('--hdrh', hdr.offsetHeight+'px'); }
+  if (tabs){ document.documentElement.style.setProperty('--tabh', tabs.offsetHeight+'px'); }
+}
+window.addEventListener('resize', updateStickyOffsets);
+
+/* ===== Auto refresh ===== */
 const sel = document.getElementById('refreshSel');
 sel.value = localStorage.getItem('refreshIntervalMs') || String(AUTO_DEFAULT);
 sel.addEventListener('change', ()=>{ localStorage.setItem('refreshIntervalMs', sel.value); setupAutoRefresh(); });
-document.getElementById('btnForceRefresh').addEventListener('click', ()=>{ loadAll(); });
+document.getElementById('btnForceRefresh').addEventListener('click', ()=>{ loadECJAndData(); });
 
-/* Maps */
+/* ===== Maps ===== */
 const JAMAICA_BOUNDS_LEAF = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
 function initNationalMap(){
   if (mapNational) return;
@@ -484,8 +552,10 @@ function initInteractiveMap(){
   document.getElementById('btnResetInteractive').onclick = ()=>{
     mapInteractive.fitBounds(JAMAICA_BOUNDS_LEAF);
     mapInteractive.setMinZoom(mapInteractive.getZoom());
-    focusedKey = null;
-    document.getElementById('imapContent').textContent = 'Click a constituency to see results here.';
+    focusedKey = null; pendingFocusName = null;
+    const cont = document.getElementById('imapContent');
+    cont.textContent = 'Click a constituency to see results here.';
+    cont.dataset.currentKey = '';
     if (geoLayerInteractive){
       geoLayerInteractive.eachLayer(l=>{
         try{ l.closeTooltip(); }catch(_){}
@@ -493,6 +563,7 @@ function initInteractiveMap(){
         const key = norm(nm);
         const fill = leaderColors[key] || '#e5e7eb';
         l.setStyle({ fillColor:fill, fillOpacity:0.75, color:'#94a3b8', weight:1 });
+        stopPulse(l);
       });
     }
     setTimeout(()=> mapInteractive.invalidateSize(), 40);
@@ -509,7 +580,7 @@ function buildLegendInto(containerId){
   });
 }
 
-/* Boundaries */
+/* ===== Boundaries ===== */
 async function loadECJBoundaries(){
   const gj = await fetch(ECJ_GEOJSON, {cache:'no-store'}).then(r=>{ if(!r.ok) throw new Error('Boundaries HTTP '+r.status); return r.json(); });
   arcFeatures = gj.features || [];
@@ -532,41 +603,159 @@ async function loadECJBoundaries(){
   });
 }
 
-/* Popup builder */
-function popupHTML(key, name, rows, boxesStr, boxesPct){
-  const cname = `${name}${constNameToNo[key]?` (#${constNameToNo[key]})`:''}`;
-  const r2 = rows.slice(0,2);
-  const row = c=>{
-    const P=partyKey(c.party), icon=PARTY_SYMBOLS[P]||PARTY_SYMBOLS.Other, col=PARTY_COLORS[P]||'#888';
-    return `<div class="mpp-row">
-      <img src="${icon}" alt="${P}" referrerpolicy="no-referrer">
-      <div style="font-weight:800;color:${col}">${c.name} <span style="color:var(--muted)">(${P})</span></div>
-      <div class="votes">${Number(c.votes||0).toLocaleString()}</div>
-      <div class="pct">${c.pct||0}%</div>
-    </div>`;
-  };
-  const boxes = boxesStr ? `<span>Boxes: <b>${boxesStr}</b>${boxesPct?` (${boxesPct}%)`:''}</span>` : `<span>&nbsp;</span>`;
-  return `
-    <div class="mpp">
-      <div class="mpp-head">
-        <div class="mpp-title">${cname}</div>
-        <div class="mpp-actions">
-          <button class="btn" data-act="open">Open</button>
-          <button class="btn" data-act="pin">📌 Pin</button>
-        </div>
-      </div>
-      <div class="mpp-body">
-        ${r2.map(row).join('')}
-      </div>
-      <div class="mpp-foot">
-        ${boxes}
-        <span style="font-variant-numeric:tabular-nums">Updated: ${fmtHHMMSS(Date.now() - (lastConstUpdated[key]||Date.now()))} ago</span>
-      </div>
-    </div>
-  `;
+/* ===== Pulsing helpers ===== */
+function startPulse(layer){
+  if (!layer || layer._pulseTimer) return;
+  let up=true;
+  layer._pulseTimer = setInterval(()=>{
+    const next = up ? 0.95 : 0.6; up=!up;
+    layer.setStyle({ fillOpacity: next });
+  }, 800);
+}
+function stopPulse(layer){
+  if (layer && layer._pulseTimer){
+    clearInterval(layer._pulseTimer);
+    layer._pulseTimer = null;
+    layer.setStyle({ fillOpacity:0.75 });
+  }
 }
 
-/* Map coloring & interactions (click opens popup) */
+/* ===== Topline builders ===== */
+function partyFullName(k){
+  switch(k){
+    case 'JLP': return 'Jamaica Labour Party';
+    case 'PNP': return 'People’s National Party';
+    case 'JPP': return 'Jamaica Progressive Party';
+    case 'UIC': return 'United Independents\' Congress';
+    default: return 'Other Parties';
+  }
+}
+function buildTopStats(totals, seats){
+  const host = document.getElementById('topStats'); if(!host) return;
+  host.innerHTML = '';
+  const totalVotes = Object.values(totals).reduce((a,b)=>a+b,0) || 1;
+  const entries = ['JLP','PNP','JPP','UIC','Other'].map(key=>{
+    const votes = totals[key]||0; const votePct = (votes/totalVotes)*100; const s = seats[key]||0;
+    return { key, votes, votePct, seats:s };
+  });
+  const maxSeats = Math.max(...entries.map(e=>e.seats));
+  entries.forEach(e=>{
+    const color = PARTY_COLORS[e.key] || PARTY_COLORS.Other;
+    const card = document.createElement('div');
+    card.className = 'stat' + (e.seats===maxSeats && e.seats>0 ? ' king' : '');
+    card.innerHTML = `
+      <img class="stat-logo" src="${PARTY_LOGOS[e.key]}" alt="${e.key} logo" referrerpolicy="no-referrer">
+      <div>
+        <div class="stat-name">${partyFullName(e.key)}</div>
+        <div class="stat-sub">Votes: <b>${e.votes.toLocaleString()}</b> • ${e.votePct.toFixed(1)}%</div>
+      </div>
+      <div class="stat-main" style="color:${color}">${e.seats}</div>
+      <div class="mini-bar"><span style="width:${Math.min(100,e.votePct).toFixed(1)}%; background:${color}"></span></div>
+    `;
+    host.appendChild(card);
+  });
+}
+function buildMajorityBar(seats){
+  const bar = document.getElementById('majorityBar');
+  const status = document.getElementById('majorityStatus');
+  const note = document.getElementById('majorityNote');
+  if (!bar) return;
+
+  bar.innerHTML = `<div class="tick" style="left:${(MAJORITY_TARGET/MAJORITY_TARGET)*100}%"></div>`;
+  const sJLP = seats.JLP||0, sPNP = seats.PNP||0, sOther = (seats.Other||0) + (seats.JPP||0) + (seats.UIC||0);
+  const totalTop = Math.max(sJLP, sPNP, sOther);
+  const cap = x=>Math.min(MAJORITY_TARGET, x);
+  const wJ = cap(sJLP)/MAJORITY_TARGET*100;
+  const wP = cap(sPNP)/MAJORITY_TARGET*100;
+  const wO = Math.max(0, 100 - Math.max(wJ, wP));
+
+  // Show both JLP and PNP progress (stack visually with shadow offsets)
+  const segJ = document.createElement('div');
+  segJ.className='seg'; segJ.style.cssText=`left:0;width:${wJ}%; background:${PARTY_COLORS.JLP}`;
+  const segP = document.createElement('div');
+  segP.className='seg'; segP.style.cssText=`left:0;width:${wP}%; background:${PARTY_COLORS.PNP}; opacity:.6`;
+  bar.appendChild(segJ); bar.appendChild(segP);
+
+  let leader = '—', reach='—';
+  if (sJLP> sPNP && sJLP>=MAJORITY_TARGET){ leader='JLP'; reach='✓ Majority reached'; }
+  else if (sPNP > sJLP && sPNP>=MAJORITY_TARGET){ leader='PNP'; reach='✓ Majority reached'; }
+  else{
+    const distJ = Math.max(0, MAJORITY_TARGET - sJLP);
+    const distP = Math.max(0, MAJORITY_TARGET - sPNP);
+    const fav = sJLP===sPNP ? 'Tied' : (sJLP> sPNP ? 'JLP' : 'PNP');
+    reach = `${fav}: ${fav==='Tied' ? 'both need 33' : `needs ${fav==='JLP'?distJ:distP} more`}`;
+  }
+  status.textContent = `${sJLP} JLP | ${sPNP} PNP`;
+  note.textContent = reach;
+}
+
+/* ===== National tab bits ===== */
+function buildScoreboard(totals,seats){
+  const el=document.getElementById('scoreboard'); if(!el) return; el.innerHTML='';
+  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
+  const prev = JSON.parse(localStorage.getItem('lastSeats')||'{}');
+  [{key:'JLP', name:'Jamaica Labour Party', color:PARTY_COLORS.JLP, logo:PARTY_LOGOS.JLP},
+   {key:'PNP', name:'People’s National Party', color:PARTY_COLORS.PNP, logo:PARTY_LOGOS.PNP},
+   {key:'Other', name:'Others (JPP, UIC, etc.)', color:PARTY_COLORS.Other, logo:PARTY_LOGOS.Other}].forEach(g=>{
+    const votes=totals[g.key]||0, s=seats[g.key]||0, pct=((votes/(totalVotes||1))*100).toFixed(1);
+    const delta=s-(prev?.[g.key]||0);
+    const deltaHtml = delta?`<span class="delta ${delta>0?'up':'down'}">${delta>0?'▲':'▼'} ${Math.abs(delta)}</span>`:'';
+    const div=document.createElement('div'); div.className='pcard';
+    div.innerHTML = `
+      <div class="phead">
+        <div class="pbrand" style="color:${g.color}">
+          <img class="plogo" src="${g.logo}" alt="${g.key} logo" referrerpolicy="no-referrer">
+          <strong>${g.name}</strong>
+        </div>
+        <div class="pmain" style="color:${g.color}">${pct}%</div>
+      </div>
+      <div class="bar"><span style="width:${pct}%; background:${g.color}"></span></div>
+      <div style="margin-top:8px; color:var(--muted)"><b>${s}</b> seats ${deltaHtml} &nbsp;|&nbsp; Votes: ${votes.toLocaleString()}</div>`;
+    el.appendChild(div);
+  });
+}
+function buildCharts(totals,seats){
+  const vc=document.getElementById('voteChart'), sc=document.getElementById('seatChart');
+  try{ voteChart && voteChart.destroy(); }catch(_){}
+  try{ seatChart && seatChart.destroy(); }catch(_){}
+  const labels=Object.keys(totals); if(!labels.length) return;
+  const colors=labels.map(p=>PARTY_COLORS[p]||PARTY_COLORS.Other);
+  voteChart=new Chart(vc,{type:'pie',data:{labels,datasets:[{data:labels.map(k=>totals[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  seatChart=new Chart(sc,{type:'bar',data:{labels,datasets:[{label:'Seats',data:labels.map(k=>seats[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0,grid:{color:'rgba(148,163,184,.3)'}}}}});
+}
+function buildClosestPanel(items){
+  const list=document.getElementById('closestList');
+  const note=document.getElementById('closestNote');
+  if(!list || !note) return;
+  list.innerHTML='';
+  const top10 = (items||[])
+    .filter(x => !isNaN(x.marginPct))
+    .sort((a,b)=> a.marginPct - b.marginPct)
+    .slice(0,10);
+  top10.forEach(item=>{
+    const party = (item.winnerParty||'Other').toUpperCase();
+    const color = PARTY_COLORS[party] || '#1e90ff';
+    const li=document.createElement('li');
+    li.style.cssText='border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card)';
+    li.innerHTML = `
+      <span>
+        <strong>${item.constituency}</strong> —
+        <span style="color:${color}">
+          ${item.winnerFirst} ${item.winnerLast} (${party})
+        </span>
+      </span>
+      <span><strong>${(item.marginPct||0).toFixed(1)}%</strong></span>
+    `;
+    li.title = (item.candidates||[]).slice(0,3).map(c =>
+      `${c.name} (${(c.party||'Other').toUpperCase()}): ${Number(c.votes||0).toLocaleString()} • ${c.pct || 0}%`
+    ).join(' | ');
+    li.addEventListener('click', ()=> gotoInteractive(item.constituency));
+    list.appendChild(li);
+  });
+  note.textContent = 'Margin = percentage-point gap between 1st and 2nd.';
+}
+
+/* ===== Map coloring & interactions ===== */
 function paintMap(layer, detailsByConst){
   if (!layer) return;
   layer.eachLayer(Ly=>{
@@ -574,48 +763,94 @@ function paintMap(layer, detailsByConst){
     const key = norm(nm);
     const info = detailsByConst[key];
     if (info){
-      const fill = PARTY_COLORS[partyKey(info.all?.[0]?.party)] || PARTY_COLORS.Other;
+      const fill = PARTY_COLORS[partyKey(info.party)] || PARTY_COLORS.Other;
       leaderColors[key]=fill;
-      Ly.setStyle({ fillColor: fill, fillOpacity:0.75, color:'#94a3b8', weight:1 });
-      const rows = (info.all||[]).slice(0,2).map(c=>{
+      const isFocused = focusedKey && focusedKey===key;
+      Ly.setStyle({ fillColor: fill, fillOpacity:isFocused?0.85:0.75, color:isFocused?'#111827':'#94a3b8', weight:isFocused?3:1 });
+      const disp = `${nm}${constNameToNo[key]?` (#${constNameToNo[key]})`:''}`;
+      const rows = (info.all||[]).slice(0,3).map(c=>{
         const P=partyKey(c.party), col=PARTY_COLORS[P]||PARTY_COLORS.Other;
         return `<div><span style="color:${col}; font-weight:700">${c.name}</span> (${P}) — ${c.votes.toLocaleString()} • ${c.pct}%</div>`;
       }).join('');
-      Ly.bindTooltip(`<div style="min-width:260px"><div style="font-weight:800;margin-bottom:4px">${nm}${constNameToNo[key]?` (#${constNameToNo[key]})`:''}</div>${rows}</div>`, {sticky:true});
-      Ly.on('click', ()=>{
-        focusedKey = key;
-        const block = document.querySelector(\`.const[data-key="\${key}"]\`);
-        const rows = JSON.parse(block?.dataset?.candidates||'[]');
-        const boxes = block?.dataset?.boxes||''; const boxesPct = block?.dataset?.boxpct||'';
-        const html = popupHTML(key, nm, rows, boxes, boxesPct);
-        const pop = L.popup({className:'mpp-pop', autoPan:true, maxWidth:500})
-          .setLatLng(Ly.getBounds().getCenter())
-          .setContent(html)
-          .openOn(mapInteractive);
-        setTimeout(()=>{
-          const root = document.querySelector('.mpp');
-          if (!root) return;
-          root.querySelector('[data-act="open"]').addEventListener('click', (e)=>{ e.stopPropagation(); gotoInteractiveKey(key); });
-          root.querySelector('[data-act="pin"]').addEventListener('click', (e)=>{ e.stopPropagation(); pinRace(key); renderPinned(window.__detailsByConst, window.__rawData); toast('Pinned race 📌'); });
-        }, 10);
-        showConstituencyDetails(key, nm);
-      });
+      Ly.bindTooltip(`<div style="min-width:260px"><div style="font-weight:800;margin-bottom:4px">${disp}</div>${rows}</div>`, {sticky:true});
     }else{
       Ly.setStyle({ fillColor:'#e5e7eb', fillOpacity:0.6, color:'#94a3b8', weight:1 });
       Ly.bindTooltip(`<div><strong>${nm}</strong><br/><span style="color:#d1d5db">No result yet.</span></div>`, {sticky:true});
     }
   });
 }
+function updateFocusOutline(){
+  if (!geoLayerInteractive) return;
+  geoLayerInteractive.eachLayer(l=>{
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    const key = norm(nm);
+    const fill = leaderColors[key] || '#e5e7eb';
+    const isFocused = focusedKey && focusedKey===key;
+    const isHovering = hoverPreviewLayer && hoverPreviewLayer === l;
+    l.setStyle({ fillColor: fill, fillOpacity:isHovering?0.9:0.75, color: (isFocused||isHovering)? '#111827':'#94a3b8', weight: (isFocused||isHovering)? 3:1 });
+    if (isFocused || isHovering){ try{ l.bringToFront(); }catch(_){}
+      startPulse(l);
+    } else { stopPulse(l); }
+  });
+}
+function getLayerByKey(key){
+  let target=null;
+  if (!geoLayerInteractive) return null;
+  geoLayerInteractive.eachLayer(l=>{
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    if (norm(nm)===key) target=l;
+  });
+  return target;
+}
+function previewHoverStart(key){
+  const layer = getLayerByKey(key);
+  hoverPreviewLayer = layer || null;
+  if (layer){
+    try{ layer.openTooltip(); layer.bringToFront(); }catch(_){}
+    updateFocusOutline();
+  }
+}
+function previewHoverEnd(){
+  if (hoverPreviewLayer){ try{ hoverPreviewLayer.closeTooltip(); }catch(_){} }
+  hoverPreviewLayer = null; updateFocusOutline();
+}
+/* CLICK/HOVER wiring on interactive polygons (FIX) */
 function wireInteractiveBehaviors(){
   if (!geoLayerInteractive) return;
+  const hoverTimers = new WeakMap();
   byParish = {};
   geoLayerInteractive.eachLayer(l=>{
     const parish = l.feature?.properties?.PARISH_NAM;
     (byParish[parish] ||= []).push(l);
   });
+  geoLayerInteractive.eachLayer(layer=>{
+    const nm = layer.feature?.properties?.CONST_NAME || '';
+    const parish = layer.feature?.properties?.PARISH_NAM || '';
+    const key = norm(nm);
+    layer.on('click', ()=>{
+      const grp = byParish[parish] || [layer];
+      const group = L.featureGroup(grp);
+      try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+      focusedKey = key; updateFocusOutline();
+      showConstituencyDetails(key, nm);
+    });
+    layer.on('mouseover', e=>{
+      const t = setTimeout(()=>{ try{ e.target.openTooltip(); }catch(_){}} , 800);
+      hoverTimers.set(layer, t);
+      e.target.setStyle({ weight: (focusedKey===key? 3:2), color:'#111827', fillOpacity:0.9 }); e.target.bringToFront();
+    });
+    layer.on('mouseout', e=>{
+      clearTimeout(hoverTimers.get(layer));
+      try{ e.target.closeTooltip(); }catch(_){}
+      const fill = leaderColors[key] || '#e5e7eb';
+      const wt = (focusedKey===key)? 3 : 1;
+      const col = (focusedKey===key)? '#111827' : '#94a3b8';
+      e.target.setStyle({ fillColor: fill, fillOpacity:0.75, color: col, weight: wt });
+    });
+  });
 }
 
-/* Constituency details (panel) */
+/* ===== Details panel ===== */
 function showConstituencyDetails(normKey, featureName){
   const cont=document.getElementById('imapContent');
   cont.dataset.currentKey = normKey;
@@ -661,8 +896,7 @@ function showConstituencyDetails(normKey, featureName){
   cont.innerHTML = html;
 }
 
-/* Constituency grid (with declared badge) */
-let constNameToNo={}, constNameToParish={};
+/* ===== Render parish blocks (with DECLARED highlight + checkmark) ===== */
 function renderParishBlocks(detailsByConst, rawData){
   const host=document.getElementById('parishContainer'); host.innerHTML='';
   const parishSel = document.getElementById('parishFilter');
@@ -687,6 +921,7 @@ function renderParishBlocks(detailsByConst, rawData){
     if (filterParish && parish!==filterParish) return;
     let keys = allKeys.filter(k=> parishOf(k)===parish);
 
+    // Order by constituency number then by name
     keys.sort((a,b)=>{
       const A = Number(cnoOf(a)) || 0;
       const B = Number(cnoOf(b)) || 0;
@@ -714,7 +949,7 @@ function renderParishBlocks(detailsByConst, rawData){
       const candidatesPayload = JSON.stringify(info.all || []);
       const updatedTs = lastConstUpdated[key] || '';
 
-      // Declare rule
+      // Boxes counted / declare rule (full or >=95%)
       let boxes = '', boxpct = ''; let canDeclare=false;
       if (record?.Data){
         const d = Array.isArray(record.Data)? record.Data[0] : record.Data;
@@ -728,10 +963,17 @@ function renderParishBlocks(detailsByConst, rawData){
       }
 
       const el=document.createElement('div'); el.className='const';
-      el.dataset.key = key; el.dataset.constno=cNo; el.dataset.updated=updatedTs;
-      el.dataset.candidates=candidatesPayload; el.dataset.boxes=boxes; el.dataset.boxpct=boxpct;
+      el.dataset.key = key;
+      el.dataset.constno = cNo;
+      el.dataset.updated = updatedTs;
+      el.dataset.candidates = candidatesPayload;
+      el.dataset.boxes = boxes;
+      el.dataset.boxpct = boxpct;
+      // Search: candidate names + constituency name + number
       el.dataset.search = [origName, cNo, ...(info.all||[]).map(c=>`${c.name}`)].join(' ').toLowerCase();
-      el.dataset.parish = parish; el.dataset.parties = (info.all||[]).map(c=>partyKey(c.party)).join('|');
+      el.dataset.parish = parish;
+      el.dataset.parties = (info.all||[]).map(c=>partyKey(c.party)).join('|');
+
       el.style.borderColor = bg;
 
       const ageMs = Date.now() - (updatedTs||Date.now());
@@ -780,38 +1022,16 @@ function renderParishBlocks(detailsByConst, rawData){
           <div class="rows">${rowsHTML}</div>
         </div>
       `;
-      el.addEventListener('click', ()=> {
-        // also open popup at map if on Interactive tab
-        const rows = JSON.parse(el.dataset.candidates||'[]');
-        const html = popupHTML(key, origName, rows, boxes, boxpct);
-        if (mapInteractive && geoLayerInteractive){
-          let tgt=null;
-          geoLayerInteractive.eachLayer(L=>{
-            if (norm(L.feature?.properties?.CONST_NAME||'')===key) tgt=L;
-          });
-          if (tgt){
-            L.popup({className:'mpp-pop',autoPan:true,maxWidth:500})
-              .setLatLng(tgt.getBounds().getCenter())
-              .setContent(html)
-              .openOn(mapInteractive);
-            setTimeout(()=>{
-              const root = document.querySelector('.mpp');
-              if (!root) return;
-              root.querySelector('[data-act="open"]').addEventListener('click', (e)=>{ e.stopPropagation(); gotoInteractiveKey(key); });
-              root.querySelector('[data-act="pin"]').addEventListener('click', (e)=>{ e.stopPropagation(); pinRace(key); renderPinned(window.__detailsByConst, window.__rawData); toast('Pinned race 📌'); });
-            }, 10);
-          }
-        }
-        openPreviewForKey(key); // optional: keep your modal preview behavior
-      });
+      el.addEventListener('click', ()=> openPreviewForKey(key));
       grid.appendChild(el);
     });
+
     if (grid.children.length) document.getElementById('parishContainer').appendChild(wrap);
   });
 
-  // Search
+  // Search filter
   const sb = document.getElementById('searchBar');
-  sb.oninput = ()=>{
+  function applyTextFilter(){
     const q = sb.value.trim().toLowerCase();
     document.querySelectorAll('.const').forEach(card=>{
       const hit = !q || card.dataset.search.includes(q);
@@ -822,16 +1042,18 @@ function renderParishBlocks(detailsByConst, rawData){
                   Array.from(p.querySelectorAll('.const')).some(x=> x.style.display!=='none');
       p.style.display = any ? '' : 'none';
     });
-  };
+  }
+  sb.oninput = applyTextFilter;
 }
 
-/* Right panel utilities */
+/* ===== Periodic timers + right sidebars + ticker ===== */
 function fmtAgeToClass(age){
   if (age <= 5*60*1000) return 'age-good';
   if (age <= 20*60*1000) return 'age-warn';
   return 'age-bad';
 }
 function tickTimersAndRecent(){
+  // Timers on cards
   document.querySelectorAll('.const .timer').forEach(t=>{
     const ts = Number(t.dataset.ts||0);
     if (!ts) { t.textContent = '00:00:00'; return; }
@@ -839,11 +1061,14 @@ function tickTimersAndRecent(){
     t.textContent = fmtHHMMSS(age);
     const dot = t.parentElement?.querySelector('.pulse');
     if (dot){
-      let col='var(--bad)'; if (age<=5*60*1000) col='var(--good)'; else if (age<=20*60*1000) col='var(--warn)';
+      let col='var(--bad)';
+      if (age <= 5*60*1000) col='var(--good)';
+      else if (age <= 20*60*1000) col='var(--warn)';
       dot.style.color = col;
     }
   });
 
+  // Recent items + ticker
   const recents = []; const ticker  = [];
   Object.keys(lastConstUpdated).forEach(k=>{
     const ts = lastConstUpdated[k];
@@ -857,6 +1082,7 @@ function tickTimersAndRecent(){
   recents.sort((a,b)=> b.ts - a.ts);
   ticker.sort((a,b)=> b.ts - a.ts);
 
+  // Recently updated sidebar
   const side = document.getElementById('sidebarList');
   side.innerHTML='';
   recents.forEach(r=>{
@@ -866,10 +1092,13 @@ function tickTimersAndRecent(){
     el.innerHTML=`<span>#${r.num||'—'}</span><small>${fmtHHMMSS(r.age)}</small>
       <button class="pin-btn" title="Pin race" aria-label="Pin race">📌</button>`;
     el.addEventListener('click', ()=> gotoInteractiveKey(r.k));
+    el.addEventListener('mouseenter', ()=> previewHoverStart(r.k));
+    el.addEventListener('mouseleave', previewHoverEnd);
     el.querySelector('.pin-btn').addEventListener('click', (e)=>{ e.stopPropagation(); pinRace(r.k); renderPinned(window.__detailsByConst, window.__rawData); });
     side.appendChild(el);
   });
 
+  // Ticker
   const tick = document.getElementById('tickerText');
   if (ticker.length){
     const parts = ticker.map(r=> `${r.name}${r.num?` (#${r.num})`:''} — ${fmtHHMMSS(Date.now()-r.ts)} ago`);
@@ -878,6 +1107,7 @@ function tickTimersAndRecent(){
     tick.textContent = '— No constituency updated in the last 15 minutes —';
   }
 
+  // Update timer inside Interactive details
   const imTimer = document.querySelector('#imapContent .updated span[style*="font-variant-numeric"]');
   const imDot   = document.querySelector('#imapContent .updated .pulse');
   const curKey = document.getElementById('imapContent')?.dataset?.currentKey;
@@ -891,7 +1121,20 @@ function tickTimersAndRecent(){
   }
 }
 
-/* Closest sidebar (≤200 votes) */
+/* ===== Robust fetch ===== */
+async function fetchOne(url){
+  try{
+    const r = await fetch(bust(url), {cache:'no-store'});
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const ct = r.headers.get('content-type') || '';
+    if (!/json/i.test(ct)) {
+      try { return await r.json(); } catch { throw new Error(`Non-JSON content-type: ${ct}`); }
+    }
+    return await r.json();
+  }catch(e){ throw new Error(`${url} → ${e.message}`); }
+}
+
+/* ===== Closest sidebar (≤ 200 votes) ===== */
 function buildClosestSidebar(detailsByConst, rawData){
   const host = document.getElementById('closestSidebar');
   host.innerHTML='';
@@ -915,6 +1158,7 @@ function buildClosestSidebar(detailsByConst, rawData){
     wrap.className='closest-item';
     wrap.dataset.key = item.key;
     const cname = `${item.name}${item.cno?` (#${item.cno})`:''}`;
+
     const rowHTML = (cand)=>{
       const P = partyKey(cand.party);
       const icon = PARTY_SYMBOLS[P] || PARTY_SYMBOLS.Other;
@@ -927,6 +1171,7 @@ function buildClosestSidebar(detailsByConst, rawData){
         <div class="pct">${pct}%</div>
       </div>`;
     };
+
     wrap.innerHTML = `
       <div class="closest-head">
         <div class="cname">${cname}</div>
@@ -941,18 +1186,22 @@ function buildClosestSidebar(detailsByConst, rawData){
         <button class="btn btn-secondary small-open">Open</button>
       </div>
     `;
+
     wrap.addEventListener('click', (e)=>{
       const isPin = e.target.closest('.closest-pin');
       const isOpen = e.target.closest('.small-open');
-      if (isPin){ pinRace(item.key); renderPinned(window.__detailsByConst, window.__rawData); e.stopPropagation(); return; }
+      if (isPin){ pinRace(item.key); renderPinned(detailsByConst, rawData); e.stopPropagation(); return; }
       if (isOpen){ gotoInteractiveKey(item.key); e.stopPropagation(); return; }
       gotoInteractiveKey(item.key);
     });
+    wrap.addEventListener('mouseenter', ()=> previewHoverStart(item.key));
+    wrap.addEventListener('mouseleave', previewHoverEnd);
+
     host.appendChild(wrap);
   });
 }
 
-/* Pinned floating card */
+/* ===== Pinned floating card ===== */
 function renderPinned(detailsByConst, rawData){
   const box = document.getElementById('pinFloat');
   if (!pinnedKey){ box.classList.add('hidden'); box.innerHTML=''; return; }
@@ -978,134 +1227,16 @@ function renderPinned(detailsByConst, rawData){
     </div>
   `;
   box.classList.remove('hidden');
-  document.getElementById('btnPinUnpin').onclick = ()=>{ pinnedKey=null; localStorage.removeItem('pinnedRaceKey'); box.classList.add('hidden'); box.innerHTML=''; };
+  document.getElementById('btnPinUnpin').onclick = ()=>{ unpinRace(); };
   document.getElementById('btnPinOpen').onclick  = ()=>{ gotoInteractiveKey(pinnedKey); };
+  box.addEventListener('mouseenter', ()=> previewHoverStart(pinnedKey));
+  box.addEventListener('mouseleave', previewHoverEnd);
 }
+function pinRace(key){ pinnedKey = key; localStorage.setItem('pinnedRaceKey', key); toast('Pinned race 📌'); }
+function unpinRace(){ pinnedKey = null; localStorage.removeItem('pinnedRaceKey'); const box = document.getElementById('pinFloat'); box.classList.add('hidden'); box.innerHTML=''; }
 
-/* Fetch */
-async function fetchOne(url){
-  const r = await fetch(bust(url), {cache:'no-store'});
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-}
-
-/* Ribbon (capsules & meters) */
-function buildRibbon(seats, totals){
-  const sJ = seats.JLP||0, sP = seats.PNP||0;
-  const capsHost = document.getElementById('capsulesRow'); capsHost.innerHTML='';
-  const filledJ = Math.min(MAJORITY_TARGET, sJ);
-  const filledP = Math.min(MAJORITY_TARGET, sP);
-  for (let i=1;i<=MAJORITY_TARGET;i++){
-    const el=document.createElement('span'); el.className='cap';
-    if (i<=filledJ && filledJ>=filledP) el.classList.add('jlp');
-    else if (i<=filledP && filledP>filledJ) el.classList.add('pnp');
-    else if (i<=Math.max(filledJ,filledP) && filledJ===filledP && filledJ>0) el.classList.add('oth'); // tie marker
-    capsHost.appendChild(el);
-  }
-  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
-  const jShare=((totals.JLP||0)/totalVotes)*100, pShare=((totals.PNP||0)/totalVotes)*100;
-  document.getElementById('meterJLP').style.width = Math.min(100,jShare).toFixed(1)+'%';
-  document.getElementById('meterPNP').style.width = Math.min(100,pShare).toFixed(1)+'%';
-  const meta = document.getElementById('ribbonMeta');
-  if (sJ>=MAJORITY_TARGET && sJ>sP) meta.textContent = `JLP ${sJ} — Majority reached`;
-  else if (sP>=MAJORITY_TARGET && sP>sJ) meta.textContent = `PNP ${sP} — Majority reached`;
-  else {
-    const needJ=Math.max(0,MAJORITY_TARGET-sJ), needP=Math.max(0,MAJORITY_TARGET-sP);
-    const lead = sJ===sP?'Tied': (sJ>sP ? `JLP +${sJ-sP}` : `PNP +${sP-sJ}`);
-    meta.textContent = `${lead} • JLP needs ${needJ} • PNP needs ${needP}`;
-  }
-}
-
-/* National tab builders */
-function buildScoreboard(totals,seats){
-  const el=document.getElementById('scoreboard'); if(!el) return; el.innerHTML='';
-  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
-  const prev = JSON.parse(localStorage.getItem('lastSeats')||'{}');
-  [{key:'JLP', name:'Jamaica Labour Party', color:PARTY_COLORS.JLP, logo:PARTY_LOGOS.JLP},
-   {key:'PNP', name:'People’s National Party', color:PARTY_COLORS.PNP, logo:PARTY_LOGOS.PNP},
-   {key:'Other', name:'Others (JPP, UIC, etc.)', color:PARTY_COLORS.Other, logo:PARTY_LOGOS.Other}].forEach(g=>{
-    const votes=totals[g.key]||0, s=seats[g.key]||0, pct=((votes/(totalVotes||1))*100).toFixed(1);
-    const delta=s-(prev?.[g.key]||0);
-    const deltaHtml = delta?`<span class="delta ${delta>0?'up':'down'}">${delta>0?'▲':'▼'} ${Math.abs(delta)}</span>`:'';
-    const div=document.createElement('div'); div.className='pcard';
-    div.innerHTML = `
-      <div class="phead">
-        <div class="pbrand" style="color:${g.color}">
-          <img class="plogo" src="${g.logo}" alt="${g.key} logo" referrerpolicy="no-referrer">
-          <strong>${g.name}</strong>
-        </div>
-        <div class="pmain" style="color:${g.color}">${pct}%</div>
-      </div>
-      <div class="bar"><span style="width:${pct}%; background:${g.color}"></span></div>
-      <div style="margin-top:8px; color:var(--muted)"><b>${s}</b> seats ${deltaHtml} &nbsp;|&nbsp; Votes: ${votes.toLocaleString()}</div>`;
-    el.appendChild(div);
-  });
-}
-function buildCharts(totals,seats){
-  const vc=document.getElementById('voteChart'), sc=document.getElementById('seatChart');
-  try{ voteChart && voteChart.destroy(); }catch(_){}
-  try{ seatChart && seatChart.destroy(); }catch(_){}
-  const labels=Object.keys(totals); if(!labels.length) return;
-  const colors=labels.map(p=>PARTY_COLORS[p]||PARTY_COLORS.Other);
-  voteChart=new Chart(vc,{type:'pie',data:{labels,datasets:[{data:labels.map(k=>totals[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-  seatChart=new Chart(sc,{type:'bar',data:{labels,datasets:[{label:'Seats',data:labels.map(k=>seats[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0,grid:{color:'rgba(148,163,184,.3)'}}}}});
-}
-function buildClosestPanel(items){
-  const list=document.getElementById('closestList');
-  const note=document.getElementById('closestNote');
-  if(!list || !note) return;
-  list.innerHTML='';
-  const top10=(items||[]).filter(x=>!isNaN(x.marginPct)).sort((a,b)=>a.marginPct-b.marginPct).slice(0,10);
-  top10.forEach(item=>{
-    const party=(item.winnerParty||'Other').toUpperCase();
-    const color=PARTY_COLORS[party]||'#1e90ff';
-    const li=document.createElement('li');
-    li.style.cssText='border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card)';
-    li.innerHTML = `
-      <span><strong>${item.constituency}</strong> — <span style="color:${color}">${item.winnerFirst} ${item.winnerLast} (${party})</span></span>
-      <span><strong>${(item.marginPct||0).toFixed(1)}%</strong></span>
-    `;
-    li.addEventListener('click', ()=> gotoInteractive(item.constituency));
-    list.appendChild(li);
-  });
-  note.textContent='Margin = percentage-point gap between 1st and 2nd.';
-}
-
-/* Deep link helpers */
-function gotoInteractive(name){
-  const k = canonKey(norm(name));
-  gotoInteractiveKey(k);
-}
-function gotoInteractiveKey(key){
-  document.querySelector('.tab[data-tab="interactive"]').click();
-  if (!geoLayerInteractive){ pendingFocusName = key; return; }
-  let target=null, parish=null, display=null;
-  geoLayerInteractive.eachLayer(L=>{
-    const nm=L.feature?.properties?.CONST_NAME||'';
-    if (canonKey(norm(nm))===key){ target=L; parish=L.feature?.properties?.PARISH_NAM; display=nm; }
-  });
-  if (target){
-    const grp=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
-    const group = L.featureGroup(grp.length? grp:[target]);
-    try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(_){}
-    const block = document.querySelector('.const[data-key="' + key + '"]');
-    const rows = JSON.parse(block?.dataset?.candidates||'[]');
-    const boxes = block?.dataset?.boxes||''; const boxesPct = block?.dataset?.boxpct||'';
-    const html = popupHTML(key, display||key, rows, boxes, boxesPct);
-    L.popup({className:'mpp-pop',autoPan:true,maxWidth:500})
-      .setLatLng(target.getBounds().getCenter()).setContent(html).openOn(mapInteractive);
-    setTimeout(()=>{
-      const root = document.querySelector('.mpp');
-      if (!root) return;
-      root.querySelector('[data-act="open"]').addEventListener('click', (e)=>{ e.stopPropagation(); gotoInteractiveKey(key); });
-      root.querySelector('[data-act="pin"]').addEventListener('click', (e)=>{ e.stopPropagation(); pinRace(key); renderPinned(window.__detailsByConst, window.__rawData); toast('Pinned race 📌'); });
-    }, 10);
-    showConstituencyDetails(key, display||key);
-  }
-}
-
-/* Data load & wiring */
-async function loadAll(){
+/* ===== Data load (local JSON) ===== */
+async function loadECJAndData(){
   try{
     if (!arcFeatures.length){ try{ await loadECJBoundaries(); }catch(_){ toast('Could not load boundaries.'); } }
     initNationalMap(); initInteractiveMap();
@@ -1128,13 +1259,22 @@ async function loadAll(){
       const cname=c?.Name||''; const cData=Array.isArray(c?.Data)? c.Data[0] : c?.Data;
       const cand = Array.isArray(cData?.Candidates)? cData.Candidates : [];
       if(!cname || !cand.length) return;
-      const key = canonKey(norm(cname));
+      let key = canonKey(norm(cname));
+      const alias = NAME_ALIASES[norm(cname)];
+      if (alias){
+        constNameToParish[key] = alias.parish || constNameToParish[key] || '';
+        constNameToNo[key]     = alias.constno || constNameToNo[key] || '';
+      }
+
       const safePct  = (x)=> Number(x)||0;
       const safeVote = (x)=> Number(x)||0;
       const winner = cand.reduce((m,x)=> safeVote(x.Votes)>safeVote(m.Votes)? x : m, cand[0]);
-      const sorted = cand.slice().sort((a,b)=> safeVote(b.Votes)-safeVote(a.Votes)).map(k=>({
+
+      const sortedByVotes = cand.slice().sort((a,b)=> safeVote(b.Votes)-safeVote(a.Votes)).map(k=>({
         name:`${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}`.trim(),
-        party:partyKey(k.Party), votes:safeVote(k.Votes), pct:safePct(k.Percentage)
+        party:partyKey(k.Party),
+        votes:safeVote(k.Votes),
+        pct:safePct(k.Percentage)
       }));
 
       const sig = makeHash(cand);
@@ -1145,51 +1285,44 @@ async function loadAll(){
         localStorage.setItem('constituencyUpdated', JSON.stringify(lastConstUpdated));
       }
 
-      detailsByConst[key] = { party:partyKey(winner?.Party), all: sorted };
+      detailsByConst[key] = { party:partyKey(winner?.Party), all: sortedByVotes };
       cand.forEach(k=>{ const p=partyKey(k.Party); partyTotals[p]=(partyTotals[p]||0)+safeVote(k.Votes); });
       const wParty = partyKey(winner?.Party);
       partySeats[wParty] = (partySeats[wParty] ?? 0) + 1;
 
-      const topPct = sorted[0]?.pct||0, runnerPct=sorted[1]?.pct||0;
+      // for national "closest by %"
+      const sortedByPct = sortedByVotes.slice().sort((a,b)=> b.pct-a.pct);
+      const topPct = sortedByPct[0]?.pct||0, runnerPct=sortedByPct[1]?.pct||0;
       closestArr.push({
         constituency:cname,
-        winnerFirst: sorted[0]?.name.split(' ')[0]||'',
-        winnerLast:  (sorted[0]?.name.split(' ').slice(1).join(' '))||'',
-        winnerParty: sorted[0]?.party||'Other',
+        winnerFirst: sortedByVotes[0]?.name.split(' ')[0]||'',
+        winnerLast:  (sortedByVotes[0]?.name.split(' ').slice(1).join(' '))||'',
+        winnerParty: sortedByVotes[0]?.party||'Other',
         marginPct: Math.max(0,(topPct-runnerPct)),
-        candidates: sorted
+        candidates: sortedByVotes
       });
     });
 
-    // Group small parties for national
-    const {totals: groupedTotals, seats: groupedSeats} = (function groupSmall(totals,seats,threshold=0.02, keep=['JLP','PNP','JPP','UIC','Other']){
-      const T={JLP:0,PNP:0,JPP:0,UIC:0,Other:0}, S={JLP:0,PNP:0,JPP:0,UIC:0,Other:0};
-      const total=Object.values(totals).reduce((a,b)=>a+b,0)||1;
-      for(const p of Object.keys(totals)){
-        const share=totals[p]/total;
-        const bucket=(!keep.includes(p)&&p!=='Other'&&share<threshold)?'Other':p;
-        T[bucket]=(T[bucket]||0)+(totals[p]||0);
-        S[bucket]=(S[bucket]||0)+(seats[p]||0);
-      }
-      return {totals:T,seats:S};
-    })(partyTotals, partySeats);
-
+    // Group small parties into "Other" for national
+    const {totals: groupedTotals, seats: groupedSeats} = groupSmallParties(partyTotals, partySeats, 0.02, Object.keys(PARTY_COLORS));
     localStorage.setItem('lastSeats', JSON.stringify(groupedSeats));
     window.__detailsByConst = detailsByConst;
 
-    // Ribbon
-    buildRibbon(groupedSeats, groupedTotals);
+    // Topline
+    buildMajorityBar(groupedSeats);
+    buildTopStats(groupedTotals, groupedSeats);
 
     // National tab
     buildScoreboard(groupedTotals, groupedSeats);
     buildCharts(groupedTotals, groupedSeats);
     buildClosestPanel(closestArr);
 
-    // Constituencies + Maps + Right panels
+    // Constituencies + Maps + Right sidebars
     renderParishBlocks(detailsByConst, data);
     paintMap(geoLayerNational, detailsByConst);
     paintMap(geoLayerInteractive, detailsByConst);
-    wireInteractiveBehaviors();
+    wireInteractiveBehaviors();              // <<< FIX: click/hover on map
+    updateFocusOutline();
     buildClosestSidebar(detailsByConst, data);
     renderPinned(detailsByConst, data);
 
@@ -1200,26 +1333,237 @@ async function loadAll(){
     tickTimersAndRecent();
   }catch(e){ console.error(e); toast('Partial update — check console.'); }
 }
+function groupSmallParties(totals,seats,threshold=0.02, keep=[]){
+  const baseKeys = Array.from(new Set([...keep, 'Other', 'JLP','PNP','JPP','UIC']));
+  const total = Object.values(totals).reduce((a,b)=>a+b,0) || 1;
+  const T = Object.fromEntries(baseKeys.map(k=>[k,0]));
+  const S = Object.fromEntries(baseKeys.map(k=>[k,0]));
+  for (const p of Object.keys(totals)){
+    const share = totals[p] / total;
+    const bucket = (!keep.includes(p) && p!=='Other' && share < threshold) ? 'Other' : p;
+    T[bucket] = (T[bucket] || 0) + (totals[p] || 0);
+    S[bucket] = (S[bucket] || 0) + (seats[p]  || 0);
+  }
+  if (T.Other == null) T.Other = 0;
+  if (S.Other == null) S.Other = 0;
+  return {totals:T, seats:S};
+}
 
+/* ===== Deep linking ===== */
+function gotoInteractive(name){
+  let k = norm(name);
+  const alias = NAME_ALIASES[k];
+  const resolved = alias?.key || k;
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="interactive"]').classList.add('active');
+  document.getElementById('tab-interactive').classList.remove('hidden');
+
+  if (!geoLayerInteractive){ pendingFocusName = resolved; return; }
+  focusConstituencyByName(resolved, true);
+  setTimeout(()=> mapInteractive.invalidateSize(), 80);
+  document.getElementById('imapDetails').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function gotoInteractiveKey(key){
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="interactive"]').classList.add('active');
+  document.getElementById('tab-interactive').classList.remove('hidden');
+
+  if (!geoLayerInteractive){ pendingFocusName = key; return; }
+  focusConstituencyByName(key, true);
+  setTimeout(()=> mapInteractive.invalidateSize(), 80);
+  document.getElementById('imapDetails').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function focusConstituencyByNumber(no){
+  if (!geoLayerInteractive) return false;
+  let found=null, parish=null, display=null, key=null;
+  geoLayerInteractive.eachLayer(L=>{
+    const p = L.feature?.properties||{};
+    const n = String(p.CONST_NO || p.CONSTNO || p.Number || '');
+    if (n === String(no)){
+      found=L; parish=p.PARISH_NAM; display=p.CONST_NAME; key=norm(p.CONST_NAME||'');
+    }
+  });
+  if (!found) return false;
+  const grp=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
+  const group = L.featureGroup(grp.length? grp:[found]);
+  try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+  focusedKey = key; updateFocusOutline();
+  setTimeout(()=> found.openTooltip(), 250);
+  showConstituencyDetails(key, display||`#${no}`);
+  return true;
+}
+function focusConstituencyByName(nameOrKey, isKey=false){
+  if (!geoLayerInteractive) return;
+  const rawK = isKey ? nameOrKey : norm(nameOrKey);
+  const alias = NAME_ALIASES[rawK];
+  const keyWanted = alias?.key || rawK;
+
+  let target=null, parish=null, display=null;
+  geoLayerInteractive.eachLayer(L=>{
+    const nm = L.feature?.properties?.CONST_NAME || '';
+    const k = norm(nm);
+    if (k===keyWanted){ target=L; parish = L.feature?.properties?.PARISH_NAM; display=nm; }
+  });
+
+  if (target){
+    const grp = (function(){ const arr=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) arr.push(l); }); return arr; })();
+    const group = L.featureGroup(grp.length? grp:[target]);
+    try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+    focusedKey = keyWanted; updateFocusOutline();
+    startPulse(target);
+    setTimeout(()=> target.openTooltip(), 250);
+    showConstituencyDetails(keyWanted, display||nameOrKey);
+  } else {
+    const number = constNameToNo[keyWanted] || constNameToNo[alias?.key || ''];
+    if (number && focusConstituencyByNumber(number)) return;
+    setTimeout(()=> focusConstituencyByName(nameOrKey, isKey), 150);
+  }
+}
+
+/* ===== Preview modal ===== */
+function initPreviewMap(){
+  if (previewMap) return;
+  previewMap = L.map('previewMap', { zoomControl:true, attributionControl:false, maxBounds:JAMAICA_BOUNDS, maxBoundsViscosity:1 });
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  L.tileLayer(isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {minZoom:7, maxZoom:15}).addTo(previewMap);
+  previewMap.fitBounds(JAMAICA_BOUNDS);
+  previewMap.setMinZoom(previewMap.getZoom());
+}
+function closePreview(){
+  const modal = document.getElementById('previewModal');
+  modal.classList.remove('show');
+  document.body.classList.remove('modal-open');
+  if (previewLayer){
+    try{ previewLayer.eachLayer(stopPulse); previewLayer.remove(); }catch(_){}
+    previewLayer=null;
+  }
+  const shim = document.getElementById('previewShimmer');
+  if (shim) shim.style.display='none';
+}
+function populatePreviewDetails(key){
+  const tbody = document.getElementById('previewTableBody');
+  const boxes = document.getElementById('previewBoxes');
+  tbody.innerHTML=''; boxes.textContent='';
+  const block = document.querySelector(`.const[data-key="${key}"]`);
+  if (!block) return;
+  const rows = JSON.parse(block.dataset.candidates || '[]');
+  const boxStr = block.dataset.boxes || '';
+  const boxPct = block.dataset.boxpct || '';
+  if (boxStr) boxes.innerHTML = `Boxes counted: <strong>${boxStr}</strong>${boxPct?` (${boxPct}%)`:''}`;
+  rows.forEach(r=>{
+    const P = partyKey(r.party);
+    const icon = PARTY_SYMBOLS[P] || PARTY_SYMBOLS.Other;
+    const nameStyle = `style="color:${PARTY_COLORS[P]||PARTY_COLORS.Other}; font-weight:700"`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><img src="${icon}" alt="${P}" class="party-icon" referrerpolicy="no-referrer"></td>
+      <td ${nameStyle}>${r.name}</td>
+      <td>${P}</td>
+      <td style="text-align:right; font-variant-numeric:tabular-nums; font-weight:800">${Number(r.votes||0).toLocaleString()}</td>
+      <td style="text-align:right">${r.pct||0}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function openPreviewForKey(key){
+  previewKey = key;
+  const modal = document.getElementById('previewModal');
+  modal.classList.add('show');
+  document.body.classList.add('modal-open');
+
+  initPreviewMap();
+  const shim = document.getElementById('previewShimmer');
+  if (shim) shim.style.display='block';
+
+  const rec = Object.values(window.__rawData||{}).find(x => canonKey(norm(x?.Name))===key);
+  const displayName = rec?.Name || key;
+  const num = constNameToNo[key] || '';
+  document.getElementById('previewTitle').textContent = displayName + (num ? ` (#${num})` : '');
+
+  let hint = 'Review the area below · Use the button to open the Interactive Map';
+  try{
+    const block = document.querySelector(`.const[data-key="${key}"]`);
+    const rows  = JSON.parse(block?.dataset?.candidates || '[]');
+    const lead  = rows[0];
+    const boxes = block?.dataset?.boxes || '';
+    if (lead){
+      const P = partyKey(lead.party);
+      hint = `${lead.name} (${P}) leading • ${Number(lead.votes||0).toLocaleString()} votes${boxes ? ` • Boxes: ${boxes}` : ''}`;
+    } else if (boxes) { hint = `Boxes: ${boxes}`; }
+  }catch(_){}
+  document.querySelector('.modal-hint').textContent = hint;
+
+  populatePreviewDetails(key);
+
+  if (previewLayer){ previewLayer.remove(); previewLayer=null; }
+  previewLayer = L.geoJSON({type:'FeatureCollection', features: arcFeatures}, {
+    style:(feat)=>{
+      const nm = feat?.properties?.CONST_NAME || '';
+      const k  = norm(nm);
+      const isTarget = (k===key);
+      const fill = isTarget ? (leaderColors[key] || '#60a5fa') : '#cbd5e1';
+      return { color: isTarget ? '#111827' : '#94a3b8', weight: isTarget ? 3 : 1, fillColor: fill, fillOpacity: isTarget ? 0.8 : 0.5 };
+    }
+  }).addTo(previewMap);
+
+  let target=null, parish=null;
+  previewLayer.eachLayer(l=>{
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    if (norm(nm)===key){ target=l; parish=l.feature?.properties?.PARISH_NAM; }
+  });
+  if (target){
+    const grp=[]; previewLayer.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
+    const bounds = (grp.length ? L.featureGroup(grp) : target).getBounds();
+    try{ previewMap.fitBounds(bounds, {padding:[24,24]}); setTimeout(()=> previewMap.zoomIn(1), 120); }catch(_){}
+    startPulse(target);
+  }
+  setTimeout(()=> { previewMap.invalidateSize(); if (shim) shim.style.display='none'; }, 120);
+
+  previewMap.off('click');
+  previewMap.on('click', ()=> { const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k); });
+
+  const goBtn = document.getElementById('btnPreviewGo');
+  if (goBtn) goBtn.focus();
+  if (num) location.hash = '#'+num;
+}
+
+/* Modal buttons */
+document.getElementById('btnPreviewClose').addEventListener('click', closePreview);
+document.getElementById('btnPreviewCancel').addEventListener('click', closePreview);
+document.getElementById('btnPreviewGo').addEventListener('click', ()=>{ const k=previewKey; closePreview(); if (k) gotoInteractiveKey(k); });
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'Escape') closePreview();
+  if (e.key === 'Enter' && document.getElementById('previewModal').classList.contains('show')){
+    const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
+  }
+});
+document.getElementById('previewModal').addEventListener('click', (e)=>{
+  if (e.target.id === 'previewModal') closePreview();
+});
+
+/* ===== Auto ===== */
 function setupAutoRefresh(){
   if (refreshTimer) clearInterval(refreshTimer);
   const ms = Number(localStorage.getItem('refreshIntervalMs')||sel.value||AUTO_DEFAULT);
-  refreshTimer = setInterval(loadAll, ms);
+  refreshTimer = setInterval(loadECJAndData, ms);
 }
 
-/* Preview modal hooks kept minimal — modal not shown in this layout but grid click still calls it */
-let previewKey=null;
-function openPreviewForKey(_k){ /* no-op to keep prior call harmless in this layout */ }
-
-/* Start */
+/* ===== Start ===== */
 (async function start(){
   initTheme();
   updateStickyOffsets();
   try{ await loadECJBoundaries(); }catch(_){}
   initNationalMap(); initInteractiveMap();
   buildLegendInto('mapLegend'); buildLegendInto('imapLegend');
-  await loadAll();
+  await loadECJAndData();
   setupAutoRefresh();
+  const pill = document.getElementById('pillMain');
+  if (pill){ pill.title = 'Using local 2025-data.json'; document.getElementById('mainLag').textContent = 'Local file'; }
 })();
 </script>
 </body>
