@@ -509,3 +509,228 @@ function demoData(){
 </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jamaica Decision 2025 — Live Results</title>
+
+<!-- Leaflet + Chart.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --card:#ffffff;
+  --accent:#0a58ca; --shadow:0 8px 24px rgba(17,24,39,.06);
+  --jlp:#2e8b57; --pnp:#ff8c00; --jpp:#6a0dad; --uic:#008b8b; --other:#1e90ff;
+}
+html[data-theme="dark"]{
+  --bg:#0f172a; --text:#e5e7eb; --muted:#9ca3af; --border:#334155; --card:#0b1220;
+  --accent:#60a5fa; --shadow:0 8px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+.container{max-width:1600px;margin:0 auto;padding:16px}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border)}
+.header-inner{display:flex;align-items:center;gap:12px;justify-content:space-between;max-width:1600px;margin:0 auto;padding:12px 16px}
+.brand{font-weight:900;letter-spacing:.2px}
+.mode-btn{border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--text);cursor:pointer;font-weight:800}
+
+/* Tabs */
+.tabs{position:sticky;top:56px;z-index:90;background:var(--card);border-bottom:1px solid var(--border)}
+.tabs-inner{max-width:1600px;margin:0 auto;display:flex;gap:24px;padding:0 16px}
+.tab{padding:14px 2px;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);font-weight:800}
+.tab.active{border-color:var(--accent);color:var(--text)}
+
+/* Race to 32 (AP-style seat bar) */
+.seatbar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow);margin:16px 0}
+.seatbar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:800}
+.seatbar-sub{color:var(--muted);font-weight:600}
+.seatbar{position:relative;height:22px;border-radius:999px;background:var(--border);overflow:hidden;display:flex}
+.seatbar .tick{position:absolute;left:calc(32/63*100%);top:-2px;width:2px;height:26px;background:#11182755}
+html[data-theme="dark"] .seatbar .tick{background:#e5e7eb66}
+.seat-slice{height:100%;cursor:pointer}
+.tooltip{position:fixed;pointer-events:none;background:#111827;color:#fff;border-radius:8px;padding:8px 10px;
+         font-size:.9rem;line-height:1.25;border:1px solid #00000040;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
+
+/* Battleground cards */
+.section-h{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.bcard{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer}
+.bhead{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);
+       background:linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, var(--bg)), color-mix(in oklab, var(--card) 75%, var(--bg)))}
+.bname{font-weight:900;font-size:1rem;line-height:1.2}
+.updated{font-size:.85rem;color:var(--muted);white-space:nowrap}
+.pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:#10b981;margin-right:6px;animation:pulse 1.8s infinite;vertical-align:-1px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.35)}70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.bbody{padding:10px 12px}
+.bbadge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-weight:800;margin-bottom:6px}
+.brows{margin-top:6px;border-top:1px solid var(--border)}
+.brow{display:grid;grid-template-columns:1fr 80px 60px;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px dashed var(--border);background:color-mix(in oklab, var(--card) 94%, var(--bg))}
+.brow:last-child{border-bottom:none}
+.bnm{font-weight:800;line-height:1.2}
+.JLP{color:var(--jlp)} .PNP{color:var(--pnp)} .JPP{color:var(--jpp)} .UIC{color:var(--uic)} .Other{color:var(--other)}
+.bvotes{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.bpct{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Constituency grid, map, sidebars, modal, ticker — keep your existing CSS here (unchanged) */
+
+.toast{position:fixed;right:12px;bottom:12px;background:#111827;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:var(--shadow);z-index:2000;font-weight:700}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">Jamaica Decision 2025 — Live</div>
+      <button id="modeBtn" class="mode-btn">🌞 Light</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <div class="tabs-inner">
+      <div class="tab active" data-tab="constituencies">Constituencies</div>
+      <div class="tab" data-tab="interactive">Interactive Map</div>
+      <div class="tab" data-tab="national">National</div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="container">
+    <!-- RACE TO 32 BAR -->
+    <section class="seatbar-wrap" aria-labelledby="race32">
+      <div class="seatbar-head">
+        <div id="race32" style="font-weight:900">Race to 32</div>
+        <div class="seatbar-sub" id="seatSummary">Loading…</div>
+      </div>
+      <div id="seatBar" class="seatbar" role="img" aria-label="Seat progress">
+        <div class="tick" title="Majority: 32"></div>
+      </div>
+    </section>
+
+    <!-- BATTLEGROUND GRID -->
+    <div class="section-h">
+      <h2 style="margin:0">Battleground Seats</h2>
+      <div class="seatbar-sub" id="bgSubtitle">Closest by vote margin</div>
+    </div>
+    <section id="bgrid" class="grid" aria-live="polite"></section>
+
+    <!-- Constituencies tab -->
+    <section id="tab-constituencies"></section>
+
+    <!-- Interactive Map tab -->
+    <section id="tab-interactive" class="hidden"></section>
+
+    <!-- National tab -->
+    <section id="tab-national" class="hidden"></section>
+  </main>
+
+  <!-- Tooltip for seat slices -->
+  <div id="apTip" class="tooltip" role="tooltip"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+/* ===== CONFIG ===== */
+const DATA_URL = './2025-data.json';
+const MAJORITY = 32;
+const JAMAICA_SEATS = 63;
+const PARTY_COLORS = { JLP:'#2e8b57', PNP:'#ff8c00', JPP:'#6a0dad', UIC:'#008b8b', Other:'#1e90ff' };
+
+/* ===== STATE ===== */
+let seatAreas = {}; // computed from GeoJSON
+let detailsByConst = {};
+let rawData = {};
+let battleground = [];
+
+/* ===== UTILS ===== */
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function partyKey(p){const P=(p||'').toUpperCase();return ['JLP','PNP','JPP','UIC'].includes(P)?P:'Other';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),3000);}
+function fmtVotes(v){return Number(v||0).toLocaleString();}
+
+/* ===== SEAT BAR ===== */
+function buildSeatBar(details){
+  const host=document.getElementById('seatBar');host.innerHTML='<div class="tick"></div>';
+  let counts={JLP:0,PNP:0,JPP:0,UIC:0,Other:0};
+  let total=0;
+  Object.keys(details).forEach(k=>{
+    const w=partyKey(details[k].party);
+    counts[w]=(counts[w]||0)+1;total++;
+  });
+  Object.keys(details).forEach(k=>{
+    const info=details[k];const p=partyKey(info.party);
+    const color=PARTY_COLORS[p]||'#999';
+    const slice=document.createElement('div');
+    slice.className='seat-slice';slice.style.flex=String(seatAreas[k]||1);slice.style.background=color;
+    slice.title=k;
+    slice.addEventListener('mouseenter',e=>{
+      const tip=document.getElementById('apTip');
+      tip.innerHTML=`<b>${k}</b><br>${info.all[0]?.name||''} (${p})<br>${fmtVotes(info.all[0]?.votes)} votes`;
+      tip.style.left=(e.pageX+10)+'px';tip.style.top=(e.pageY+10)+'px';
+      tip.style.opacity=1;tip.style.transform='translateY(0)';
+    });
+    slice.addEventListener('mousemove',e=>{
+      const tip=document.getElementById('apTip');
+      tip.style.left=(e.pageX+10)+'px';tip.style.top=(e.pageY+10)+'px';
+    });
+    slice.addEventListener('mouseleave',()=>{
+      const tip=document.getElementById('apTip');tip.style.opacity=0;tip.style.transform='translateY(4px)';
+    });
+    slice.addEventListener('click',()=>{toast(`Go to Interactive: ${k}`);});
+    host.appendChild(slice);
+  });
+  document.getElementById('seatSummary').textContent=`JLP ${counts.JLP} | PNP ${counts.PNP}`;
+}
+
+/* ===== BATTLEGROUND ===== */
+function buildBattleground(){
+  const host=document.getElementById('bgrid');host.innerHTML='';
+  battleground.sort((a,b)=>a.gap-b.gap);const top=battleground.slice(0,12);
+  top.forEach(r=>{
+    const card=document.createElement('div');card.className='bcard';
+    card.innerHTML=`
+      <div class="bhead">
+        <div class="bname">${r.name}</div>
+        <div class="updated"><span class="pulse"></span> Updated</div>
+      </div>
+      <div class="bbody">
+        <div class="bbadge" style="border-color:${PARTY_COLORS[r.top.party]};color:${PARTY_COLORS[r.top.party]}">Leading: ${r.top.name}</div>
+        <div class="brows">
+          <div class="brow"><div class="bnm ${r.top.party}">${r.top.name}</div><div class="bvotes">${fmtVotes(r.top.votes)}</div><div class="bpct">${r.top.pct}%</div></div>
+          <div class="brow"><div class="bnm ${r.second.party}">${r.second.name}</div><div class="bvotes">${fmtVotes(r.second.votes)}</div><div class="bpct">${r.second.pct}%</div></div>
+        </div>
+      </div>`;
+    card.addEventListener('click',()=>{toast(`Go to Interactive: ${r.key}`)});
+    host.appendChild(card);
+  });
+}
+
+/* ===== LOAD DATA (simplified) ===== */
+async function loadData(){
+  try{
+    rawData=await fetch(DATA_URL).then(r=>r.json());
+    detailsByConst={};battleground=[];
+    Object.values(rawData).forEach(c=>{
+      const cname=c.Name;const cand=c.Data[0].Candidates;
+      const sorted=cand.map(x=>({name:x["First Name"]+" "+x["Last Name"],party:partyKey(x.Party),votes:+x.Votes,pct:+x.Percentage})).sort((a,b)=>b.votes-a.votes);
+      detailsByConst[cname]={party:sorted[0].party,all:sorted};
+      if(sorted.length>=2){const gap=Math.abs(sorted[0].votes-sorted[1].votes);battleground.push({key:cname,name:cname,top:sorted[0],second:sorted[1],gap});}
+    });
+    buildSeatBar(detailsByConst);
+    buildBattleground();
+  }catch(e){console.error(e);toast("Failed to load data");}
+}
+loadData();
+</script>
+</body>
+</html>
