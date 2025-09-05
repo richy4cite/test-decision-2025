@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Decision 2025 — AP-Inspired Seat Bar + Battleground</title>
+<title>Jamaica Decision 2025 — Live Results</title>
+
+<!-- Leaflet + Chart.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
@@ -17,16 +22,22 @@ html[data-theme="dark"]{
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
-.container{max-width:1200px;margin:0 auto;padding:16px}
+.container{max-width:1600px;margin:0 auto;padding:16px}
 
 /* Header */
-.header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border)}
-.header-inner{display:flex;align-items:center;gap:12px;justify-content:space-between;max-width:1200px;margin:0 auto;padding:12px 16px}
+.header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border)}
+.header-inner{display:flex;align-items:center;gap:12px;justify-content:space-between;max-width:1600px;margin:0 auto;padding:12px 16px}
 .brand{font-weight:900;letter-spacing:.2px}
 .mode-btn{border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--text);cursor:pointer;font-weight:800}
 
-/* Seat (majority) bar */
-.seatbar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+/* Tabs */
+.tabs{position:sticky;top:56px;z-index:90;background:var(--card);border-bottom:1px solid var(--border)}
+.tabs-inner{max-width:1600px;margin:0 auto;display:flex;gap:24px;padding:0 16px}
+.tab{padding:14px 2px;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);font-weight:800}
+.tab.active{border-color:var(--accent);color:var(--text)}
+
+/* Race to 32 (AP-style seat bar) */
+.seatbar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow);margin:16px 0}
 .seatbar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:800}
 .seatbar-sub{color:var(--muted);font-weight:600}
 .seatbar{position:relative;height:22px;border-radius:999px;background:var(--border);overflow:hidden}
@@ -36,7 +47,7 @@ html[data-theme="dark"] .seatbar .tick{background:#e5e7eb66}
 .tooltip{position:fixed;pointer-events:none;background:#111827;color:#fff;border-radius:8px;padding:8px 10px;
          font-size:.9rem;line-height:1.25;border:1px solid #00000040;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
 
-/* Battleground cards (AP-ish compact) */
+/* Battleground cards */
 .section-h{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 .bcard{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -56,8 +67,7 @@ html[data-theme="dark"] .seatbar .tick{background:#e5e7eb66}
 .bvotes{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
 .bpct{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 
-/* Footer note */
-.note{color:var(--muted);font-size:.92rem;margin-top:10px}
+/* Other app parts (sidebars, ticker, map, constituency cards) — keep your existing CSS here */
 
 /* Toast */
 .toast{position:fixed;right:12px;bottom:12px;background:#111827;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:var(--shadow);z-index:2000;font-weight:700}
@@ -65,15 +75,26 @@ html[data-theme="dark"] .seatbar .tick{background:#e5e7eb66}
 </style>
 </head>
 <body>
+  <!-- HEADER -->
   <header class="header">
     <div class="header-inner">
-      <div class="brand">Decision 2025 — Live</div>
-      <button id="modeBtn" class="mode-btn" title="Toggle light/dark">🌞 Light</button>
+      <div class="brand">Jamaica Decision 2025 — Live</div>
+      <button id="modeBtn" class="mode-btn">🌞 Light</button>
     </div>
   </header>
 
+  <!-- TABS -->
+  <nav class="tabs">
+    <div class="tabs-inner">
+      <div class="tab active" data-tab="constituencies">Constituencies</div>
+      <div class="tab" data-tab="interactive">Interactive Map</div>
+      <div class="tab" data-tab="national">National</div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
   <main class="container">
-    <!-- Race to 32 -->
+    <!-- RACE TO 32 BAR -->
     <section class="seatbar-wrap" aria-labelledby="race32">
       <div class="seatbar-head">
         <div id="race32" style="font-weight:900">Race to 32</div>
@@ -81,21 +102,28 @@ html[data-theme="dark"] .seatbar .tick{background:#e5e7eb66}
       </div>
       <div id="seatBar" class="seatbar" role="img" aria-label="Seat progress">
         <div class="tick" title="Majority: 32"></div>
-        <!-- slices appended by JS -->
       </div>
-      <div class="note" id="seatNote">Each slice is one constituency; slice width can be area-weighted using ECJ boundaries.</div>
     </section>
 
-    <!-- Battleground / Closest -->
+    <!-- BATTLEGROUND GRID -->
     <div class="section-h">
       <h2 style="margin:0">Battleground Seats</h2>
       <div class="seatbar-sub" id="bgSubtitle">Closest by vote margin</div>
     </div>
     <section id="bgrid" class="grid" aria-live="polite"></section>
+
+    <!-- Constituencies tab (your existing constituency grid goes here) -->
+    <section id="tab-constituencies"></section>
+
+    <!-- Interactive Map tab -->
+    <section id="tab-interactive" class="hidden"></section>
+
+    <!-- National tab -->
+    <section id="tab-national" class="hidden"></section>
   </main>
 
   <!-- Floating tooltip for seat slices -->
-  <div id="apTip" class="tooltip" role="tooltip" aria-hidden="true"></div>
+  <div id="apTip" class="tooltip" role="tooltip"></div>
 
   <!-- Toast -->
   <div id="toast" class="toast hidden"></div>
@@ -108,6 +136,25 @@ const ECJ_GEOJSON =
  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=*&f=geojson';
 
 const PARTY_COLORS = { JLP:'var(--jlp)', PNP:'var(--pnp)', JPP:'var(--jpp)', UIC:'var(--uic)', Other:'var(--other)' };
+
+/* ===================== Tabs ===================== */
+(function initTabs(){
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.querySelectorAll('main .container > section, main .container > .grid, main .container > .seatbar-wrap')
+        .forEach(s=>{}); // (No-op: we keep seat bar + battleground above tabs content)
+
+      // Show/hide the three tab sections
+      document.querySelectorAll('main .container section[id^="tab-"]').forEach(sec=>sec.classList.add('hidden'));
+      const sec = document.getElementById('tab-'+target);
+      if (sec) sec.classList.remove('hidden');
+      // We keep Race to 32 + Battleground always visible at top by design
+    });
+  });
+})();
 
 /* ===================== Theme ===================== */
 (function initTheme(){
@@ -142,7 +189,6 @@ const partyKey = p => {
 /* Polygon area approximation (equirectangular) for GeoJSON */
 function ringArea(coords){
   if (!coords || coords.length<3) return 0;
-  // project (lon,lat) to meters using equirectangular at mean lat
   const meanLat = coords.reduce((a,c)=>a+c[1],0)/coords.length * Math.PI/180;
   const R = 6371000; // Earth radius
   const cosLat = Math.cos(meanLat);
@@ -160,7 +206,6 @@ function ringArea(coords){
   return Math.abs(area)/2;
 }
 function polygonArea(poly){
-  // poly: [ [ [lon,lat],... ] , [hole] , ... ]
   if (!Array.isArray(poly) || !poly.length) return 0;
   let a = ringArea(poly[0]);
   for (let i=1;i<poly.length;i++) a -= ringArea(poly[i]);
@@ -177,18 +222,21 @@ function featureArea(f){
 /* ===================== Seat Bar + Tooltip ===================== */
 function buildSeatBar(results, areaWeights){
   const bar = document.getElementById('seatBar');
-  // Remove old slices
+  // Clear
   bar.querySelectorAll('.seat-slice').forEach(n=>n.remove());
 
-  // Build items: each constituency → width weight
+  // Build slice model
   const items = results.map(r=>({
     key:r.key,
     number:r.number||0,
     party:r.party,
+    name:r.name,
+    leader:r.leader,
+    runner:r.runner,
     w: (areaWeights && areaWeights[r.key]) ? areaWeights[r.key] : 1
   }));
 
-  // Sort for stable visual band (by party then number)
+  // Sort visually by party band then number (keeps AP-like grouped color bands)
   items.sort((a,b)=> a.party===b.party ? a.number-b.number : a.party.localeCompare(b.party));
 
   const totalW = items.reduce((a,b)=>a+b.w,0) || 1;
@@ -199,32 +247,40 @@ function buildSeatBar(results, areaWeights){
     div.style.width = (s.w/totalW*100).toFixed(4)+'%';
     div.style.background = PARTY_COLORS[s.party] || PARTY_COLORS.Other;
     div.dataset.key = s.key;
+    div.title = `${s.name}${s.number?` (#${s.number})`:''}`;
 
-    div.addEventListener('mousemove', ev => showTip(ev, s.key, results));
+    div.addEventListener('mousemove', ev => showTip(ev, s));
     div.addEventListener('mouseleave', hideTip);
     div.addEventListener('click', ()=> openConstituency(s.key));
 
     bar.appendChild(div);
   });
 
-  // Counts + majority note
+  // Counts + majority status
   const counts = {JLP:0,PNP:0,JPP:0,UIC:0,Other:0};
   results.forEach(r=> counts[r.party] = (counts[r.party]||0)+1 );
+  const sJ = counts.JLP||0, sP = counts.PNP||0;
+  let note = '';
+  if (sJ>=MAJORITY) note = 'JLP has reached majority';
+  else if (sP>=MAJORITY) note = 'PNP has reached majority';
+  else {
+    const fav = sJ===sP ? 'Tied' : (sJ>sP ? 'JLP' : 'PNP');
+    const need = fav==='JLP' ? (MAJORITY - sJ) : (MAJORITY - sP);
+    note = fav==='Tied' ? 'Tied — both need 32' : `${fav} needs ${Math.max(0,need)} more`;
+  }
   document.getElementById('seatSummary').textContent =
-    `JLP ${counts.JLP||0} | PNP ${counts.PNP||0} | JPP ${counts.JPP||0} | UIC ${counts.UIC||0} | Other ${counts.Other||0}`;
+    `JLP ${sJ} | PNP ${sP} | JPP ${counts.JPP||0} | UIC ${counts.UIC||0} | Other ${counts.Other||0} • ${note}`;
 }
 
 /* Tooltip content */
-function showTip(ev, key, results){
+function showTip(ev, s){
   const tip = document.getElementById('apTip');
-  const r = results.find(x=>x.key===key);
-  if (!r){ hideTip(); return; }
-  const color = PARTY_COLORS[r.party] || PARTY_COLORS.Other;
+  const color = PARTY_COLORS[s.party] || PARTY_COLORS.Other;
   tip.innerHTML = `
-    <div style="font-weight:900;margin-bottom:4px">${r.name}${r.number?` (#${r.number})`:''}</div>
-    <div><span style="color:${color};font-weight:800">${r.leader?.name||'—'}</span> (${r.party})
-      — ${(r.leader?.votes||0).toLocaleString()} • ${r.leader?.pct??0}%</div>
-    ${r.runner ? `<div style="color:var(--muted)">${r.runner.name} — ${(r.runner.votes||0).toLocaleString()} • ${r.runner.pct??0}%</div>`:''}
+    <div style="font-weight:900;margin-bottom:4px">${s.name}${s.number?` (#${s.number})`:''}</div>
+    <div><span style="color:${color};font-weight:800">${s.leader?.name||'—'}</span> (${s.party})
+      — ${(s.leader?.votes||0).toLocaleString()} • ${s.leader?.pct??0}%</div>
+    ${s.runner ? `<div style="color:var(--muted)">${s.runner.name} — ${(s.runner.votes||0).toLocaleString()} • ${s.runner.pct??0}%</div>`:''}
   `;
   tip.style.left = (ev.clientX + 12) + 'px';
   tip.style.top  = (ev.clientY + 12) + 'px';
@@ -239,11 +295,17 @@ function hideTip(){
   tip.setAttribute('aria-hidden','true');
 }
 
-/* Hook slice/card click into your app (replace as needed) */
+/* Hook slice/card click into your app (navigate to interactive tab) */
 function openConstituency(key){
-  // Integrate with your router / interactive map / modal here.
-  // Example: window.gotoInteractiveKey?.(key);
-  console.log('open →', key);
+  // Activate Interactive tab if you want:
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const intTab = document.querySelector('.tab[data-tab="interactive"]');
+  if (intTab){ intTab.classList.add('active'); }
+  document.querySelectorAll('main .container section[id^="tab-"]').forEach(sec=>sec.classList.add('hidden'));
+  const sec = document.getElementById('tab-interactive'); if (sec) sec.classList.remove('hidden');
+  // Your full app likely has gotoInteractiveKey; if present, call it
+  if (typeof window.gotoInteractiveKey === 'function'){ window.gotoInteractiveKey(key); }
+  else console.log('open →', key);
 }
 
 /* ===================== Battleground Cards ===================== */
@@ -251,7 +313,7 @@ function buildBattleground(results){
   const grid = document.getElementById('bgrid');
   grid.innerHTML = '';
 
-  // Compute close by absolute vote margin between #1 and #2
+  // Compute close by absolute vote margin (top two)
   const ranked = results
     .filter(r=> r.leader && r.runner)
     .map(r=> ({...r, gap:Math.abs((r.leader.votes||0)-(r.runner.votes||0))}))
@@ -298,10 +360,8 @@ function buildBattleground(results){
   });
 }
 
-/* ===================== Data Adapters ===================== */
-/** Convert your 2025-data.json shape → RESULTS array the seat bar/cards expect. */
+/* ===================== Data Adapter ===================== */
 function adaptData(raw){
-  // raw is an object keyed by constituency name; each has Data[0].Candidates[]
   const results = [];
   Object.values(raw||{}).forEach(c=>{
     const cname = c?.Name || '';
@@ -333,7 +393,6 @@ function adaptData(raw){
     const key = norm(cname);
     const number = Number(d?.['Constituency No'] || d?.ConstNo || '') || null;
 
-    // Build human “x min ago” if updated_ts exists
     let lastUpdatedLabel = '—';
     const ts = Number(d?.updated_ts || 0);
     if (ts){
@@ -353,7 +412,6 @@ function adaptData(raw){
     });
   });
 
-  // Safety: trim to TOTAL_SEATS if your data includes extras
   if (results.length > TOTAL_SEATS) results.length = TOTAL_SEATS;
   return results;
 }
@@ -370,14 +428,15 @@ async function fetchAreaWeights(){
       const key = norm(cname);
       out[key] = featureArea(f) || 1;
     });
-    // Normalize weights to avoid extreme skews
+    // Normalize & clamp to a readable range (avoid ultra-thin slices)
     const vals = Object.values(out);
-    const max = Math.max(...vals,1), min = Math.max(Math.min(...vals),1);
+    if (!vals.length) return null;
+    const max = Math.max(...vals), min = Math.max(Math.min(...vals), 1);
     const normed = {};
     Object.keys(out).forEach(k=>{
       const v = out[k];
-      // clamp to 10x range for readability
-      const clamped = Math.min(max, Math.max(min, v));
+      // clamp to within 10× range from min
+      const clamped = Math.min(min*10, Math.max(min, v));
       normed[k] = clamped;
     });
     return normed;
@@ -398,17 +457,12 @@ async function fetchAreaWeights(){
   }catch(e){
     console.warn('Local 2025-data.json not found, using demo.', e);
     raw = demoData();
-    document.getElementById('seatNote').textContent =
-      'Demo data loaded (could not find 2025-data.json). Each slice is one constituency.';
+    const seatNote = document.getElementById('seatSummary');
+    if (seatNote) seatNote.textContent = 'Demo data loaded (2025-data.json missing)';
     toast('Demo mode: 2025-data.json not found');
   }
 
   const results = adaptData(raw);
-
-  // If you want strictly MAJORITY race count visual (first 63 only):
-  if (results.length && results.length !== TOTAL_SEATS){
-    document.getElementById('seatNote').textContent += ` • Loaded ${results.length}/${TOTAL_SEATS} seats`;
-  }
 
   // Compute area weights (optional)
   const weights = await fetchAreaWeights();
@@ -416,9 +470,8 @@ async function fetchAreaWeights(){
   buildBattleground(results);
 })();
 
-/* ===================== Demo dataset (only used if local file missing) ===================== */
+/* ===================== Demo dataset (only if local file missing) ===================== */
 function demoData(){
-  // Minimal shape that mimics your 2025-data.json
   const mk = (name, n, lVotes, lPct, lParty, rVotes, rPct, rParty, boxes='120 of 180', pctBoxes=66, updated_ts=Date.now() - Math.random()*3600_000) => ({
     Name:name,
     Data:[{
