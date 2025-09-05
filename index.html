@@ -268,7 +268,6 @@
         <div class="tabs-inner">
           <div class="tab active" data-tab="constituencies">Constituencies</div>
           <div class="tab" data-tab="interactive">Interactive Map</div>
-          <div class="tab" data-tab="national">National</div>
         </div>
       </nav>
 
@@ -332,7 +331,7 @@
                   <option value="desc">Desc</option>
                 </select>
               </div>
-            </div>
+          </div>
             <h2>Constituencies by Parish</h2>
             <div id="parishContainer"></div>
           </div>
@@ -375,28 +374,26 @@
       <div class="modal-header">
         <div class="modal-title" id="previewTitle">Constituency</div>
         <button class="close-x" id="btnPreviewClose" aria-label="Close preview">✕</button>
-      </div>
-      <div class="modal-hint" aria-live="polite">Loading…</div>
-      <div class="modal-body">
-        <div id="previewMap">
-          <div class="shimmer" id="previewShimmer"></div>
+        <div class="modal-body">
+          <div id="previewMap">
+            <div class="shimmer" id="previewShimmer"></div>
+          </div>
+          <div class="modal-details">
+            <div id="previewBoxes" class="boxline" style="margin-top:2px"></div>
+            <table style="width:100%; border-collapse:collapse; margin-top:8px">
+              <thead>
+                <tr><th style="width:28px"></th><th style="text-align:left">Candidate</th><th>Party</th><th style="text-align:right">Votes</th><th style="text-align:right">%</th></tr>
+              </thead>
+              <tbody id="previewTableBody"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="modal-details">
-          <div id="previewBoxes" class="boxline" style="margin-top:2px"></div>
-          <table style="width:100%; border-collapse:collapse; margin-top:8px">
-            <thead>
-              <tr><th style="width:28px"></th><th style="text-align:left">Candidate</th><th>Party</th><th style="text-align:right">Votes</th><th style="text-align:right">%</th></tr>
-            </thead>
-            <tbody id="previewTableBody"></tbody>
-          </table>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="btnPreviewCancel">Close</button>
+          <button class="btn btn-primary" id="btnPreviewGo">Open in Interactive Map</button>
         </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="btnPreviewCancel">Close</button>
-        <button class="btn btn-primary" id="btnPreviewGo">Open in Interactive Map</button>
       </div>
     </div>
-  </div>
 
 <script>
 /* ===== Config ===== */
@@ -934,7 +931,6 @@ function renderParishBlocks(detailsByConst, rawData){
                 ${fmtHHMMSS(Date.now()-(updatedTs||Date.now()))}
               </span> ago
             </span>
-          </span>
         </div>
         <div class="const-body">
           ${winnerBadgeHTML}
