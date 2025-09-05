@@ -632,7 +632,43 @@ function buildCharts(totals,seats){
   voteChart=new Chart(vc,{type:'pie',data:{labels,datasets:[{data:labels.map(k=>totals[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   seatChart=new Chart(sc,{type:'bar',data:{labels,datasets:[{label:'Seats',data:labels.map(k=>seats[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0,grid:{color:'rgba(148,163,184,.3)'}}}}});
 }
+<script>
+// Re-add National "Top 10 Closest Seats" list used in the National tab
+function buildClosestPanel(items){
+  const list=document.getElementById('closestList');
+  const note=document.getElementById('closestNote');
+  if(!list || !note) return;
 
+  list.innerHTML='';
+  // items expected: [{ constituency, winnerFirst, winnerLast, winnerParty, marginPct, candidates:[{name,party,votes,pct}, ...] }]
+  const top10 = (items||[])
+    .filter(x => !isNaN(x.marginPct))
+    .sort((a,b)=> a.marginPct - b.marginPct)
+    .slice(0,10);
+
+  top10.forEach(item=>{
+    const party = (item.winnerParty||'Other').toUpperCase();
+    const color = (window.PARTY_COLORS && PARTY_COLORS[party]) || '#1e90ff';
+    const li=document.createElement('li');
+    li.innerHTML = `
+      <span>
+        <strong>${item.constituency}</strong> —
+        <span style="color:${color}">
+          ${item.winnerFirst} ${item.winnerLast} (${party})
+        </span>
+      </span>
+      <span><strong>${(item.marginPct||0).toFixed(1)}%</strong></span>
+    `;
+    li.title = (item.candidates||[]).slice(0,3).map(c =>
+      `${c.name} (${(c.party||'Other').toUpperCase()}): ${Number(c.votes||0).toLocaleString()} • ${c.pct || 0}%`
+    ).join(' | ');
+    li.addEventListener('click', ()=> gotoInteractive(item.constituency));
+    list.appendChild(li);
+  });
+
+  note.textContent = 'Margin = percentage-point gap between 1st and 2nd.';
+}
+</script>
 /* ===== Map coloring & interactions ===== */
 function paintMap(layer, detailsByConst){
   if (!layer) return;
