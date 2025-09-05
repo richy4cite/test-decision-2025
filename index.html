@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8" />
-<title>Jamaica Decision 2025 — Live Results</title>
+<title>Jamaica Decision 2025 — Live Results + Constituency Bar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -240,6 +240,134 @@
             </select>
             <button id="btnForceRefresh" class="btn">Refresh now</button>
           </div>
+
+  <style>
+    /* === existing styles omitted here for brevity === */
+    /* Progress bar styling (AP-style) */
+    .constituency-bar {
+      display: flex;
+      height: 32px;
+      margin: 4px 0;
+      font-size: 0; /* hide text overflow */
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .constituency-segment {
+      position: relative;
+      height: 100%;
+      cursor: pointer;
+    }
+    .constituency-segment:hover {
+      opacity: 0.7;
+    }
+    .constituency-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 0.85rem;
+      z-index: 2000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Constituency Size Bar (by area)</h2>
+    <div class="constituency-bar" id="constituencyBar"></div>
+  </div>
+
+  <!-- (Rest of your existing content) -->
+  <div class="page">
+    <!-- … existing HTML structure … -->
+  </div>
+
+  <script>
+    // After loadECJAndData() finishes, we add the bar.
+    async function buildConstituencyBar(detailsByConst) {
+      const bar = document.getElementById('constituencyBar');
+      if (!window.arcFeatures?.length || !detailsByConst) return;
+
+      // Compute area for each constituency from arcFeatures
+      const areas = {}; let totalArea = 0;
+      window.arcFeatures.forEach(f => {
+        const name = f.properties?.CONST_NAME || '';
+        const key = norm(name);
+        // Using Leaflet’s geodesic area utility
+        const latlngs = L.geoJSON(f).getLayers()[0].getLatLngs();
+        // Flatten array if multi
+        const flatten = arr => Array.isArray(arr[0]) ? arr.flatMap(flatten) : arr;
+        const pts = flatten(latlngs);
+        const latlngsFlat = pts.map(ll => [ll.lat, ll.lng]);
+        const area = L.GeometryUtil.geodesicArea(latlngsFlat.map(ll => L.latLng(ll[0], ll[1])));
+        areas[key] = area;
+        totalArea += area;
+      });
+
+      // Build segments
+      Object.entries(detailsByConst).forEach(([key, info]) => {
+        const area = areas[key] || 0;
+        if (area <= 0) return;
+        const pct = (area / totalArea) * 100;
+        const winner = info.all[0]; // leading candidate
+        const winnerParty = partyKey(winner.party);
+        const color = PARTY_COLORS[winnerParty] || PARTY_COLORS.Other;
+        const seg = document.createElement('div');
+        seg.className = 'constituency-segment';
+        seg.style.width = pct + '%';
+        seg.style.background = color;
+        // Tooltip
+        seg.addEventListener('mouseover', e => {
+          const tip = document.createElement('div');
+          tip.className = 'constituency-tooltip';
+          tip.innerText = `${winner.name} (${winnerParty}) — ${winner.votes.toLocaleString()} votes`;
+          seg.appendChild(tip);
+        });
+        seg.addEventListener('mouseout', e => {
+          const tip = seg.querySelector('.constituency-tooltip');
+          if (tip) seg.removeChild(tip);
+        });
+        // Click to go to interactive map for that const
+        seg.addEventListener('click', () => gotoInteractiveKey(key));
+        bar.appendChild(seg);
+      });
+    }
+
+    // Hook into your existing flow
+    (function augmentDataLoad() {
+      const originalLoad = loadECJAndData;
+      loadECJAndData = async function(...args) {
+        await originalLoad.apply(this, args);
+        // Now build the bar
+        await buildConstituencyBar(window.__rawData ? (() => {
+          // Construct detailsByConst again
+          const details = {};
+          Object.values(window.__rawData).forEach(c => {
+            const name = canonKey(norm(c.Name || ''));
+            const candData = Array.isArray(c.Data) ? c.Data[0] : c.Data;
+            const cands = Array.isArray(candData.Candidates) ? candData.Candidates : [];
+            const sorted = cands.map(k => ({
+              name: `${k["First Name"] || ''} ${(k["Last Name"] || '').trim()}`.trim(),
+              party: partyKey(k.Party),
+              votes: Number(k.Votes) || 0,
+              pct: Number(k.Percentage) || 0
+            })).sort((a, b) => b.votes - a.votes);
+            if (sorted.length) details[name] = { all: sorted, party: sorted[0].party };
+          });
+          return details;
+        })() : null);
+      };
+    })();
+  </script>
+</body>
+</html>
+
 
           <!-- Parity pills (now indicate local file) -->
           <div class="status-group" id="sourceStatus">
