@@ -1,212 +1,234 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <title>Jamaica Decision 2025 — Live Results</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<title>Jamaica Decision 2025 — Live Results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* THEME TOKENS */
+  :root{
+    --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --accent:#0a58ca;
+    --card:#ffffff; --card-alt:#f8fafc; --shadow:0 6px 18px rgba(17,24,39,.06);
+    --jlp:#2e8b57; --pnp:#ff8c00; --jpp:#6a0dad; --uic:#008b8b; --other:#1e90ff;
+    --good:#16a34a; --warn:#f59e0b; --bad:#ef4444;
+    --hdrh:56px; --tabh:48px;
+  }
+  html[data-theme="dark"]{
+    --bg:#0f172a;
+    --text:#e5e7eb;
+    --muted:#9ca3af;
+    --border:#334155;
+    --accent:#60a5fa;
+    --card:#111827;
+    --card-alt:#0b1220;
+    --shadow:0 6px 18px rgba(0,0,0,.35);
+  }
 
-  <!-- Leaflet + Chart.js -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root{
-      --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --accent:#0a58ca;
-      --card:#ffffff; --card-alt:#f8fafc; --shadow:0 6px 18px rgba(17,24,39,.06);
-      --jlp:#2e8b57; --pnp:#ff8c00; --jpp:#6a0dad; --uic:#008b8b; --other:#1e90ff;
-      --good:#16a34a; --warn:#f59e0b; --bad:#ef4444;
-      --hdrh:56px; --tabh:48px;
-      --ap-bar-h:34px;
-    }
-    html[data-theme="dark"]{
-      --bg:#0f172a; --text:#e5e7eb; --muted:#9ca3af; --border:#334155; --accent:#60a5fa;
-      --card:#111827; --card-alt:#0b1220; --shadow:0 6px 18px rgba(0,0,0,.35);
-    }
-    body{margin:0; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
-    body.modal-open{overflow:hidden}
-    .header{position:sticky; top:0; z-index:1500; background:var(--card); border-bottom:1px solid var(--border)}
-    .header-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
-    .brand{font-weight:800; font-size:1.25rem; letter-spacing:.2px}
-    .live-pill{margin-left:auto; display:flex; align-items:center; gap:8px; font-weight:700}
-    .live-dot{width:10px; height:10px; border-radius:50%; background:#ef4444; animation:pulse 1.8s infinite}
-    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 12px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
-    .refresh{display:flex; align-items:center; gap:6px}
-    select, .mode-btn{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--text); cursor:pointer; font-weight:700}
-    .mode-btn{display:flex; align-items:center; gap:6px}
-    .status-group{display:flex; align-items:center; gap:12px; margin-left:8px}
-    .status-pill{display:flex; align-items:center; gap:8px;background:var(--card); border:1px solid var(--border); border-radius:999px;padding:6px 10px; font-weight:800}
-    .status-pill small{color:var(--muted); font-weight:600}
-    .dot{width:10px; height:10px; border-radius:50%; animation:pulse 1.8s infinite; background:#10b981}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+  body.modal-open{overflow:hidden}
 
-    /* AP-NEWS BAR STYLE TOPLINE */
-    .ap-seatbar-wrap{
-      margin:18px 0 0 0; background:var(--card); border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow);
-      padding:18px 18px 14px 18px;
-      display:flex; flex-direction:column; gap:8px;
-    }
-    .ap-seatbar-labels{display:flex; align-items:center; font-weight:700; font-size:1.08em; gap:8px;}
-    .ap-seatbar-labels .ap-jlp{color:var(--jlp)}
-    .ap-seatbar-labels .ap-pnp{color:var(--pnp)}
-    .ap-seatbar-labels .ap-pnp2{color:var(--pnp);margin-left:12px;}
-    .ap-seatbar-barbox{position:relative; height:var(--ap-bar-h); width:100%; display:flex; align-items:center; margin:6px 0 0 0; background:var(--border); border-radius:8px; overflow:hidden;}
-    .ap-seatbar{display:flex; height:100%; width:100%; z-index:2;}
-    .ap-seatbar-slice{
-      height:var(--ap-bar-h);
-      cursor:pointer;
-      position:relative;
-      transition:filter .08s;
-      display:flex; align-items:center; justify-content:center;
-      font-size:1em;
-      outline:none;
-    }
-    .ap-seatbar-slice:focus{z-index:8;}
-    .ap-seatbar-slice span{pointer-events:none;}
-    .ap-seatbar-tooltip{
-      pointer-events:none;
-      position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
-      min-width:180px; background:rgba(23,27,40,.97); color:#fff; padding:7px 13px;
-      border-radius:9px; font-size:.97em; opacity:0; transition:opacity .15s; z-index:22;
-      font-weight:400; text-align:left; box-shadow:0 7px 18px rgba(22,23,30,.19);
-      white-space:nowrap;
-    }
-    .ap-seatbar-slice:hover .ap-seatbar-tooltip,
-    .ap-seatbar-slice:focus .ap-seatbar-tooltip{opacity:1;}
-    .ap-seatbar-marker{
-      position:absolute; top:-4px; z-index:10; width:3px; height:calc(var(--ap-bar-h) + 8px); background:#222; left:50%; border-radius:4px;}
-    .ap-seatbar-marker-label{
-      position:absolute; left:50%; top:calc(var(--ap-bar-h) + 8px); font-size:.96em; color:var(--muted); font-weight:900; padding-left:4px; pointer-events:none;
-      transform:translateX(-50%);
-    }
+  /* Header (raise z-index so maps stay underneath) */
+  .header{position:sticky; top:0; z-index:1500; background:var(--card); border-bottom:1px solid var(--border)}
+  .header-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+  .brand{font-weight:800; font-size:1.25rem; letter-spacing:.2px}
+  .live-pill{margin-left:auto; display:flex; align-items:center; gap:8px; font-weight:700}
+  .live-dot{width:10px; height:10px; border-radius:50%; background:#ef4444; animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 12px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+  .refresh{display:flex; align-items:center; gap:6px}
+  select, .mode-btn{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--text); cursor:pointer; font-weight:700}
+  .mode-btn{display:flex; align-items:center; gap:6px}
 
-    .battleground-wrap{margin:14px 0 0 0;}
-    .battleground-header{display:flex; gap:10px; align-items:center; font-weight:700;}
-    .battleground-no{font-size:1.03em; color:var(--muted);}
-    .battleground-name{font-size:1.07em;}
-    .battleground-card{
-      background:var(--card-alt); border:1.6px solid var(--border); border-radius:10px; margin-bottom:8px; padding:10px 14px;
-      display:flex; flex-direction:column; gap:3px; transition:box-shadow .13s, border-color .18s;
-      cursor:pointer; box-shadow:0 1px 4px rgba(32,34,42,0.03);
-    }
-    .battleground-card:hover, .battleground-card:focus{border-color:var(--accent); box-shadow:0 2px 14px rgba(0,72,255,0.05);}
-    .battleground-rows{display:flex; flex-direction:column; gap:2px;}
-    .battleground-row{display:flex; align-items:center; gap:10px; font-size:1em;}
-    .battleground-party{display:inline-block; padding:0 7px; border-radius:7px; font-size:.97em; font-weight:800; margin-right:5px;}
-    .battleground-gap{margin-top:4px; font-size:.95em; color:var(--muted);}
-    .battleground-card-winner{border:2.5px solid var(--accent);}
-    .battleground-seatno{color:var(--muted); font-weight:600;font-size:.98em;margin-right:7px;}
-    .battleground-partylogo{height:17px;width:auto;margin-right:3px;vertical-align:-4px;}
-    /* Constituency Grid (compact/AP style) */
-    .container{max-width:1600px; margin:14px auto; padding:0 24px}
-    .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
-    .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
-    .controls input, .controls select{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:var(--card); color:var(--text)}
-    .controls input#searchBar{width:420px; max-width:95vw}
-    .parish{margin:12px 0 22px}
-    .parish h2{font-size:1.1rem; border-left:4px solid var(--accent); padding-left:10px; margin:0 0 12px}
-    .const-grid{display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-    .const{background:var(--card); border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; margin-bottom:3px;}
-    .const-head{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, var(--bg)), color-mix(in oklab, var(--card) 75%, var(--bg))); border-bottom:1px solid var(--border);
-      padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:10px}
-    .const-name{font-weight:900; font-size:1rem; line-height:1.2; background:var(--bg); padding:3px 8px; border:1px solid var(--border); border-radius:8px}
-    .updated{font-size:.82rem; color:var(--muted); display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:2px; white-space:nowrap}
-    .pulse{display:inline-block; width:10px; height:10px; border-radius:50%; background:currentColor; animation:pulseSoft 1.8s infinite}
-    @keyframes pulseSoft{0%{box-shadow:0 0 0 0 rgba(0,0,0,.2)}70%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
-    .const-body{padding:7px 9px; display:flex; flex-direction:column; gap:5px}
-    .winner-badge{display:inline-flex; align-items:center; gap:6px; font-weight:800; padding:2px 8px; border-radius:999px; border:1.4px solid rgba(0,0,0,.10);font-size:.98em;}
-    html[data-theme="dark"] .winner-badge{border-color:#00000040}
-    .winner-badge .check{font-weight:900}
-    .boxline{font-size:.89em; color:var(--muted); margin-top:2px}
+  /* Source status pills */
+  .status-group{display:flex; align-items:center; gap:12px; margin-left:8px}
+  .status-pill{
+    display:flex; align-items:center; gap:8px;
+    background:var(--card); border:1px solid var(--border); border-radius:999px;
+    padding:6px 10px; font-weight:800; color:var(--text);
+  }
+  .status-pill small{color:var(--muted); font-weight:600}
+  .dot{width:10px; height:10px; border-radius:50%; animation:pulse 1.8s infinite; background:#10b981}
+  .dot.ok{ background:#10b981 } .dot.warn{ background:#f59e0b } .dot.bad{ background:#ef4444 }
 
-    .rows{margin-top:3px; border-top:1px solid var(--border)}
-    .row{display:grid;grid-template-columns:28px 1fr 34px 52px 40px;gap:7px; padding:7px 0; align-items:start; border-bottom:1px solid var(--border); min-height:32px; background:var(--card-alt);}
-    .row:last-child{border-bottom:none}
-    .nm{font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.08}
-    .party{text-align:center; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.3px;font-size:.96em;}
-    .votes{font-weight:800; text-align:right;font-size:.98em;}
-    .pct{color:var(--muted); text-align:right;font-size:.95em;}
-    .party-icon{height:15px; width:auto; display:block; margin-top:2px}
+  /* Tabs — sticky (below header), with higher z-index than maps */
+  .tabs{position:sticky; top:var(--hdrh); z-index:1400; background:var(--card); border-bottom:1px solid var(--border)}
+  .tabs-inner{max-width:1800px; margin:0 auto; padding:0 24px; display:flex; gap:24px}
+  .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
+  .tab.active{border-color:var(--accent); color:var(--text)}
 
-    /* Tabs/sections */
-    .tabs{position:sticky; top:var(--hdrh); z-index:1400; background:var(--card); border-bottom:1px solid var(--border)}
-    .tabs-inner{max-width:1800px; margin:0 auto; padding:0 24px; display:flex; gap:24px}
-    .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
-    .tab.active{border-color:var(--accent); color:var(--text)}
-    .hidden{display:none !important}
+  /* Topline */
+  .topline{background:color-mix(in oklab, var(--card) 80%, var(--bg)); border-bottom:1px solid var(--border)}
+  .topline-inner{max-width:1800px; margin:0 auto; padding:12px 24px; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .tcard{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; gap:12px; align-items:center}
+  .tlogo{height:22px; width:auto; filter:brightness(1)}
+  html[data-theme="dark"] .tlogo{filter:brightness(1.2) contrast(1.1)}
+  .tstats{font-size:.98rem; color:var(--muted)} .tstats b{color:var(--text)}
+  .delta{font-weight:800; margin-left:6px} .delta.up{color:#16a34a} .delta.down{color:#ef4444}
 
-    /* Page grid (right column is 360px) */
-    .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 360px 1fr; gap:16px}
-    .page > .main{grid-column:2}
-    .rightcol{grid-column:3; position:sticky; top:calc(var(--hdrh) + var(--tabh) + 12px); align-self:start;
-      height:calc(100vh - (var(--hdrh) + var(--tabh) + 28px));
-      display:grid; grid-template-rows:1fr 1fr; gap:12px; z-index:1}
-    .sidepanel{display:flex; flex-direction:column; min-height:0; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden}
-    .sidepanel h3{margin:8px 10px; font-size:1rem}
-    .panel-body{min-height:0; overflow:auto; padding:6px 8px}
-    .panel-body:has(.empty){display:flex; align-items:center; justify-content:center; color:var(--muted)}
-    /* Recently updated items */
-    .sideitem{position:relative; display:flex; justify-content:space-between; align-items:center;
-      border:2px solid var(--border); border-radius:10px; padding:4px 8px; margin:6px 0; font-weight:800; cursor:pointer; background:var(--card);
-      transition:transform .06s ease, background .12s ease; line-height:1.2}
-    .sideitem:hover{background:color-mix(in oklab, var(--card) 90%, var(--bg)); transform:translateY(-1px)}
-    .sideitem small{color:var(--muted); font-weight:700; font-size:.85em; font-variant-numeric:tabular-nums}
-    .sideitem .pin-btn{border:1px solid var(--border); background:var(--card); border-radius:8px; padding:2px 6px; font-size:.75rem; margin-left:8px; cursor:pointer}
-    .age-good{border-color:var(--good)} .age-warn{border-color:var(--warn)} .age-bad{border-color:var(--bad)}
+  /* Page grid */
+  .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 320px 1fr; gap:16px}
+  .page > .main{grid-column:2}
+  .page > .rightbar{grid-column:3}
+  @media (max-width:1300px){ .page{display:block} .rightbar{position:relative; width:auto; max-width:none} }
 
-    /* Closest panel — tighter vertical spacing */
-    .closest-item{border:2px solid var(--border); border-radius:10px; margin:6px 0; overflow:hidden; background:var(--card); cursor:pointer}
-    .closest-head{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; background:var(--card-alt); border-bottom:1px solid var(--border)}
-    .closest-head .cname{font-weight:900; font-size:.95rem; line-height:1.1}
-    .closest-body{padding:4px 8px}
-    .closerow{display:grid; grid-template-columns:22px 1fr 72px 62px; gap:8px; align-items:center; padding:3px 0; line-height:1.1}
-    .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800; font-size:.92rem}
-    .closerow img{height:16px; width:auto}
-    .closest-foot{padding:4px 8px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center; font-size:.9rem}
-    .closest-item:hover{background:color-mix(in oklab, var(--card) 94%, var(--bg))}
-    .closest-winner{border-left:6px solid var(--accent); padding-left:6px; background:color-mix(in oklab, var(--card) 98%, var(--jlp) 6%)}
+  /* Sidebar (z under tabs/header) */
+  .rightbar{position:sticky; top:calc(var(--hdrh) + var(--tabh) + 12px); align-self:start; height:calc(100vh - (var(--hdrh) + var(--tabh) + 28px)); overflow:auto;
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; z-index:1}
+  .rightbar h3{margin:2px 0 8px 0; font-size:1rem}
+  .sideitem{position:relative; display:flex; justify-content:space-between; align-items:center;
+    border:2px solid var(--border); border-radius:12px; padding:6px 8px; margin:8px 0; font-weight:800; cursor:pointer; background:var(--card)}
+  .sideitem small{color:var(--muted); font-weight:700; font-size:.88em; font-variant-numeric:tabular-nums}
+  .sideitem::before{content:""; position:absolute; inset:-2px; border-radius:14px; padding:2px; background:
+    conic-gradient(from var(--angle,0deg), rgba(22,163,74,.9), rgba(245,158,11,.9), rgba(239,68,68,.9), rgba(22,163,74,.9));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.18; animation:spin 12s linear infinite}
+  @keyframes spin{to{--angle:360deg}}
+  .age-good{border-color:var(--good)} .age-warn{border-color:var(--warn)} .age-bad{border-color:var(--bad)}
 
-    /* Interactive map, modal, preview */
-    .interactivemap{margin:16px 0 0 0; min-height:560px; background:var(--card); border-radius:14px; border:1.5px solid var(--border); box-shadow:var(--shadow); }
-    .leaflet-container{width:100%; height:530px; border-radius:10px;}
-    .modal{display:none; position:fixed; inset:0; background:rgba(18,19,24,.64); z-index:2500; align-items:center; justify-content:center}
-    .modal.active{display:flex}
-    .modal-content{background:var(--card); border-radius:14px; max-width:500px; min-width:300px; padding:28px 24px 20px 24px; box-shadow:0 7px 48px rgba(0,0,0,.16); position:relative;}
-    .modal-close{position:absolute; right:18px; top:15px; background:none; border:none; color:var(--muted); font-size:2rem; cursor:pointer}
+  /* Sections / cards */
+  .container{max-width:1600px; margin:14px auto; padding:0 24px}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
 
-    /* Responsive */
-    @media (max-width: 1190px){
-      .page{grid-template-columns:0 1fr 360px 0;}
-      .rightcol{grid-column:3;}
-    }
-    @media (max-width: 900px){
-      .page{grid-template-columns:0 1fr;}
-      .main{grid-column:2;}
-      .rightcol{display:none;}
-      .tabs-inner{padding:0 4vw;}
-      .header-inner{padding:14px 4vw;}
-      .container{padding:0 4vw;}
-    }
-    @media (max-width: 600px){
-      .ap-seatbar-wrap,.battleground-wrap{margin:6px 0;}
-      .header-inner{flex-direction:column; gap:7px;align-items:flex-start;}
-      .tabs-inner{gap:13px;}
-      .ap-seatbar-labels{font-size:.99em;}
-      .ap-seatbar-barbox{height:28px;}
-      .ap-seatbar-slice{font-size:.96em;}
-      .battleground-card{padding:8px 8px;}
-      .container{padding:0 2vw;}
-      .const-grid{grid-template-columns:1fr;}
-      .sidepanel{border-radius:8px;}
-      .modal-content{padding:18px 7px;}
-    }
-  </style>
+  /* Controls */
+  .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
+  .controls input, .controls select{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:var(--card); color:var(--text)}
+  .controls input#searchBar{width:360px; max-width:90vw}
+  .controls input#cnoFilter{width:120px}
+
+  /* Parish -> constituency blocks */
+  .parish{margin:12px 0 22px}
+  .parish h2{font-size:1.1rem; border-left:4px solid var(--accent); padding-left:10px; margin:0 0 12px}
+  .const-grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .const{background:var(--card); border:2px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer}
+  .const-head{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, var(--bg)), color-mix(in oklab, var(--card) 75%, var(--bg))); border-bottom:1px solid var(--border);
+    padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .const-name{font-weight:900; font-size:1rem; line-height:1.2; background:var(--bg); padding:3px 8px; border:1px solid var(--border); border-radius:8px}
+  .updated{font-size:.85rem; color:var(--muted); display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:4px; white-space:nowrap}
+  .pulse{display:inline-block; width:10px; height:10px; border-radius:50%; background:currentColor; animation:pulseSoft 1.8s infinite}
+  @keyframes pulseSoft{0%{box-shadow:0 0 0 0 rgba(0,0,0,.2)}70%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
+  .const-body{padding:12px; display:flex; flex-direction:column; gap:8px}
+  .winner-badge{display:inline-flex; align-items:center; gap:6px; font-weight:800; padding:2px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.08)}
+  html[data-theme="dark"] .winner-badge{border-color:#00000040}
+  .winner-badge .check{font-weight:900}
+  .boxline{font-size:.9rem; color:var(--muted); margin-top:2px}
+
+  /* Rows (5 columns) */
+  .rows{margin-top:6px; border-top:1px solid var(--border)}
+  .row{
+    display:grid;
+    grid-template-columns:35px 1fr 40px 70px 52px;
+    gap:12px; padding:10px 4px;
+    align-items:start;
+    border-bottom:1px solid var(--border);
+    min-height:44px;
+    background:var(--card-alt);
+  }
+  .row:last-child{border-bottom:none}
+  .nm{font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.15}
+  .party{ text-align:center; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.3px; }
+  .votes{font-weight:800; text-align:right}
+  .pct{color:var(--muted); text-align:right}
+  .party-icon{height:18px; width:auto; display:block; margin-top:2px; filter:none}
+  html[data-theme="dark"] .party-icon{filter:brightness(1.1)}
+
+  /* Scoreboard + charts */
+  .scoreboard{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+  .pcard{border:1px solid var(--border); border-radius:10px; padding:14px; background:var(--card)}
+  .phead{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .pbrand{display:flex; align-items:center; gap:10px; font-weight:800}
+  .plogo{height:22px; width:auto; filter:none}
+  html[data-theme="dark"] .plogo{filter:brightness(1.2) contrast(1.1)}
+  .pmain{font-size:1.6rem; font-weight:800}
+  .bar{height:8px; border-radius:999px; background:var(--border); overflow:hidden; margin-top:8px}
+  .bar>span{display:block; height:100%}
+
+  .charts{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+  .chart-wrap{position:relative; height:300px}
+  canvas{position:absolute; inset:0}
+
+  .closelist{list-style:none; padding:0; margin:0; display:grid; gap:8px}
+  .closelist li{display:flex; justify-content:space-between; gap:10px; border:1px solid var(--border); background:var(--card); border-radius:10px; padding:10px 12px; cursor:pointer}
+
+  /* Maps */
+  .map-wrap{position:relative; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--card-alt); z-index:1}
+  #mapContainer{height:460px}
+  #imapMap{height:60vh; min-height:380px; max-height:72vh}
+  .mapControls{position:absolute; right:8px; top:8px; z-index:500}
+  .btn{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:700; color:var(--text)}
+  .btn:hover{filter:brightness(0.98)}
+  .legend{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px}
+  .legend-item{display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); padding:6px 10px; border-radius:999px; color:var(--text)}
+  .swatch{width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.15)}
+  .leaflet-tooltip{background:#111827; color:#f9fafb; border:0; border-radius:8px; padding:8px 10px; box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .leaflet-container{background:var(--card-alt)}
+  .leaflet-control-attribution{display:none}
+
+  /* Bottom ticker — ensure above maps too */
+  .ticker{position:sticky; bottom:0; z-index:1600; background:#0b1220; color:#fff; border-top:1px solid #0f172a}
+  html[data-theme="dark"] .ticker{background:#0b1220}
+  .ticker-inner{max-width:1600px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:12px; overflow:hidden}
+  .tick-title{font-weight:800; margin-right:8px}
+  .marquee{white-space:nowrap; overflow:hidden; flex:1}
+  .marquee span{display:inline-block; padding-left:100%; animation:scroll 180s linear infinite}
+  @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+  .hidden{display:none !important}
+  .toast{position:fixed; right:12px; bottom:72px; background:#111827; color:#fff; padding:10px 12px; border-radius:10px; box-shadow:var(--shadow); z-index:2000; font-weight:700}
+
+  /* ================== PREVIEW MODAL ================== */
+  .modal{position:fixed; inset:0; background:rgba(15,23,42,.5); display:none; align-items:center; justify-content:center; z-index:2000; backdrop-filter:blur(2px)}
+  .modal.show{display:flex}
+  .modal-content{
+    width:min(1100px, 66vw);
+    max-height:86vh;
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 30px 80px rgba(0,0,0,.35);
+    display:grid;
+    grid-template-rows:auto auto 1fr auto;
+    overflow:hidden;
+  }
+  .modal-header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border)}
+  .modal-title{font-weight:900; font-size:1.05rem}
+  .modal-hint{padding:8px 14px; color:var(--muted); border-bottom:1px solid var(--border)}
+  .modal-body{display:grid; grid-template-columns:1.2fr .8fr; gap:0; min-height:380px}
+  #previewMap{min-height:380px; position:relative}
+  .modal-details{border-left:1px solid var(--border); padding:10px 12px; overflow:auto}
+  .modal-actions{padding:12px 14px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end}
+  .btn-secondary{background:color-mix(in oklab, var(--card) 80%, var(--bg)); border:1px solid var(--border)}
+  .btn-primary{background:var(--accent); border:1px solid color-mix(in oklab, var(--accent) 70%, black); color:white}
+  .close-x{border-radius:10px; padding:6px 10px; background:var(--card); border:1px solid var(--border); cursor:pointer}
+
+  /* Preview loading shimmer */
+  .shimmer{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(100deg, rgba(0,0,0,0) 0%, rgba(148,163,184,.22) 40%, rgba(0,0,0,0) 80%);
+    background-size:200% 100%;
+    animation:shimmer 1.2s linear infinite;
+    z-index:5;
+  }
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* Ensure Leaflet panes don’t exceed sticky UI */
+  .leaflet-pane{z-index:400}
+</style>
 </head>
 <body>
   <div class="page">
+    <!-- MAIN -->
     <div class="main">
+      <!-- Header -->
       <header class="header" id="siteHeader">
         <div class="header-inner">
           <div class="brand">Jamaica Decision 2025 — Live Results</div>
+
           <button id="modeBtn" class="mode-btn" title="Toggle light/dark">🌞 Light</button>
+
           <div class="refresh">
             <span style="color:var(--muted)">Auto-refresh:</span>
             <select id="refreshSel">
@@ -218,14 +240,19 @@
             </select>
             <button id="btnForceRefresh" class="btn">Refresh now</button>
           </div>
+
+          <!-- Parity pills (now indicate local file) -->
           <div class="status-group" id="sourceStatus">
             <div class="status-pill" id="pillMain" title="Using local 2025-data.json">
-              <span class="dot" aria-hidden="true"></span> Data <small id="mainLag">Local file</small>
+              <span class="dot ok" aria-hidden="true"></span> Data <small id="mainLag">Local file</small>
             </div>
           </div>
+
           <div class="live-pill"><span class="live-dot"></span><span id="lastUpdated">Updating…</span></div>
         </div>
       </header>
+
+      <!-- Tabs (order: Constituencies, Interactive, National) -->
       <nav class="tabs" id="siteTabs">
         <div class="tabs-inner">
           <div class="tab active" data-tab="constituencies">Constituencies</div>
@@ -234,454 +261,1116 @@
         </div>
       </nav>
 
-      <!-- AP NEWS-STYLE RACE TO 32 BAR -->
-      <section class="ap-seatbar-wrap">
-        <div class="ap-seatbar-labels">
-          <span class="ap-jlp">JLP</span>
-          <span id="seatbar-jlp-count" style="font-weight:900; margin-right:14px;">0</span>
-          <span class="ap-pnp">PNP</span>
-          <span id="seatbar-pnp-count" style="font-weight:900; margin-right:10px;">0</span>
-          <span style="margin-left:auto;color:var(--muted);font-weight:600;font-size:1em;">Race to 32</span>
-        </div>
-        <div class="ap-seatbar-barbox">
-          <div class="ap-seatbar" id="apSeatBar"></div>
-          <div class="ap-seatbar-marker"></div>
-          <div class="ap-seatbar-marker-label">Majority (32)</div>
+      <!-- Topline -->
+      <section class="topline">
+        <div class="topline-inner" id="toplineBar"></div>
+      </section>
+
+      <!-- NATIONAL -->
+      <section id="tab-national" class="hidden">
+        <div class="container">
+          <div class="scoreboard" id="scoreboard"></div>
+
+          <div class="charts">
+            <div class="card">
+              <h2 style="color:var(--muted); font-size:1rem">Total Votes by Party</h2>
+              <div class="chart-wrap"><canvas id="voteChart"></canvas></div>
+            </div>
+            <div class="card">
+              <h2 style="color:var(--muted); font-size:1rem">Seats Won by Party</h2>
+              <div class="chart-wrap"><canvas id="seatChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Top 10 Closest Seats</h2>
+            <ul id="closestList" class="closelist"></ul>
+            <p id="closestNote" style="color:var(--muted); margin-top:8px"></p>
+          </div>
+
+          <div class="card">
+            <h2>Seats Won Map</h2>
+            <div class="map-wrap">
+              <div id="mapContainer"></div>
+              <div class="mapControls"><button id="btnResetNational" class="btn">Reset view</button></div>
+            </div>
+            <div id="mapLegend" class="legend"></div>
+          </div>
         </div>
       </section>
-      <!-- AP NEWS-STYLE CLOSEST BATTLEGROUND -->
-      <section class="battleground-wrap">
-        <div style="font-weight:900; color:var(--muted); margin:8px 0 5px 0; font-size:1.06em;">Battleground: Closest 10 Races</div>
-        <div id="apBattlegroundList"></div>
+
+      <!-- CONSTITUENCIES (default visible) -->
+      <section id="tab-constituencies">
+        <div class="container">
+          <div class="card">
+            <div class="controls">
+              <input id="searchBar" type="text" placeholder="Search candidate, constituency, #…">
+              <select id="parishFilter"><option value="">All Parishes</option></select>
+              <select id="partyFilter">
+                <option value="">All Parties</option>
+                <option>JLP</option><option>PNP</option><option>JPP</option><option>UIC</option><option>Other</option>
+              </select>
+              <input id="cnoFilter" type="text" inputmode="numeric" placeholder="Const. #">
+              <div class="split">
+                <label for="sortField" style="color:var(--muted); font-weight:700">Sort by</label>
+                <select id="sortField">
+                  <option value="cno">Const #</option>
+                  <option value="name">Const name</option>
+                  <option value="parish">Parish</option>
+                  <option value="party">Leading party</option>
+                </select>
+                <select id="sortDir">
+                  <option value="asc">Asc</option>
+                  <option value="desc">Desc</option>
+                </select>
+              </div>
+            </div>
+            <h2>Constituencies by Parish</h2>
+            <div id="parishContainer"></div>
+          </div>
+        </div>
       </section>
-      <!-- Tabs: Constituencies -->
-      <div class="container" id="constituencyTab">
-        <div class="controls">
-          <input id="searchBar" type="text" placeholder="Search candidate, constituency or seat #" autocomplete="off" />
+
+      <!-- INTERACTIVE MAP -->
+      <section id="tab-interactive" class="hidden">
+        <div class="container">
+          <div class="card">
+            <h2>Interactive Map</h2>
+            <div class="map-wrap">
+              <div id="imapMap"></div>
+              <div class="mapControls"><button id="btnResetInteractive" class="btn">Reset view</button></div>
+            </div>
+            <div id="imapLegend" class="legend" style="margin-top:8px"></div>
+            <div id="imapDetails" class="card" style="margin-top:12px">
+              <h2 style="margin-top:0">Constituency Details</h2>
+              <div id="imapContent" class="small">Click a constituency to see results here.</div>
+            </div>
+          </div>
         </div>
-        <div id="parishList"></div>
-      </div>
-      <!-- Tabs: Interactive Map -->
-      <div class="container hidden" id="interactiveTab">
-        <div class="interactivemap" id="leafletMap"></div>
-      </div>
-      <!-- Tabs: National -->
-      <div class="container hidden" id="nationalTab">
-        <div class="card">
-          <h2 style="margin-top:0;margin-bottom:18px;">National Results</h2>
-          <canvas id="nationalChart" height="100"></canvas>
-          <div id="nationalSummary" style="margin:18px 0 0 0;"></div>
-        </div>
-      </div>
+      </section>
     </div>
-    <div class="rightcol">
-      <div class="sidepanel">
-        <h3>Recently Updated</h3>
-        <div class="panel-body" id="recentlyUpdated"></div>
-      </div>
-      <div class="sidepanel">
-        <h3>Closest Margins</h3>
-        <div class="panel-body" id="closestMargins"></div>
-      </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="rightbar" aria-label="Recently Updated Constituency Numbers">
+      <h3>Recently Updated (#)</h3>
+      <div id="sidebarList"></div>
+    </aside>
+  </div>
+
+  <!-- Bottom ticker -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="tick-title">Live Updates:</span>
+      <div class="marquee"><span id="tickerText">—</span></div>
     </div>
   </div>
 
-  <!-- MODAL PREVIEW -->
-  <div class="modal" id="previewModal" tabindex="-1" role="dialog" aria-modal="true">
-    <div class="modal-content" role="document">
-      <button class="modal-close" id="closeModal" title="Close" aria-label="Close">&times;</button>
-      <div id="modalDetails"></div>
+  <!-- ================== PREVIEW MODAL MARKUP ================== -->
+  <div class="modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="previewTitle">Constituency</div>
+        <button class="close-x" id="btnPreviewClose" aria-label="Close preview">✕</button>
+      </div>
+      <div class="modal-hint" aria-live="polite">Loading…</div>
+      <div class="modal-body">
+        <div id="previewMap">
+          <div class="shimmer" id="previewShimmer"></div>
+        </div>
+        <div class="modal-details">
+          <div id="previewBoxes" class="boxline" style="margin-top:2px"></div>
+          <table style="width:100%; border-collapse:collapse; margin-top:8px">
+            <thead>
+              <tr><th style="width:28px"></th><th style="text-align:left">Candidate</th><th>Party</th><th style="text-align:right">Votes</th><th style="text-align:right">%</th></tr>
+            </thead>
+            <tbody id="previewTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnPreviewCancel">Close</button>
+        <button class="btn btn-primary" id="btnPreviewGo">Open in Interactive Map</button>
+      </div>
     </div>
   </div>
 
 <script>
-/* ========== Helper Data (Party colors, logos, etc) ========== */
-const PARTY_COLORS = {
-  "JLP": "var(--jlp)",
-  "PNP": "var(--pnp)",
-  "JPP": "var(--jpp)",
-  "UIC": "var(--uic)",
-  "OTHER": "var(--other)"
+/* ===== Config ===== */
+const AUTO_DEFAULT = 60000;
+const ECJ_GEOJSON =
+ 'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=*&f=geojson';
+const JAMAICA_BOUNDS = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
+
+/* Party theming (unchanged) */
+const PARTY_COLORS = { JLP:'#2e8b57', PNP:'#ff8c00', JPP:'#6a0dad', UIC:'#008b8b', Other:'#1e90ff' };
+const PARTY_LOGOS = {
+  JLP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JLP_logo-300x98.png",
+  PNP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/PNP_logo-300x182.png",
+  JPP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JPP_logo-300x275.png",
+  UIC:"https://www.ecj.com.jm/wp-content/uploads/2025/03/UIC_logo-300x164.png",
+  Other:"https://static.vecteezy.com/system/resources/thumbnails/012/025/259/small_2x/jamaica-flag-with-grunge-texture-png.png"
 };
-const PARTY_LOGO = {
-  "JLP": "https://jamaicadecides.com/assets/jlp.png",
-  "PNP": "https://jamaicadecides.com/assets/pnp.png",
-  "JPP": "https://jamaicadecides.com/assets/jpp.png",
-  "UIC": "https://jamaicadecides.com/assets/uic.png"
+const PARTY_SYMBOLS = {
+  JLP:"https://ecj.com.jm/wp-content/uploads/2025/03/JLP_symbol.png",
+  PNP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/PNP_symbol.png",
+  JPP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JPP_symbol-300x261.png",
+  UIC:"https://www.ecj.com.jm/wp-content/uploads/2025/03/UIC_symbol-300x106.png",
+  Other:"https://static.vecteezy.com/system/resources/thumbnails/012/025/259/small_2x/jamaica-flag-with-grunge-texture-png.png"
 };
-const partyShort = p => p === "JLP" || p === "PNP" ? p : (p === "JPP" || p === "UIC" ? p : "Other");
-const partyColor = p => PARTY_COLORS[partyShort(p)] || "var(--other)";
-const partyLogo = p => PARTY_LOGO[partyShort(p)] || "https://jamaicadecides.com/assets/indep.png";
+const CORE_PARTIES = ["JLP","PNP","JPP","UIC"];
+const TICKER_MAX_AGE = 15*60*1000;
+const SIDEBAR_MAX_AGE = 25*60*1000;
 
-const seatCount = 63;
-const majority = 32;
-let constituencies = [];
-let parishGroups = [];
-let lastUpdated = "";
-let recentUpdateList = [];
-let closestList = [];
-let map, geoLayer, activeConstNo = null, geojson = null, chart = null;
+/* ===== Local data source ===== */
+const DATA_URL = './2025-data.json';  // ←————— local file
 
-async function fetchData(){
-  // You should have 2025-data.json and geojson (ECJ)
-  const data = await fetch('2025-data.json').then(r=>r.json());
-  constituencies = data.constituencies || [];
-  lastUpdated = data.updated || "";
-  build();
-  updateNational();
-  updateSeatBar();
-  updateBattleground();
-  buildParishes();
-  buildSidebars();
-}
-async function fetchGeo(){
-  // You should have ecj_constituencies.geojson (or your shape file)
-  if(geojson) return geojson;
-  geojson = await fetch('ecj_constituencies.geojson').then(r=>r.json());
-  return geojson;
-}
+/* ===== Normalizer + Name Aliases with metadata ===== */
+function norm(s){ return String(s||'').toLowerCase().replace(/[\s\-\u2013\u2014'’.]/g,'').replace(/&/g,'and'); }
+const NAME_ALIASES = {
+  [norm('Kingston East and Port Royal')]: { key: norm('Kingston Eastern and Port Royal'), parish: 'KINGSTON', constno: '3' }
+};
+function canonKey(k){ return NAME_ALIASES[k]?.key || k; }
 
-/* ========== AP-NEWS "RACE TO 32" BAR ========== */
-function updateSeatBar(){
-  // Slices: width proportional to polygon area (not just 1/63)
-  // We'll use a fixed area table for demo, but you can load from GeoJSON
-  // Or just use equal widths if you don't have area data
-  let seatbar = document.getElementById('apSeatBar');
-  seatbar.innerHTML = '';
-  let jlp=0, pnp=0;
-  let totalArea = constituencies.reduce((a,c)=>a+(c.area||1),0);
-  let seatSlices = [];
-  for(let c of constituencies){
-    let area = c.area || 1; // ideally, you set .area from geo
-    let style = `background:${partyColor(c.winner_party)};flex:${area} 0 0;position:relative;`;
-    seatSlices.push(`<div class="ap-seatbar-slice" style="${style}" tabindex="0" data-const="${c.no}">
-      <span></span>
-      <div class="ap-seatbar-tooltip">
-        <b>${c.name}</b><br>
-        <span style="font-size:.97em;">${c.winner_party ? `Won by <span style="color:${partyColor(c.winner_party)};font-weight:700;">${c.winner_party}</span> (${c.winner_name})` : 'No declared winner.'}</span>
-        <br><span style="color:var(--muted);">Margin: ${c.margin!=null?c.margin.toLocaleString():"–"} votes</span>
-      </div>
-    </div>`);
-    if(c.winner_party==="JLP")jlp++;
-    if(c.winner_party==="PNP")pnp++;
+/* ===== State ===== */
+let voteChart=null, seatChart=null, refreshTimer=null, timerInterval=null;
+let mapNational=null, mapInteractive=null, geoLayerNational=null, geoLayerInteractive=null;
+let baseLightNat=null, baseDarkNat=null, baseLightInt=null, baseDarkInt=null, currentBase='light';
+let arcFeatures=[], byParish={}, constNameToNo={}, constNameToParish={};
+let leaderColors = {}; let focusedKey = null; let pendingFocusName = null;
+let lastSeats = JSON.parse(localStorage.getItem('lastSeats') || '{}');
+let lastConstHashes = JSON.parse(localStorage.getItem('constituencyHashes')||'{}');
+let lastConstUpdated = JSON.parse(localStorage.getItem('constituencyUpdated')||'{}');
+
+/* ===== Preview modal state ===== */
+let previewMap=null, previewLayer=null, previewKey=null, previewPulseTimer=null;
+
+/* ===== Utils ===== */
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
+function contrastText(hex){ try{ const c=hex.replace('#',''); const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16); return ((r*299+g*587+b*114)/1000>=140)?'#0b1220':'#ffffff'; }catch{ return '#0b1220'; } }
+function fmtHHMMSS(ms){ const s=Math.max(0,Math.floor(ms/1000)); const hh=String(Math.floor(s/3600)).padStart(2,'0'); const mm=String(Math.floor((s%3600)/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${hh}:${mm}:${ss}`; }
+function makeHash(cands){ return cands.map(k=>`${(k.Party||'Other').toUpperCase()}|${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}|${Number(k.Votes||0)}`).join(';'); }
+const partyKey = p => { const P = String(p||'Other').toUpperCase(); if (P.startsWith('INDA') || P.startsWith('INDB')) return 'Other'; return ['JLP','PNP','JPP','UIC'].includes(P) ? P : 'Other'; };
+const bust = url => url + (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+
+/* ===== Theme toggle ===== */
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('modeBtn').textContent = theme==='dark' ? '🌙 Dark' : '🌞 Light';
+  if (mapNational && baseLightNat && baseDarkNat){
+    if (theme==='dark' && currentBase!=='dark'){ mapNational.removeLayer(baseLightNat); baseDarkNat.addTo(mapNational); currentBase='dark'; }
+    if (theme==='light' && currentBase!=='light'){ mapNational.removeLayer(baseDarkNat); baseLightNat.addTo(mapNational); currentBase='light'; }
+    setTimeout(()=>mapNational.invalidateSize(), 60);
   }
-  seatbar.innerHTML = seatSlices.join('');
-  document.getElementById('seatbar-jlp-count').textContent = jlp;
-  document.getElementById('seatbar-pnp-count').textContent = pnp;
-  // Marker at 32
-  let marker = document.querySelector('.ap-seatbar-marker');
-  let markerLbl = document.querySelector('.ap-seatbar-marker-label');
-  marker.style.left = ((majority/seatCount)*100).toFixed(2)+'%';
-  markerLbl.style.left = marker.style.left;
-  // Hover/click/focus
-  seatbar.querySelectorAll('.ap-seatbar-slice').forEach(el=>{
-    el.addEventListener('click',()=>showModal(+el.dataset.const));
-    el.addEventListener('keydown',e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.const)}});
+  if (mapInteractive && baseLightInt && baseDarkInt){
+    if (theme==='dark'){ mapInteractive.removeLayer(baseLightInt); baseDarkInt.addTo(mapInteractive); }
+    else { mapInteractive.removeLayer(baseDarkInt); baseLightInt.addTo(mapInteractive); }
+    setTimeout(()=>mapInteractive.invalidateSize(), 60);
+  }
+}
+function initTheme(){
+  const saved = localStorage.getItem('theme') || 'light';
+  applyTheme(saved);
+  document.getElementById('modeBtn').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+    const next = cur==='dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
   });
 }
 
-/* ========== AP-NEWS "BATTLEGROUND: 10 CLOSEST" ========== */
-function updateBattleground(){
-  // List top 10 closest margins, undecided seats at top
-  let apb = document.getElementById('apBattlegroundList');
-  if(!apb) return;
-  let byMargin = [...constituencies]
-    .filter(c=>c.total_votes>0)
-    .sort((a,b)=>{
-      if((a.winner_party?"1":"0")!== (b.winner_party?"1":"0")){
-        // Put undecided (no winner) at top
-        return (a.winner_party?1:0)-(b.winner_party?1:0);
-      }
-      if(a.margin!=null&&b.margin!=null)return Math.abs(a.margin)-Math.abs(b.margin);
-      return 1;
-    }).slice(0,10);
-  apb.innerHTML = byMargin.map(c=>{
-    let rows = c.candidates.map(x=>`
-      <div class="battleground-row">
-        <img src="${partyLogo(x.party)}" class="battleground-partylogo" alt="${x.party}" />
-        <span class="battleground-party" style="background:${partyColor(x.party)};color:#fff">${x.party}</span>
-        <span style="font-weight:800">${x.name}</span>
-        <span class="votes" style="min-width:45px; text-align:right">${x.votes?.toLocaleString()||"—"}</span>
-        <span class="pct" style="min-width:38px; text-align:right">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
-      </div>
-    `).join('');
-    let gap = (c.margin==null||c.margin==0)?"—":`${Math.abs(c.margin).toLocaleString()} vote${Math.abs(c.margin)==1?"":"s"}`;
-    return `<div class="battleground-card${c.margin==0?' battleground-card-winner':''}" tabindex="0" onclick="showModal(${c.no})">
-      <span class="battleground-seatno">#${c.no}</span>
-      <span class="battleground-name">${c.name}</span>
-      <div class="battleground-rows">${rows}</div>
-      <div class="battleground-gap">Gap: <b>${gap}</b> ${c.winner_party?`<span style="color:${partyColor(c.winner_party)};font-weight:900;">${c.winner_party}</span>`:""}</div>
-    </div>`;
-  }).join('');
-}
+/* ===== Tabs ===== */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('tab-'+t.dataset.tab).classList.remove('hidden');
+  if (t.dataset.tab==='national' && mapNational) setTimeout(()=>mapNational.invalidateSize(), 60);
+  if (t.dataset.tab==='interactive' && mapInteractive) {
+    setTimeout(()=>mapInteractive.invalidateSize(), 60);
+    if (pendingFocusName){ focusConstituencyByName(pendingFocusName, true); pendingFocusName=null; }
+    else {
+      const cur = document.getElementById('imapContent')?.dataset?.currentKey;
+      if (cur) focusConstituencyByName(cur, true);
+    }
+  }
+}));
 
-/* ========== CONSTITUENCY GRID (BY PARISH) ========== */
-function buildParishes(){
-  // Build groupings
-  let byParish = {};
-  for(let c of constituencies){
-    if(!byParish[c.parish]) byParish[c.parish]=[];
-    byParish[c.parish].push(c);
-  }
-  let html = '';
-  for(let p of Object.keys(byParish)){
-    let group = byParish[p];
-    html += `<div class="parish"><h2>${p}</h2>
-      <div class="const-grid">`+
-      group.map(c=>constCard(c)).join('')+
-      `</div></div>`;
-  }
-  document.getElementById('parishList').innerHTML = html;
-  // Click/keyboard
-  document.querySelectorAll('.const').forEach(el=>{
-    el.onclick=()=>showModal(+el.dataset.no);
-    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.no)}};
+/* ===== Sticky offsets ===== */
+function updateStickyOffsets(){
+  const hdr = document.getElementById('siteHeader');
+  const tabs = document.getElementById('siteTabs');
+  if (hdr){ document.documentElement.style.setProperty('--hdrh', hdr.offsetHeight+'px'); }
+  if (tabs){ document.documentElement.style.setProperty('--tabh', tabs.offsetHeight+'px'); }
+}
+window.addEventListener('resize', updateStickyOffsets);
+
+/* ===== Auto refresh ===== */
+const sel = document.getElementById('refreshSel');
+sel.value = localStorage.getItem('refreshIntervalMs') || String(AUTO_DEFAULT);
+sel.addEventListener('change', ()=>{ localStorage.setItem('refreshIntervalMs', sel.value); setupAutoRefresh(); });
+document.getElementById('btnForceRefresh').addEventListener('click', ()=>{ loadECJAndData(); });
+
+/* ===== Maps ===== */
+const JAMAICA_BOUNDS_LEAF = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
+function initNationalMap(){
+  if (mapNational) return;
+  mapNational = L.map('mapContainer',{zoomControl:true, attributionControl:false, maxBounds:JAMAICA_BOUNDS_LEAF, maxBoundsViscosity:1});
+  baseLightNat = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{minZoom:7, maxZoom:15});
+  baseDarkNat  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{minZoom:7, maxZoom:15});
+  (document.documentElement.getAttribute('data-theme')==='dark' ? baseDarkNat : baseLightNat).addTo(mapNational);
+  mapNational.fitBounds(JAMAICA_BOUNDS_LEAF);
+  mapNational.setMinZoom(mapNational.getZoom());
+  document.getElementById('btnResetNational').onclick = ()=>{
+    mapNational.fitBounds(JAMAICA_BOUNDS_LEAF);
+    mapNational.setMinZoom(mapNational.getZoom());
+    setTimeout(()=> mapNational.invalidateSize(), 40);
+  };
+}
+function initInteractiveMap(){
+  if (mapInteractive) return;
+  mapInteractive = L.map('imapMap',{zoomControl:true, attributionControl:false, maxBounds:JAMAICA_BOUNDS_LEAF, maxBoundsViscosity:1});
+  baseLightInt = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{minZoom:7, maxZoom:15});
+  baseDarkInt  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{minZoom:7, maxZoom:15});
+  (document.documentElement.getAttribute('data-theme')==='dark' ? baseDarkInt : baseLightInt).addTo(mapInteractive);
+  mapInteractive.fitBounds(JAMAICA_BOUNDS_LEAF);
+  mapInteractive.setMinZoom(mapInteractive.getZoom());
+  document.getElementById('btnResetInteractive').onclick = ()=>{
+    mapInteractive.fitBounds(JAMAICA_BOUNDS_LEAF);
+    mapInteractive.setMinZoom(mapInteractive.getZoom());
+    focusedKey = null; pendingFocusName = null;
+    const cont = document.getElementById('imapContent');
+    cont.textContent = 'Click a constituency to see results here.';
+    cont.dataset.currentKey = '';
+    if (geoLayerInteractive){
+      geoLayerInteractive.eachLayer(l=>{
+        try{ l.closeTooltip(); }catch(_){}
+        const nm = l.feature?.properties?.CONST_NAME || '';
+        const key = norm(nm);
+        const fill = leaderColors[key] || '#e5e7eb';
+        l.setStyle({ fillColor:fill, fillOpacity:0.75, color:'#94a3b8', weight:1 });
+        stopPulse(l);
+      });
+    }
+    setTimeout(()=> mapInteractive.invalidateSize(), 40);
+  };
+  window.addEventListener('resize', ()=> setTimeout(()=> mapInteractive.invalidateSize(), 40));
+}
+function buildLegendInto(containerId){
+  const host=document.getElementById(containerId); if(!host) return;
+  host.innerHTML='';
+  ['JLP','PNP','JPP','UIC','Other'].forEach(p=>{
+    const el=document.createElement('span'); el.className='legend-item';
+    el.innerHTML=`<span class="swatch" style="background:${PARTY_COLORS[p]}"></span>${p}`;
+    host.appendChild(el);
   });
 }
 
-/* ========== CONSTITUENCY CARD (GRID) ========== */
-function constCard(c){
-  let win = c.winner_party;
-  let winColor = partyColor(win);
-  let winName = c.winner_name;
-  let badge = win
-    ? `<span class="winner-badge" style="border-color:${winColor};background:color-mix(in oklab, var(--card) 95%, ${winColor});color:${winColor};"><span class="check">✓</span>${win} <span style="color:var(--text);font-weight:700">${winName||""}</span></span>`
-    : '';
-  return `<div class="const" tabindex="0" data-no="${c.no}">
-    <div class="const-head">
-      <span class="const-name">#${c.no} ${c.name}</span>
-      <span class="updated">${c.updated || ""}<span>${c.final?"FINAL":"Live"}</span></span>
-    </div>
-    <div class="const-body">
-      ${badge}
-      <div class="boxline">Boxes: <b>${c.boxes_reported||0}</b>/${c.boxes_total||"?"} (${c.boxes_total?Math.round(100*(c.boxes_reported||0)/c.boxes_total):'–'}%)</div>
-      <div class="rows">
-        ${c.candidates.map(x=>`
-          <div class="row" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
-            <img src="${partyLogo(x.party)}" class="party-icon" alt="${x.party}" />
-            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
-            <span class="party">${x.party}</span>
-            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
-            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
-          </div>
-        `).join('')}
-      </div>
-      <div class="boxline">Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b></div>
-    </div>
-  </div>`;
-}
-
-/* ========== SIDE PANELS (RECENTLY UPDATED / CLOSEST) ========== */
-function buildSidebars(){
-  // Recently updated
-  let list = [...constituencies].sort((a,b)=>(b.updated_time||0)-(a.updated_time||0)).slice(0,10);
-  document.getElementById('recentlyUpdated').innerHTML =
-    list.map(c=>`<div class="sideitem" onclick="showModal(${c.no})">
-      <span>${c.name} <small>#${c.no}</small></span>
-      <small>${c.updated||""}</small>
-    </div>`).join('') || '<div class="empty">No updates yet.</div>';
-  // Closest
-  let closest = [...constituencies].filter(c=>c.margin!=null).sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin)).slice(0,10);
-  document.getElementById('closestMargins').innerHTML =
-    closest.map(c=>`<div class="closest-item" onclick="showModal(${c.no})">
-      <div class="closest-head">
-        <span class="cname">${c.name} <small>#${c.no}</small></span>
-        <span style="color:${partyColor(c.winner_party)};font-weight:900;">${c.winner_party||""}</span>
-      </div>
-      <div class="closest-body">
-        ${c.candidates.map(x=>`
-          <div class="closerow" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
-            <img src="${partyLogo(x.party)}" />
-            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
-            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
-            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
-          </div>`).join('')}
-      </div>
-      <div class="closest-foot">
-        Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b>
-        <span>${c.boxes_reported||0}/${c.boxes_total||"?"} boxes</span>
-      </div>
-    </div>`).join('') || '<div class="empty">—</div>';
-}
-
-/* ========== SEARCH ========== */
-document.getElementById('searchBar').oninput = function(){
-  let q = this.value.toLowerCase();
-  let hits = constituencies.filter(c=>
-    c.name.toLowerCase().includes(q)
-    || (c.no+"")===q
-    || (c.candidates.some(x=>x.name.toLowerCase().includes(q)))
-  );
-  // Show only matching parishes
-  let byParish = {};
-  for(let c of hits){
-    if(!byParish[c.parish]) byParish[c.parish]=[];
-    byParish[c.parish].push(c);
-  }
-  let html = '';
-  for(let p of Object.keys(byParish)){
-    let group = byParish[p];
-    html += `<div class="parish"><h2>${p}</h2>
-      <div class="const-grid">`+
-      group.map(c=>constCard(c)).join('')+
-      `</div></div>`;
-  }
-  document.getElementById('parishList').innerHTML = html;
-  document.querySelectorAll('.const').forEach(el=>{
-    el.onclick=()=>showModal(+el.dataset.no);
-    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.no)}};
+/* ===== Boundaries ===== */
+async function loadECJBoundaries(){
+  const gj = await fetch(ECJ_GEOJSON, {cache:'no-store'}).then(r=>{ if(!r.ok) throw new Error('Boundaries HTTP '+r.status); return r.json(); });
+  arcFeatures = gj.features || [];
+  byParish = {}; constNameToNo={}; constNameToParish={};
+  arcFeatures.forEach(f=>{
+    const p=f.properties||{};
+    const parish = p.PARISH_NAM || p.PARISH_NAME || '';
+    const cname  = p.CONST_NAME || p.CONSTNAME || p.Name || '';
+    const cno    = p.CONST_NO || p.CONSTNO || p.Number || '';
+    const key=norm(cname);
+    if (parish) (byParish[parish] ||= []);
+    constNameToNo[key]=(cno||'').toString();
+    constNameToParish[key]=parish||'';
   });
-};
+  Object.values(NAME_ALIASES).forEach(a=>{
+    if (a.key){
+      constNameToParish[a.key] = a.parish || constNameToParish[a.key] || '';
+      constNameToNo[a.key]     = a.constno || constNameToNo[a.key] || '';
+    }
+  });
+}
 
-/* ========== MODAL (PREVIEW DETAILS) ========== */
-function showModal(no){
-  let c = constituencies.find(x=>x.no==no);
-  if(!c) return;
-  document.body.classList.add('modal-open');
-  let m = document.getElementById('previewModal');
-  m.classList.add('active');
-  document.getElementById('modalDetails').innerHTML = `
-    <h2 style="margin:0 0 12px 0">${c.name} <small>#${c.no}</small></h2>
-    <div style="font-size:.98em; margin-bottom:7px;">
-      <b>Parish:</b> ${c.parish} &middot; <b>Boxes:</b> ${c.boxes_reported||0}/${c.boxes_total||"?"} (${c.boxes_total?Math.round(100*(c.boxes_reported||0)/c.boxes_total):'–'}%)
-    </div>
-    <div style="margin-bottom:7px;">${c.winner_party?`<span class="winner-badge" style="border-color:${partyColor(c.winner_party)};background:color-mix(in oklab, var(--card) 93%, ${partyColor(c.winner_party)});color:${partyColor(c.winner_party)};"><span class="check">✓</span>${c.winner_party} <span style="color:var(--text);font-weight:700">${c.winner_name||""}</span></span>`:"<b>No winner declared.</b>"}</div>
-    <div>
-      <div class="rows">
-        ${c.candidates.map(x=>`
-          <div class="row" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
-            <img src="${partyLogo(x.party)}" class="party-icon" alt="${x.party}" />
-            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
-            <span class="party">${x.party}</span>
-            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
-            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
-          </div>
-        `).join('')}
+/* ===== Pulsing helpers ===== */
+function startPulse(layer){
+  if (!layer || layer._pulseTimer) return;
+  let up=true;
+  layer._pulseTimer = setInterval(()=>{
+    const next = up ? 0.95 : 0.6; up=!up;
+    layer.setStyle({ fillOpacity: next });
+  }, 800);
+}
+function stopPulse(layer){
+  if (layer && layer._pulseTimer){
+    clearInterval(layer._pulseTimer);
+    layer._pulseTimer = null;
+    layer.setStyle({ fillOpacity:0.75 });
+  }
+}
+
+/* ===== Topline / score / charts / closest ===== */
+function buildToplineBar(totals,seats){
+  const el=document.getElementById('toplineBar'); el.innerHTML='';
+  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
+  const deltas={}; ['JLP','PNP','JPP','UIC','Other'].forEach(p=>{ const prev=lastSeats?.[p]||0; const cur=seats[p]||0; deltas[p]=cur-prev; });
+  localStorage.setItem('lastSeats', JSON.stringify(seats)); lastSeats=seats;
+  ['JLP','PNP','JPP','UIC','Other'].forEach(p=>{
+    const votes=totals[p]||0, s=seats[p]||0; const pct=((votes/(totalVotes||1))*100).toFixed(1); const d=deltas[p]||0;
+    const deltaHtml = d?`<span class="delta ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`:'';
+    const card=document.createElement('div'); card.className='tcard';
+    card.innerHTML = `<img class="tlogo" src="${PARTY_LOGOS[p]}" alt="${p} logo" referrerpolicy="no-referrer">
+      <div class="tstats"><b>${s}</b> seats ${deltaHtml} &nbsp;|&nbsp; <b>${votes.toLocaleString()}</b> votes &nbsp;|&nbsp; <b>${pct}%</b></div>`;
+    el.appendChild(card);
+  });
+}
+function buildScoreboard(totals,seats){
+  const el=document.getElementById('scoreboard'); if(!el) return; el.innerHTML='';
+  const totalVotes=Object.values(totals).reduce((a,b)=>a+b,0)||1;
+  const prev = JSON.parse(localStorage.getItem('lastSeats')||'{}');
+  [{key:'JLP', name:'Jamaica Labour Party', color:PARTY_COLORS.JLP, logo:PARTY_LOGOS.JLP},
+   {key:'PNP', name:'People’s National Party', color:PARTY_COLORS.PNP, logo:PARTY_LOGOS.PNP},
+   {key:'Other', name:'Others (JPP, UIC, etc.)', color:PARTY_COLORS.Other, logo:PARTY_LOGOS.Other}].forEach(g=>{
+    const votes=totals[g.key]||0, s=seats[g.key]||0, pct=((votes/(totalVotes||1))*100).toFixed(1);
+    const delta=s-(prev?.[g.key]||0);
+    const deltaHtml = delta?`<span class="delta ${delta>0?'up':'down'}">${delta>0?'▲':'▼'} ${Math.abs(delta)}</span>`:'';
+    const div=document.createElement('div'); div.className='pcard';
+    div.innerHTML = `
+      <div class="phead">
+        <div class="pbrand" style="color:${g.color}">
+          <img class="plogo" src="${g.logo}" alt="${g.key} logo" referrerpolicy="no-referrer">
+          <strong>${g.name}</strong>
+        </div>
+        <div class="pmain" style="color:${g.color}">${pct}%</div>
       </div>
-      <div style="font-size:.98em; color:var(--muted); margin:7px 0 0 0">Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b></div>
+      <div class="bar"><span style="width:${pct}%; background:${g.color}"></span></div>
+      <div style="margin-top:8px; color:var(--muted)"><b>${s}</b> seats ${deltaHtml} &nbsp;|&nbsp; Votes: ${votes.toLocaleString()}</div>`;
+    el.appendChild(div);
+  });
+}
+function buildCharts(totals,seats){
+  const vc=document.getElementById('voteChart'), sc=document.getElementById('seatChart');
+  try{ voteChart && voteChart.destroy(); }catch(_){}
+  try{ seatChart && seatChart.destroy(); }catch(_){}
+  const labels=Object.keys(totals); if(!labels.length) return;
+  const colors=labels.map(p=>PARTY_COLORS[p]||PARTY_COLORS.Other);
+  voteChart=new Chart(vc,{type:'pie',data:{labels,datasets:[{data:labels.map(k=>totals[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  seatChart=new Chart(sc,{type:'bar',data:{labels,datasets:[{label:'Seats',data:labels.map(k=>seats[k]||0),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0,grid:{color:'rgba(148,163,184,.3)'}}}}});
+}
+function buildClosestPanel(items){
+  const list=document.getElementById('closestList'), note=document.getElementById('closestNote'); if(!list) return;
+  list.innerHTML='';
+  const top10 = items.filter(x=>!isNaN(x.marginPct)).sort((a,b)=>a.marginPct-b.marginPct).slice(0,10);
+  top10.forEach(item=>{
+    const color=PARTY_COLORS[partyKey(item.winnerParty)]||PARTY_COLORS.Other;
+    const li=document.createElement('li');
+    li.innerHTML = `<span><strong>${item.constituency}</strong> — <span style="color:${color}">${item.winnerFirst} ${item.winnerLast} (${partyKey(item.winnerParty)})</span></span><span><strong>${item.marginPct.toFixed(1)}%</strong></span>`;
+    li.title = item.candidates.map(c=>`${c.name} (${partyKey(c.party)}): ${c.votes.toLocaleString()} • ${c.pct}%`).join(' | ');
+    li.addEventListener('click', ()=> gotoInteractive(item.constituency));
+    list.appendChild(li);
+  });
+  note.textContent='Margin = percentage-point gap between 1st and 2nd.';
+}
+
+/* ===== Map coloring & interactions ===== */
+function paintMap(layer, detailsByConst){
+  if (!layer) return;
+  layer.eachLayer(Ly=>{
+    const nm = Ly.feature?.properties?.CONST_NAME || '';
+    const key = norm(nm);
+    const info = detailsByConst[key];
+    if (info){
+      const fill = PARTY_COLORS[partyKey(info.party)] || PARTY_COLORS.Other;
+      leaderColors[key]=fill;
+      const strokeWeight = (focusedKey && focusedKey===key) ? 3 : 1;
+      const strokeColor  = (focusedKey && focusedKey===key) ? '#111827' : '#94a3b8';
+      Ly.setStyle({ fillColor: fill, fillOpacity:0.75, color:strokeColor, weight:strokeWeight });
+      const disp = `${nm}${constNameToNo[key]?` (#${constNameToNo[key]})`:''}`;
+      const rows = (info.all||[]).map(c=>{
+        const P=partyKey(c.party), col=PARTY_COLORS[P]||PARTY_COLORS.Other;
+        return `<div><span style="color:${col}; font-weight:700">${c.name}</span> (${P}) — ${c.votes.toLocaleString()} • ${c.pct}%</div>`;
+      }).join('');
+      Ly.bindTooltip(`<div style="min-width:260px"><div style="font-weight:800;margin-bottom:4px">${disp}</div>${rows}</div>`, {sticky:true});
+    }else{
+      Ly.setStyle({ fillColor:'#e5e7eb', fillOpacity:0.6, color:'#94a3b8', weight:1 });
+      Ly.bindTooltip(`<div><strong>${nm}</strong><br/><span style="color:#d1d5db">No result yet.</span></div>`, {sticky:true});
+    }
+  });
+}
+function updateFocusOutline(){
+  if (!geoLayerInteractive) return;
+  geoLayerInteractive.eachLayer(l=>{
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    const key = norm(nm);
+    const fill = leaderColors[key] || '#e5e7eb';
+    const isFocused = focusedKey && focusedKey===key;
+    l.setStyle({ fillColor: fill, fillOpacity:0.75, color: isFocused? '#111827':'#94a3b8', weight: isFocused? 3:1 });
+    if (isFocused){ try{ l.bringToFront(); }catch(_){}
+      startPulse(l);
+    } else {
+      stopPulse(l);
+    }
+  });
+}
+function wireInteractiveBehaviors(){
+  const hoverTimers = new WeakMap();
+  byParish = {};
+  geoLayerInteractive.eachLayer(l=>{
+    const parish = l.feature?.properties?.PARISH_NAM;
+    (byParish[parish] ||= []).push(l);
+  });
+  geoLayerInteractive.eachLayer(layer=>{
+    const nm = layer.feature?.properties?.CONST_NAME || '';
+    const parish = layer.feature?.properties?.PARISH_NAM || '';
+    const key = norm(nm);
+    layer.on('click', ()=>{
+      const grp = byParish[parish] || [layer];
+      const group = L.featureGroup(grp);
+      try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+      focusedKey = key; updateFocusOutline();
+      showConstituencyDetails(key, nm);
+    });
+    layer.on('mouseover', e=>{
+      const t = setTimeout(()=>{ e.target.openTooltip(); }, 800);
+      hoverTimers.set(layer, t);
+      e.target.setStyle({ weight: (focusedKey===key? 3:2), color:'#111827', fillOpacity:0.9 }); e.target.bringToFront();
+    });
+    layer.on('mouseout', e=>{
+      clearTimeout(hoverTimers.get(layer));
+      e.target.closeTooltip();
+      const fill = leaderColors[key] || '#e5e7eb';
+      const wt = (focusedKey===key)? 3 : 1;
+      const col = (focusedKey===key)? '#111827' : '#94a3b8';
+      e.target.setStyle({ fillColor: fill, fillOpacity:0.75, color: col, weight: wt });
+    });
+  });
+}
+
+/* ===== Details panel ===== */
+function showConstituencyDetails(normKey, featureName){
+  const cont=document.getElementById('imapContent');
+  cont.dataset.currentKey = normKey;
+  const block = document.querySelector(`.const[data-key="${normKey}"]`);
+  if (!block){ cont.textContent='No data found.'; return; }
+  const rows = JSON.parse(block.dataset.candidates || '[]');
+  const updated = block.dataset.updated ? Number(block.dataset.updated) : null;
+  const cNo = block.dataset.constno ? ` (#${block.dataset.constno})` : '';
+
+  const ageMs = Date.now() - (updated||Date.now());
+  let dotColor = 'var(--bad)';
+  if (ageMs <= 5*60*1000) dotColor = 'var(--good)';
+  else if (ageMs <= 20*60*1000) dotColor = 'var(--warn)';
+
+  const dispName = featureName + cNo;
+  const boxStr = block.dataset.boxes || '';
+  const boxPct = block.dataset.boxpct || '';
+
+  let html = `<h3 style="margin:4px 0">${dispName}</h3>`;
+  html += `
+    <div class="updated">
+      <span>Last updated:</span>
+      <span><span class="pulse" style="color:${dotColor}"></span>
+        <span style="font-variant-numeric:tabular-nums">${fmtHHMMSS(Date.now()-(updated||Date.now()))}</span> ago
+      </span>
     </div>
-    <div style="margin-top:9px;font-size:.96em;">
-      <b>Last updated:</b> ${c.updated||""}
-    </div>
+    ${boxStr ? `<div class="boxline">Boxes counted: <strong>${boxStr}</strong>${boxPct?` (${boxPct}%)`:''}</div>` : ''}
   `;
-}
-document.getElementById('closeModal').onclick = function(){
-  document.getElementById('previewModal').classList.remove('active');
-  document.body.classList.remove('modal-open');
-}
-window.onclick = function(e){
-  if(e.target.classList && e.target.classList.contains('modal')){
-    document.getElementById('previewModal').classList.remove('active');
-    document.body.classList.remove('modal-open');
-  }
+  html += `<table style="width:100%; border-collapse:collapse; margin-top:6px"><thead><tr><th style="width:28px"></th><th>Candidate</th><th>Party</th><th style="text-align:right">Votes</th><th style="text-align:right">%</th></tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const P = partyKey(r.party);
+    const icon = PARTY_SYMBOLS[P] || PARTY_SYMBOLS.Other;
+    const nameStyle = `style="color:${PARTY_COLORS[P]||PARTY_COLORS.Other}; font-weight:700"`;
+    html += `<tr>
+      <td><img src="${icon}" alt="${P}" class="party-icon" referrerpolicy="no-referrer"></td>
+      <td ${nameStyle}>${r.name}</td>
+      <td>${P}</td>
+      <td style="text-align:right; font-weight:800">${Number(r.votes||0).toLocaleString()}</td>
+      <td style="text-align:right">${r.pct||0}%</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  cont.innerHTML = html;
 }
 
-/* ========== NATIONAL CHART ========== */
-function updateNational(){
-  let totals = {JLP:0,PNP:0,JPP:0,UIC:0,OTHER:0};
-  let totalVotes = 0;
-  for(let c of constituencies){
-    for(let x of c.candidates){
-      if(totals.hasOwnProperty(x.party)){
-        totals[x.party]+=(x.votes||0);
-      }else{
-        totals.OTHER+=(x.votes||0);
+/* ===== Render parish blocks + filters + SORT ===== */
+function renderParishBlocks(detailsByConst, rawData){
+  const host=document.getElementById('parishContainer'); host.innerHTML='';
+  const parishSel = document.getElementById('parishFilter');
+  const partySel  = document.getElementById('partyFilter');
+  const cnoInp    = document.getElementById('cnoFilter');
+  const sortField = document.getElementById('sortField').value;
+  const sortDir   = document.getElementById('sortDir').value;
+
+  const allKeys = Object.keys(detailsByConst);
+  const parishOf = k => constNameToParish[k] || '';
+  const cnoOf    = k => (constNameToNo[k] || '');
+  const recOf    = k => Object.values(rawData).find(x=> canonKey(norm(x?.Name))===k);
+  const nameOf   = k => (recOf(k)?.Name || k);
+  const leadPartyOf = k => detailsByConst[k]?.all?.[0]?.party || 'Other';
+
+  const parishSet = new Set(allKeys.map(parishOf));
+  let parishes = Array.from(parishSet).sort((a,b)=> a.localeCompare(b));
+  if (sortField==='parish') parishes.sort((a,b)=> sortDir==='asc'? a.localeCompare(b):b.localeCompare(a));
+
+  const curParish = parishSel.value;
+  parishSel.innerHTML = `<option value="">All Parishes</option>` + parishes.map(p=>`<option ${curParish===p?'selected':''} value="${p}">${p}</option>`).join('');
+
+  const filterParish = parishSel.value;
+  const filterParty  = partySel.value;
+  const filterCno    = cnoInp.value.trim();
+
+  parishes.forEach(parish=>{
+    if (filterParish && parish!==filterParish) return;
+    let keys = allKeys.filter(k=> parishOf(k)===parish);
+
+    keys.sort((ka,kb)=>{
+      let A,B;
+      switch (sortField){
+        case 'cno':   A=Number(cnoOf(ka)||0); B=Number(cnoOf(kb)||0); break;
+        case 'name':  A=nameOf(ka).toLowerCase(); B=nameOf(kb).toLowerCase(); break;
+        case 'party': A=leadPartyOf(ka); B=leadPartyOf(kb); break;
+        case 'parish':A=parishOf(ka); B=parishOf(kb); break;
+        default: A=nameOf(ka).toLowerCase(); B=nameOf(kb).toLowerCase();
       }
-      totalVotes+=(x.votes||0);
-    }
+      if (A<B) return sortDir==='asc'?-1:1;
+      if (A>B) return sortDir==='asc'? 1:-1;
+      return 0;
+    });
+
+    const wrap=document.createElement('div'); wrap.className='parish';
+    wrap.innerHTML = `<h2>${parish||'—'}</h2><div class="const-grid"></div>`;
+    const grid = wrap.querySelector('.const-grid');
+
+    keys.forEach(key=>{
+      const info = detailsByConst[key];
+      const record = recOf(key);
+      const origName = record?.Name || key;
+      const cNo = constNameToNo[key] || '';
+
+      if (filterParty && !info.all.some(c=> partyKey(c.party)===filterParty)) return;
+      if (filterCno && !String(cNo).startsWith(filterCno)) return;
+
+      const winnerParty = partyKey(info.all?.[0]?.party || 'Other');
+      const winnerObj = info.all?.[0] || null;
+
+      const bg = PARTY_COLORS[winnerParty] || PARTY_COLORS.Other;
+      const textColor = contrastText(bg);
+      const candidatesPayload = JSON.stringify(info.all || []);
+      const updatedTs = lastConstUpdated[key] || '';
+
+      // Boxes declare rule: declare only full or >=95%
+      let boxes = '', boxpct = ''; let fullCounted=false, pctNum=0, canDeclare=false;
+      if (record?.Data){
+        const d = Array.isArray(record.Data)? record.Data[0] : record.Data;
+        boxes  = d?.["Boxes Counted"] || '';
+        boxpct = (d?.["Box Counted Percentage"]!=null) ? String(d["Box Counted Percentage"]) : '';
+        const m = boxes ? String(boxes).match(/(\d+)\s*of\s*(\d+)/i) : null;
+        if (m){ const counted=+m[1], total=+m[2]; fullCounted = total>0 && counted===total; }
+        pctNum = Number(boxpct)||0;
+        canDeclare = fullCounted || (pctNum>=95);
+      }
+
+      const el=document.createElement('div'); el.className='const';
+      el.dataset.key = key;
+      el.dataset.constno = cNo;
+      el.dataset.updated = updatedTs;
+      el.dataset.candidates = candidatesPayload;
+      el.dataset.boxes = boxes;
+      el.dataset.boxpct = boxpct;
+
+      el.dataset.search = [origName, cNo, parish, ...(info.all||[]).map(c=>`${c.name} ${partyKey(c.party)}`)].join(' ').toLowerCase();
+      el.dataset.parish = parish;
+      el.dataset.parties = (info.all||[]).map(c=>partyKey(c.party)).join('|');
+      el.dataset.cno = cNo;
+
+      el.style.borderColor = bg;
+
+      const ageMs = Date.now() - (updatedTs||Date.now());
+      let dotColor = 'var(--bad)';
+      if (ageMs <= 5*60*1000) dotColor = 'var(--good)';
+      else if (ageMs <= 20*60*1000) dotColor = 'var(--warn)';
+
+      const niceName = `${origName} ${cNo?`(#${cNo})`:''}`;
+
+      const winnerBadgeHTML = (canDeclare && winnerObj)
+        ? `<div class="winner-badge" style="background:${bg}; color:${textColor}; border-color:${bg}">
+             <span class="check">✓</span> ${winnerObj.name} (${winnerParty})
+           </div>`
+        : (winnerObj
+           ? `<div class="winner-badge" style="background:var(--card); color:var(--text); border-color:var(--border)">
+                Leading: <strong style="color:${PARTY_COLORS[winnerParty]||'#888'}">${winnerObj.name} (${winnerParty})</strong>
+              </div>`
+           : ``);
+
+      const rowsHTML = (info.all||[]).map(c=>{
+        const P=partyKey(c.party), icon=PARTY_SYMBOLS[P]||PARTY_SYMBOLS.Other;
+        const nameStyle = `style="color:${PARTY_COLORS[P]||PARTY_COLORS.Other}"`;
+        return `<div class="row">
+          <img class="party-icon" src="${icon}" alt="${P}" referrerpolicy="no-referrer">
+          <div class="nm" ${nameStyle}>${c.name}</div>
+          <div class="party">${P}</div>
+          <div class="votes">${Number(c.votes||0).toLocaleString()}</div>
+          <div class="pct">${c.pct||0}%</div>
+        </div>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div class="const-head">
+          <div class="const-name">${niceName}</div>
+          <span class="updated">
+            <span>Last updated:</span>
+            <span><span class="pulse" style="color:${dotColor}"></span>
+              <span class="timer" data-ts="${updatedTs||''}" style="font-variant-numeric:tabular-nums">
+                ${fmtHHMMSS(Date.now()-(updatedTs||Date.now()))}
+              </span> ago
+            </span>
+          </span>
+        </div>
+        <div class="const-body">
+          ${winnerBadgeHTML}
+          ${boxes? `<div class="boxline">Boxes counted: <strong>${boxes}</strong>${boxpct?` (${boxpct}%)`:''}</div>` : ''}
+          <div class="rows">${rowsHTML}</div>
+        </div>
+      `;
+      /* OPEN PREVIEW (first click) */
+      el.addEventListener('click', ()=> openPreviewForKey(key));
+      grid.appendChild(el);
+    });
+
+    if (grid.children.length) document.getElementById('parishContainer').appendChild(wrap);
+  });
+
+  // Text search
+  const sb = document.getElementById('searchBar');
+  function applyTextFilter(){
+    const q = sb.value.trim().toLowerCase();
+    document.querySelectorAll('.const').forEach(card=>{
+      const hit = !q || card.dataset.search.includes(q);
+      card.style.display = hit ? '' : 'none';
+    });
+    document.querySelectorAll('.parish').forEach(p=>{
+      const any = p.querySelector('.const-grid').children.length &&
+                  Array.from(p.querySelectorAll('.const')).some(x=> x.style.display!=='none');
+      p.style.display = any ? '' : 'none';
+    });
   }
-  let ctx = document.getElementById('nationalChart').getContext('2d');
-  if(chart)chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: Object.keys(totals),
-      datasets: [{
-        label: 'Votes',
-        data: Object.values(totals),
-        backgroundColor: Object.keys(totals).map(partyColor)
-      }]
-    },
-    options: {
-      plugins:{
-        legend:{display:false}
-      },
-      scales:{
-        y:{beginAtZero:true,ticks:{color:'var(--text)'}},
-        x:{ticks:{color:'var(--text)'}}
-      }
+  sb.oninput = applyTextFilter;
+}
+
+/* ===== Periodic timers + sidebar + ticker ===== */
+function fmtAgeToClass(age){
+  if (age <= 5*60*1000) return 'age-good';
+  if (age <= 20*60*1000) return 'age-warn';
+  return 'age-bad';
+}
+function tickTimersAndRecent(){
+  document.querySelectorAll('.const .timer').forEach(t=>{
+    const ts = Number(t.dataset.ts||0);
+    if (!ts) { t.textContent = '00:00:00'; return; }
+    const age = Date.now()-ts;
+    t.textContent = fmtHHMMSS(age);
+    const dot = t.parentElement?.querySelector('.pulse');
+    if (dot){
+      let col='var(--bad)';
+      if (age <= 5*60*1000) col='var(--good)';
+      else if (age <= 20*60*1000) col='var(--warn)';
+      dot.style.color = col;
     }
   });
-  document.getElementById('nationalSummary').innerHTML =
-    Object.entries(totals).map(([p,v])=>
-      `<span style="margin-right:18px;display:inline-block;"><b style="color:${partyColor(p)};">${p}</b>: ${v.toLocaleString()}</span>`
-    ).join('');
+
+  const recents = []; const ticker  = [];
+  Object.keys(lastConstUpdated).forEach(k=>{
+    const ts = lastConstUpdated[k];
+    const age = Date.now()-ts;
+    const name = Object.values(window.__rawData||{}).find(x=> canonKey(norm(x?.Name))===k)?.Name || k;
+    const num = constNameToNo[k] || '';
+    if (ts && age <= SIDEBAR_MAX_AGE) recents.push({k, name, num, ts, age});
+    if (ts && age <= TICKER_MAX_AGE)  ticker.push({k, name, num, ts, age});
+  });
+  recents.sort((a,b)=> b.ts - a.ts);
+  ticker.sort((a,b)=> b.ts - a.ts);
+
+  const side = document.getElementById('sidebarList');
+  side.innerHTML='';
+  recents.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='sideitem '+fmtAgeToClass(r.age);
+    el.dataset.key = r.k;
+    el.innerHTML=`<span>#${r.num||'—'}</span><small>${fmtHHMMSS(r.age)}</small>`;
+    el.addEventListener('click', ()=> gotoInteractiveKey(r.k));
+    side.appendChild(el);
+  });
+
+  const tick = document.getElementById('tickerText');
+  if (ticker.length){
+    const parts = ticker.map(r=> `${r.name}${r.num?` (#${r.num})`:''} — ${fmtHHMMSS(Date.now()-r.ts)} ago`);
+    tick.textContent = '   •   ' + parts.join('   •   ') + '   •   ';
+  }else{
+    tick.textContent = '— No constituency updated in the last 15 minutes —';
+  }
+
+  const imTimer = document.querySelector('#imapContent .updated span[style*="font-variant-numeric"]');
+  const imDot   = document.querySelector('#imapContent .updated .pulse');
+  const curKey = document.getElementById('imapContent')?.dataset?.currentKey;
+  if (imTimer && curKey && lastConstUpdated[curKey]){
+    const age = Date.now()-lastConstUpdated[curKey];
+    imTimer.textContent = fmtHHMMSS(age);
+    if (imDot){
+      let col='var(--bad)'; if (age<=5*60*1000) col='var(--good)'; else if (age<=20*60*1000) col='var(--warn)';
+      imDot.style.color = col;
+    }
+  }
 }
 
-/* ========== INTERACTIVE MAP ========== */
-async function buildMap(){
-  await fetchGeo();
-  if(map)return;
-  map = L.map('leafletMap',{scrollWheelZoom:false,zoomControl:true}).setView([18.05,-77.25],7.4);
-  geoLayer = L.geoJSON(geojson,{
-    style:feat=>{
-      let c = constituencies.find(x=>x.no==feat.properties.SEATNO);
-      return {
-        color: partyColor(c?.winner_party),
-        fillColor: partyColor(c?.winner_party),
-        fillOpacity:.53, weight:2,
-        opacity:.98
-      }
-    },
-    onEachFeature:(feat,layer)=>{
-      let c = constituencies.find(x=>x.no==feat.properties.SEATNO);
-      let name = feat.properties.SEATNAME;
-      layer.bindTooltip(`#${feat.properties.SEATNO} ${name}`,{sticky:true});
-      layer.on('click',()=>showModal(feat.properties.SEATNO));
+/* ===== Robust fetch helpers ===== */
+async function fetchOne(url){
+  try{
+    const r = await fetch(bust(url), {cache:'no-store'});
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const ct = r.headers.get('content-type') || '';
+    if (!/json/i.test(ct)) {
+      try { return await r.json(); } catch { throw new Error(`Non-JSON content-type: ${ct}`); }
     }
-  }).addTo(map);
+    return await r.json();
+  }catch(e){ throw new Error(`${url} → ${e.message}`); }
 }
-document.querySelectorAll('.tab').forEach(el=>{
-  el.onclick=function(){
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    el.classList.add('active');
-    let tab = el.dataset.tab;
-    document.getElementById('constituencyTab').classList.toggle('hidden',tab!=="constituencies");
-    document.getElementById('interactiveTab').classList.toggle('hidden',tab!=="interactive");
-    document.getElementById('nationalTab').classList.toggle('hidden',tab!=="national");
-    if(tab==="interactive"){buildMap();}
-    window.scrollTo({top:0,behavior:'smooth'});
+
+/* ===== Data load (local JSON) ===== */
+async function loadECJAndData(){
+  try{
+    if (!arcFeatures.length){ try{ await loadECJBoundaries(); }catch(_){ toast('Could not load boundaries.'); } }
+    initNationalMap(); initInteractiveMap();
+    buildLegendInto('mapLegend'); buildLegendInto('imapLegend');
+
+    const data = await fetchOne(DATA_URL);
+    window.__rawData = data;
+
+    if (!geoLayerNational){
+      geoLayerNational = L.geoJSON({type:'FeatureCollection', features: arcFeatures},{ style:()=>({ color:'#94a3b8', weight:1, fillColor:'#e5e7eb', fillOpacity:0.6 })}).addTo(mapNational);
+    }
+    if (!geoLayerInteractive){
+      geoLayerInteractive = L.geoJSON({type:'FeatureCollection', features: arcFeatures},{ style:()=>({ color:'#94a3b8', weight:1, fillColor:'#e5e7eb', fillOpacity:0.6 })}).addTo(mapInteractive);
+    }
+
+    const partyTotals={JLP:0, PNP:0, JPP:0, UIC:0, Other:0};
+    const partySeats ={JLP:0, PNP:0, JPP:0, UIC:0, Other:0};
+    const detailsByConst={}, closestArr=[];
+    Object.values(data).forEach(c=>{
+      const cname=c?.Name||''; const cData=Array.isArray(c?.Data)? c.Data[0] : c?.Data;
+      const cand = Array.isArray(cData?.Candidates)? cData.Candidates : [];
+      if(!cname || !cand.length) return;
+      let key = canonKey(norm(cname));
+      const alias = NAME_ALIASES[norm(cname)];
+      if (alias){
+        constNameToParish[key] = alias.parish || constNameToParish[key] || '';
+        constNameToNo[key]     = alias.constno || constNameToNo[key] || '';
+      }
+
+      const safePct  = (x)=> Number(x)||0;
+      const safeVote = (x)=> Number(x)||0;
+      const winner = cand.reduce((m,x)=> safeVote(x.Votes)>safeVote(m.Votes)? x : m, cand[0]);
+      const sorted = cand.slice().sort((a,b)=> safePct(b.Percentage)-safePct(a.Percentage)).map(k=>({
+        name:`${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}`.trim(),
+        party:partyKey(k.Party),
+        votes:safeVote(k.Votes),
+        pct:safePct(k.Percentage)
+      }));
+
+      const sig = makeHash(cand);
+      if (lastConstHashes[key] !== sig){
+        lastConstHashes[key] = sig;
+        lastConstUpdated[key] = Date.now();
+        localStorage.setItem('constituencyHashes', JSON.stringify(lastConstHashes));
+        localStorage.setItem('constituencyUpdated', JSON.stringify(lastConstUpdated));
+      }
+
+      detailsByConst[key] = { party:partyKey(winner?.Party), all: sorted };
+      cand.forEach(k=>{ const p=partyKey(k.Party); partyTotals[p]=(partyTotals[p]||0)+safeVote(k.Votes); });
+      const wParty = partyKey(winner?.Party);
+      partySeats[wParty] = (partySeats[wParty] ?? 0) + 1;
+
+      const topPct = sorted[0]?.pct||0, runnerPct=sorted[1]?.pct||0;
+      closestArr.push({
+        constituency:cname,
+        winnerFirst: sorted[0]?.name.split(' ')[0]||'',
+        winnerLast:  (sorted[0]?.name.split(' ').slice(1).join(' '))||'',
+        winnerParty: sorted[0]?.party||'Other',
+        marginPct: Math.max(0,(topPct-runnerPct)),
+        candidates: sorted
+      });
+    });
+
+    const {totals: groupedTotals, seats: groupedSeats} = groupSmallParties(partyTotals, partySeats, 0.02, Object.keys(PARTY_COLORS));
+
+    buildToplineBar(groupedTotals, groupedSeats);
+    buildScoreboard(groupedTotals, groupedSeats);
+    buildCharts(groupedTotals, groupedSeats);
+    buildClosestPanel(closestArr);
+    renderParishBlocks(detailsByConst, data);
+    paintMap(geoLayerNational, detailsByConst);
+    paintMap(geoLayerInteractive, detailsByConst);
+    wireInteractiveBehaviors();
+    updateFocusOutline();
+
+    document.getElementById('lastUpdated').textContent = "Live • " + new Date().toLocaleTimeString();
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimersAndRecent, 1000);
+    tickTimersAndRecent();
+  }catch(e){ console.error(e); toast('Partial update — check console.'); }
+}
+function groupSmallParties(totals,seats,threshold=0.02, keep=[]){
+  const baseKeys = Array.from(new Set([...keep, 'Other', 'JLP','PNP','JPP','UIC']));
+  const total = Object.values(totals).reduce((a,b)=>a+b,0) || 1;
+  const T = Object.fromEntries(baseKeys.map(k=>[k,0]));
+  const S = Object.fromEntries(baseKeys.map(k=>[k,0]));
+  for (const p of Object.keys(totals)){
+    const share = totals[p] / total;
+    const bucket = (!keep.includes(p) && p!=='Other' && share < threshold) ? 'Other' : p;
+    T[bucket] = (T[bucket] || 0) + (totals[p] || 0);
+    S[bucket] = (S[bucket] || 0) + (seats[p]  || 0);
+  }
+  if (T.Other == null) T.Other = 0;
+  if (S.Other == null) S.Other = 0;
+  return {totals:T, seats:S};
+}
+
+/* ===== Deep link + handshake ===== */
+function gotoInteractive(name){
+  let k = norm(name);
+  const alias = NAME_ALIASES[k];
+  const resolved = alias?.key || k;
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="interactive"]').classList.add('active');
+  document.getElementById('tab-interactive').classList.remove('hidden');
+
+  if (!geoLayerInteractive){ pendingFocusName = resolved; return; }
+  focusConstituencyByName(resolved, true);
+  setTimeout(()=> mapInteractive.invalidateSize(), 80);
+  document.getElementById('imapDetails').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function gotoInteractiveKey(key){
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="interactive"]').classList.add('active');
+  document.getElementById('tab-interactive').classList.remove('hidden');
+
+  if (!geoLayerInteractive){ pendingFocusName = key; return; }
+  focusConstituencyByName(key, true);
+  setTimeout(()=> mapInteractive.invalidateSize(), 80);
+  document.getElementById('imapDetails').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function focusConstituencyByNumber(no){
+  if (!geoLayerInteractive) return false;
+  let found=null, parish=null, display=null, key=null;
+  geoLayerInteractive.eachLayer(L=>{
+    const p = L.feature?.properties||{};
+    const n = String(p.CONST_NO || p.CONSTNO || p.Number || '');
+    if (n === String(no)){
+      found=L; parish=p.PARISH_NAM; display=p.CONST_NAME; key=norm(p.CONST_NAME||'');
+    }
+  });
+  if (!found) return false;
+  const grp=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
+  const group = L.featureGroup(grp.length? grp:[found]);
+  try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+  focusedKey = key; updateFocusOutline();
+  setTimeout(()=> found.openTooltip(), 250);
+  showConstituencyDetails(key, display||`#${no}`);
+  return true;
+}
+function focusConstituencyByName(nameOrKey, isKey=false){
+  if (!geoLayerInteractive) return;
+  const rawK = isKey ? nameOrKey : norm(nameOrKey);
+  const alias = NAME_ALIASES[rawK];
+  const keyWanted = alias?.key || rawK;
+
+  let target=null, parish=null, display=null;
+  geoLayerInteractive.eachLayer(L=>{
+    const nm = L.feature?.properties?.CONST_NAME || '';
+    const k = norm(nm);
+    if (k===keyWanted){ target=L; parish = L.feature?.properties?.PARISH_NAM; display=nm; }
+  });
+
+  if (target){
+    const grp = (function(){ const arr=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) arr.push(l); }); return arr; })();
+    const group = L.featureGroup(grp.length? grp:[target]);
+    try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(e){}
+    focusedKey = keyWanted; updateFocusOutline();
+    startPulse(target);
+    setTimeout(()=> target.openTooltip(), 250);
+    showConstituencyDetails(keyWanted, display||nameOrKey);
+  } else {
+    const number = constNameToNo[keyWanted] || constNameToNo[alias?.key || ''];
+    if (number && focusConstituencyByNumber(number)) return;
+    setTimeout(()=> focusConstituencyByName(nameOrKey, isKey), 150);
+  }
+}
+
+/* ===== Preview modal logic ===== */
+function initPreviewMap(){
+  if (previewMap) return;
+  previewMap = L.map('previewMap', { zoomControl:true, attributionControl:false, maxBounds:JAMAICA_BOUNDS, maxBoundsViscosity:1 });
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  L.tileLayer(isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {minZoom:7, maxZoom:15}).addTo(previewMap);
+  previewMap.fitBounds(JAMAICA_BOUNDS);
+  previewMap.setMinZoom(previewMap.getZoom());
+}
+function closePreview(){
+  const modal = document.getElementById('previewModal');
+  modal.classList.remove('show');
+  document.body.classList.remove('modal-open');
+  if (previewLayer){
+    try{
+      previewLayer.eachLayer(stopPulse);
+      previewLayer.remove();
+    }catch(_){}
+    previewLayer=null;
+  }
+  const shim = document.getElementById('previewShimmer');
+  if (shim) shim.style.display='none';
+}
+function populatePreviewDetails(key){
+  const tbody = document.getElementById('previewTableBody');
+  const boxes = document.getElementById('previewBoxes');
+  tbody.innerHTML='';
+  boxes.textContent='';
+  const block = document.querySelector(`.const[data-key="${key}"]`);
+  if (!block) return;
+  const rows = JSON.parse(block.dataset.candidates || '[]');
+  const boxStr = block.dataset.boxes || '';
+  const boxPct = block.dataset.boxpct || '';
+  if (boxStr) boxes.innerHTML = `Boxes counted: <strong>${boxStr}</strong>${boxPct?` (${boxPct}%)`:''}`;
+  rows.forEach(r=>{
+    const P = partyKey(r.party);
+    const icon = PARTY_SYMBOLS[P] || PARTY_SYMBOLS.Other;
+    const nameStyle = `style="color:${PARTY_COLORS[P]||PARTY_COLORS.Other}; font-weight:700"`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><img src="${icon}" alt="${P}" class="party-icon" referrerpolicy="no-referrer"></td>
+      <td ${nameStyle}>${r.name}</td>
+      <td>${P}</td>
+      <td style="text-align:right; font-variant-numeric:tabular-nums; font-weight:800">${Number(r.votes||0).toLocaleString()}</td>
+      <td style="text-align:right">${r.pct||0}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function openPreviewForKey(key){
+  previewKey = key;
+  const modal = document.getElementById('previewModal');
+  modal.classList.add('show');
+  document.body.classList.add('modal-open');
+
+  initPreviewMap();
+  const shim = document.getElementById('previewShimmer');
+  if (shim) shim.style.display='block';
+
+  // Title = Name (#no)
+  const rec = Object.values(window.__rawData||{}).find(x => canonKey(norm(x?.Name))===key);
+  const displayName = rec?.Name || key;
+  const num = constNameToNo[key] || '';
+  document.getElementById('previewTitle').textContent = displayName + (num ? ` (#${num})` : '');
+
+  // Hint aria-live
+  let hint = 'Review the area below · Use the button to open the Interactive Map';
+  try{
+    const block = document.querySelector(`.const[data-key="${key}"]`);
+    const rows  = JSON.parse(block?.dataset?.candidates || '[]');
+    const lead  = rows[0];
+    const boxes = block?.dataset?.boxes || '';
+    if (lead){
+      const P = partyKey(lead.party);
+      hint = `${lead.name} (${P}) leading • ${Number(lead.votes||0).toLocaleString()} votes${boxes ? ` • Boxes: ${boxes}` : ''}`;
+    } else if (boxes) { hint = `Boxes: ${boxes}`; }
+  }catch(_){}
+  document.querySelector('.modal-hint').textContent = hint;
+
+  // Details table + boxes
+  populatePreviewDetails(key);
+
+  // Build a fresh layer with pulsing on target, others muted
+  if (previewLayer){ previewLayer.remove(); previewLayer=null; }
+  previewLayer = L.geoJSON({type:'FeatureCollection', features: arcFeatures}, {
+    style:(feat)=>{
+      const nm = feat?.properties?.CONST_NAME || '';
+      const k  = norm(nm);
+      const isTarget = (k===key);
+      const fill = isTarget ? (leaderColors[key] || '#60a5fa') : '#cbd5e1';
+      return { color: isTarget ? '#111827' : '#94a3b8', weight: isTarget ? 3 : 1, fillColor: fill, fillOpacity: isTarget ? 0.8 : 0.5 };
+    }
+  }).addTo(previewMap);
+
+  // Fit to parish bounds, then zoom in +1
+  let target=null, parish=null;
+  previewLayer.eachLayer(l=>{
+    const nm = l.feature?.properties?.CONST_NAME || '';
+    if (norm(nm)===key){ target=l; parish=l.feature?.properties?.PARISH_NAM; }
+  });
+  if (target){
+    const grp=[]; previewLayer.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
+    const bounds = (grp.length ? L.featureGroup(grp) : target).getBounds();
+    try{
+      previewMap.fitBounds(bounds, {padding:[24,24]});
+      setTimeout(()=> previewMap.zoomIn(1), 120);
+    }catch(_){}
+    startPulse(target);
+  }
+  setTimeout(()=> {
+    previewMap.invalidateSize();
+    if (shim) shim.style.display='none';
+  }, 120);
+
+  // Map click = go interactive
+  previewMap.off('click');
+  previewMap.on('click', ()=> {
+    const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
+  });
+
+  // Focus mgmt
+  const goBtn = document.getElementById('btnPreviewGo');
+  if (goBtn) goBtn.focus();
+
+  // Deep link hash by number
+  if (num) location.hash = '#'+num;
+}
+
+/* Modal buttons + keyboard */
+document.getElementById('btnPreviewClose').addEventListener('click', closePreview);
+document.getElementById('btnPreviewCancel').addEventListener('click', closePreview);
+document.getElementById('btnPreviewGo').addEventListener('click', ()=>{ const k=previewKey; closePreview(); if (k) gotoInteractiveKey(k); });
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'Escape') closePreview();
+  if (e.key === 'Enter' && document.getElementById('previewModal').classList.contains('show')){
+    const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
   }
 });
+// Close if clicking backdrop
+document.getElementById('previewModal').addEventListener('click', (e)=>{
+  if (e.target.id === 'previewModal') closePreview();
+});
 
-/* ========== MODE/DARK ========= */
-document.getElementById('modeBtn').onclick = function(){
-  let html = document.documentElement;
-  if(html.getAttribute('data-theme')==="dark"){
-    html.setAttribute('data-theme','light');
-    this.innerHTML = "🌞 Light";
-  }else{
-    html.setAttribute('data-theme','dark');
-    this.innerHTML = "🌚 Dark";
-  }
+/* ===== Auto ===== */
+function setupAutoRefresh(){
+  if (refreshTimer) clearInterval(refreshTimer);
+  const ms = Number(localStorage.getItem('refreshIntervalMs')||sel.value||AUTO_DEFAULT);
+  refreshTimer = setInterval(loadECJAndData, ms);
 }
 
-/* ========== AUTO-REFRESH ========== */
-let interval = 60000, timer;
-function setAutoRefresh(ms){
-  clearInterval(timer);
-  timer = setInterval(()=>{fetchData()},ms);
-}
-document.getElementById('refreshSel').onchange = function(){
-  interval = +this.value;
-  setAutoRefresh(interval);
-};
-document.getElementById('btnForceRefresh').onclick = ()=>fetchData();
-setAutoRefresh(interval);
+/* ===== Start ===== */
+(async function start(){
+  initTheme();
+  updateStickyOffsets();
+  try{ await loadECJBoundaries(); }catch(_){}
+  initNationalMap(); initInteractiveMap();
+  buildLegendInto('mapLegend'); buildLegendInto('imapLegend');
+  await loadECJAndData();
+  setupAutoRefresh();
 
-/* ========== INITIAL LOAD ========== */
-fetchData();
-
+  // Update the single pill to show local state
+  const pill = document.getElementById('pillMain');
+  if (pill){ pill.title = 'Using local 2025-data.json'; document.getElementById('mainLag').textContent = 'Local file'; }
+})();
 </script>
 </body>
 </html>
