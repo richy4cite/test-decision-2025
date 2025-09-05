@@ -1088,7 +1088,7 @@ function gotoInteractiveKey(key){
     const grp=[]; geoLayerInteractive.eachLayer(l=>{ if (l.feature?.properties?.PARISH_NAM===parish) grp.push(l); });
     const group = L.featureGroup(grp.length? grp:[target]);
     try{ mapInteractive.fitBounds(group.getBounds(), {padding:[10,10]}); }catch(_){}
-    const block = document.querySelector(`.const[data-key="${key}"]`);
+    const block = document.querySelector('.const[data-key="' + key + '"]');
     const rows = JSON.parse(block?.dataset?.candidates||'[]');
     const boxes = block?.dataset?.boxes||''; const boxesPct = block?.dataset?.boxpct||'';
     const html = popupHTML(key, display||key, rows, boxes, boxesPct);
