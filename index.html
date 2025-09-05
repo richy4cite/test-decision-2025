@@ -1,360 +1,687 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <title>Jamaica Decision 2025 — Live Results</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Leaflet + Chart.js -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --jlp: #2e8b57;
-      --pnp: #ff8c00;
-      --other: #6066f2;
-      --border: #e5e7eb;
-      --bg: #fff;
-      --text: #18181b;
-      --accent: #2563eb;
-      --shadow: 0 2px 14px rgba(0,0,0,.07);
-      --winner-check: #18c963;
+    :root{
+      --bg:#ffffff; --text:#0b1220; --muted:#6b7280; --border:#e5e7eb; --accent:#0a58ca;
+      --card:#ffffff; --card-alt:#f8fafc; --shadow:0 6px 18px rgba(17,24,39,.06);
+      --jlp:#2e8b57; --pnp:#ff8c00; --jpp:#6a0dad; --uic:#008b8b; --other:#1e90ff;
+      --good:#16a34a; --warn:#f59e0b; --bad:#ef4444;
+      --hdrh:56px; --tabh:48px;
+      --ap-bar-h:34px;
     }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+    html[data-theme="dark"]{
+      --bg:#0f172a; --text:#e5e7eb; --muted:#9ca3af; --border:#334155; --accent:#60a5fa;
+      --card:#111827; --card-alt:#0b1220; --shadow:0 6px 18px rgba(0,0,0,.35);
     }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      padding: 18px 24px 16px 24px;
-      border-bottom: 1.5px solid var(--border);
-      background: var(--bg);
-      font-size: 1.15rem;
-      font-weight: bold;
+    body{margin:0; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+    body.modal-open{overflow:hidden}
+    .header{position:sticky; top:0; z-index:1500; background:var(--card); border-bottom:1px solid var(--border)}
+    .header-inner{max-width:1800px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+    .brand{font-weight:800; font-size:1.25rem; letter-spacing:.2px}
+    .live-pill{margin-left:auto; display:flex; align-items:center; gap:8px; font-weight:700}
+    .live-dot{width:10px; height:10px; border-radius:50%; background:#ef4444; animation:pulse 1.8s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 12px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+    .refresh{display:flex; align-items:center; gap:6px}
+    select, .mode-btn{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--text); cursor:pointer; font-weight:700}
+    .mode-btn{display:flex; align-items:center; gap:6px}
+    .status-group{display:flex; align-items:center; gap:12px; margin-left:8px}
+    .status-pill{display:flex; align-items:center; gap:8px;background:var(--card); border:1px solid var(--border); border-radius:999px;padding:6px 10px; font-weight:800}
+    .status-pill small{color:var(--muted); font-weight:600}
+    .dot{width:10px; height:10px; border-radius:50%; animation:pulse 1.8s infinite; background:#10b981}
+
+    /* AP-NEWS BAR STYLE TOPLINE */
+    .ap-seatbar-wrap{
+      margin:18px 0 0 0; background:var(--card); border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow);
+      padding:18px 18px 14px 18px;
+      display:flex; flex-direction:column; gap:8px;
     }
-    .brand { font-size: 1.35em; letter-spacing: 1.5px; color: var(--accent);}
-    /* Progress bar */
-    .progress-wrap {
-      margin: 0 auto;
-      padding: 18px 0 12px 0;
-      background: #f6f8fa;
-      border-bottom: 1.5px solid var(--border);
-      box-shadow: var(--shadow);
+    .ap-seatbar-labels{display:flex; align-items:center; font-weight:700; font-size:1.08em; gap:8px;}
+    .ap-seatbar-labels .ap-jlp{color:var(--jlp)}
+    .ap-seatbar-labels .ap-pnp{color:var(--pnp)}
+    .ap-seatbar-labels .ap-pnp2{color:var(--pnp);margin-left:12px;}
+    .ap-seatbar-barbox{position:relative; height:var(--ap-bar-h); width:100%; display:flex; align-items:center; margin:6px 0 0 0; background:var(--border); border-radius:8px; overflow:hidden;}
+    .ap-seatbar{display:flex; height:100%; width:100%; z-index:2;}
+    .ap-seatbar-slice{
+      height:var(--ap-bar-h);
+      cursor:pointer;
+      position:relative;
+      transition:filter .08s;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1em;
+      outline:none;
     }
-    .race-bar {
-      width: 98vw;
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      gap: 2px;
-      height: 32px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 8px #0001;
-      background: #d4d4d8;
-      border: 1px solid #e5e7eb;
-      position: relative;
+    .ap-seatbar-slice:focus{z-index:8;}
+    .ap-seatbar-slice span{pointer-events:none;}
+    .ap-seatbar-tooltip{
+      pointer-events:none;
+      position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+      min-width:180px; background:rgba(23,27,40,.97); color:#fff; padding:7px 13px;
+      border-radius:9px; font-size:.97em; opacity:0; transition:opacity .15s; z-index:22;
+      font-weight:400; text-align:left; box-shadow:0 7px 18px rgba(22,23,30,.19);
+      white-space:nowrap;
     }
-    .race-seg {
-      flex: 1 1 0px;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform .12s;
-      font-size: .95em;
-      font-weight: 700;
-      color: #fff;
-      border-right: 1px solid #fff2;
-      position: relative;
+    .ap-seatbar-slice:hover .ap-seatbar-tooltip,
+    .ap-seatbar-slice:focus .ap-seatbar-tooltip{opacity:1;}
+    .ap-seatbar-marker{
+      position:absolute; top:-4px; z-index:10; width:3px; height:calc(var(--ap-bar-h) + 8px); background:#222; left:50%; border-radius:4px;}
+    .ap-seatbar-marker-label{
+      position:absolute; left:50%; top:calc(var(--ap-bar-h) + 8px); font-size:.96em; color:var(--muted); font-weight:900; padding-left:4px; pointer-events:none;
+      transform:translateX(-50%);
     }
-    .race-seg:last-child { border-right: none; }
-    .race-seg.jlp { background: var(--jlp);}
-    .race-seg.pnp { background: var(--pnp);}
-    .race-seg.other { background: var(--other);}
-    .race-seg.focused, .race-seg:hover {
-      outline: 2.5px solid var(--accent);
-      z-index: 1;
-      transform: scale(1.10);
+
+    .battleground-wrap{margin:14px 0 0 0;}
+    .battleground-header{display:flex; gap:10px; align-items:center; font-weight:700;}
+    .battleground-no{font-size:1.03em; color:var(--muted);}
+    .battleground-name{font-size:1.07em;}
+    .battleground-card{
+      background:var(--card-alt); border:1.6px solid var(--border); border-radius:10px; margin-bottom:8px; padding:10px 14px;
+      display:flex; flex-direction:column; gap:3px; transition:box-shadow .13s, border-color .18s;
+      cursor:pointer; box-shadow:0 1px 4px rgba(32,34,42,0.03);
     }
-    .race-labels {
-      width: 98vw;
-      max-width: 1280px;
-      margin: 8px auto 0 auto;
-      display: flex;
-      justify-content: space-between;
-      font-size: .98em;
-      font-weight: bold;
-      color: #64748b;
-    }
-    .race-labels span:first-child { color: var(--jlp);}
-    .race-labels span:last-child { color: var(--pnp);}
-    /* Grid of battlegrounds */
-    .constituency-wrap {
-      max-width: 1340px;
-      margin: 30px auto 24px auto;
-      padding: 0 20px;
-    }
-    .battleground-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 22px;
-    }
-    .battle-card {
-      border: 2.5px solid var(--border);
-      border-radius: 16px;
-      padding: 17px 18px 12px 18px;
-      background: #fff;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      min-height: 110px;
-      transition: border-color 0.15s;
-      cursor: pointer;
-      position: relative;
-    }
-    .battle-card.jlp { border-color: var(--jlp);}
-    .battle-card.pnp { border-color: var(--pnp);}
-    .battle-card.other { border-color: var(--other);}
-    .battle-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 1.07em;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-    .battle-name {
-      flex: 1;
-      color: var(--accent);
-      letter-spacing: .05em;
-      font-size: 1.02em;
-      font-weight: 800;
-    }
-    .battle-winner {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 1.01em;
-      background: #e0fcef;
-      color: var(--jlp);
-      border-radius: 99px;
-      padding: 2px 10px 2px 7px;
-      font-weight: 800;
-      border: 1.5px solid #bbf7d0;
-      box-shadow: 0 2px 5px #2e8b5735;
-    }
-    .battle-card.pnp .battle-winner { background: #fff7ed; color: var(--pnp); border-color: #fed7aa;}
-    .battle-card.other .battle-winner { background: #f1f5f9; color: var(--other); border-color: #dbeafe;}
-    .winner-check {
-      font-size: 1.2em;
-      color: var(--winner-check);
-    }
-    .candidates-list {
-      margin-top: 7px;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-    .candidate-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1em;
-      font-weight: 600;
-    }
-    .candidate-party {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #fff;
-      font-size: .97em;
-      box-shadow: 0 1px 2px #0001;
-    }
-    .jlp .candidate-party { background: var(--jlp);}
-    .pnp .candidate-party { background: var(--pnp);}
-    .other .candidate-party { background: var(--other);}
-    .candidate-name { flex: 1;}
-    .candidate-votes { font-variant-numeric: tabular-nums; text-align: right;}
-    .candidate-pct { font-size: .96em; margin-left: 8px; color: #64748b;}
-    .battle-footer {
-      margin-top: 9px;
-      font-size: .94em;
-      color: #64748b;
-      font-weight: 600;
-      display: flex;
-      gap: 18px;
-      justify-content: space-between;
-    }
-    .battle-card.focused,
-    .battle-card:hover {
-      border-color: var(--accent);
-      z-index: 2;
-      box-shadow: 0 4px 28px #2563eb18;
-    }
+    .battleground-card:hover, .battleground-card:focus{border-color:var(--accent); box-shadow:0 2px 14px rgba(0,72,255,0.05);}
+    .battleground-rows{display:flex; flex-direction:column; gap:2px;}
+    .battleground-row{display:flex; align-items:center; gap:10px; font-size:1em;}
+    .battleground-party{display:inline-block; padding:0 7px; border-radius:7px; font-size:.97em; font-weight:800; margin-right:5px;}
+    .battleground-gap{margin-top:4px; font-size:.95em; color:var(--muted);}
+    .battleground-card-winner{border:2.5px solid var(--accent);}
+    .battleground-seatno{color:var(--muted); font-weight:600;font-size:.98em;margin-right:7px;}
+    .battleground-partylogo{height:17px;width:auto;margin-right:3px;vertical-align:-4px;}
+    /* Constituency Grid (compact/AP style) */
+    .container{max-width:1600px; margin:14px auto; padding:0 24px}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px}
+    .controls{display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
+    .controls input, .controls select{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:var(--card); color:var(--text)}
+    .controls input#searchBar{width:420px; max-width:95vw}
+    .parish{margin:12px 0 22px}
+    .parish h2{font-size:1.1rem; border-left:4px solid var(--accent); padding-left:10px; margin:0 0 12px}
+    .const-grid{display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+    .const{background:var(--card); border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; margin-bottom:3px;}
+    .const-head{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, var(--bg)), color-mix(in oklab, var(--card) 75%, var(--bg))); border-bottom:1px solid var(--border);
+      padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:10px}
+    .const-name{font-weight:900; font-size:1rem; line-height:1.2; background:var(--bg); padding:3px 8px; border:1px solid var(--border); border-radius:8px}
+    .updated{font-size:.82rem; color:var(--muted); display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:2px; white-space:nowrap}
+    .pulse{display:inline-block; width:10px; height:10px; border-radius:50%; background:currentColor; animation:pulseSoft 1.8s infinite}
+    @keyframes pulseSoft{0%{box-shadow:0 0 0 0 rgba(0,0,0,.2)}70%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
+    .const-body{padding:7px 9px; display:flex; flex-direction:column; gap:5px}
+    .winner-badge{display:inline-flex; align-items:center; gap:6px; font-weight:800; padding:2px 8px; border-radius:999px; border:1.4px solid rgba(0,0,0,.10);font-size:.98em;}
+    html[data-theme="dark"] .winner-badge{border-color:#00000040}
+    .winner-badge .check{font-weight:900}
+    .boxline{font-size:.89em; color:var(--muted); margin-top:2px}
+
+    .rows{margin-top:3px; border-top:1px solid var(--border)}
+    .row{display:grid;grid-template-columns:28px 1fr 34px 52px 40px;gap:7px; padding:7px 0; align-items:start; border-bottom:1px solid var(--border); min-height:32px; background:var(--card-alt);}
+    .row:last-child{border-bottom:none}
+    .nm{font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.08}
+    .party{text-align:center; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.3px;font-size:.96em;}
+    .votes{font-weight:800; text-align:right;font-size:.98em;}
+    .pct{color:var(--muted); text-align:right;font-size:.95em;}
+    .party-icon{height:15px; width:auto; display:block; margin-top:2px}
+
+    /* Tabs/sections */
+    .tabs{position:sticky; top:var(--hdrh); z-index:1400; background:var(--card); border-bottom:1px solid var(--border)}
+    .tabs-inner{max-width:1800px; margin:0 auto; padding:0 24px; display:flex; gap:24px}
+    .tab{padding:14px 2px; cursor:pointer; border-bottom:3px solid transparent; color:var(--muted); font-weight:800}
+    .tab.active{border-color:var(--accent); color:var(--text)}
+    .hidden{display:none !important}
+
+    /* Page grid (right column is 360px) */
+    .page{display:grid; grid-template-columns:1fr minmax(0,1600px) 360px 1fr; gap:16px}
+    .page > .main{grid-column:2}
+    .rightcol{grid-column:3; position:sticky; top:calc(var(--hdrh) + var(--tabh) + 12px); align-self:start;
+      height:calc(100vh - (var(--hdrh) + var(--tabh) + 28px));
+      display:grid; grid-template-rows:1fr 1fr; gap:12px; z-index:1}
+    .sidepanel{display:flex; flex-direction:column; min-height:0; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden}
+    .sidepanel h3{margin:8px 10px; font-size:1rem}
+    .panel-body{min-height:0; overflow:auto; padding:6px 8px}
+    .panel-body:has(.empty){display:flex; align-items:center; justify-content:center; color:var(--muted)}
+    /* Recently updated items */
+    .sideitem{position:relative; display:flex; justify-content:space-between; align-items:center;
+      border:2px solid var(--border); border-radius:10px; padding:4px 8px; margin:6px 0; font-weight:800; cursor:pointer; background:var(--card);
+      transition:transform .06s ease, background .12s ease; line-height:1.2}
+    .sideitem:hover{background:color-mix(in oklab, var(--card) 90%, var(--bg)); transform:translateY(-1px)}
+    .sideitem small{color:var(--muted); font-weight:700; font-size:.85em; font-variant-numeric:tabular-nums}
+    .sideitem .pin-btn{border:1px solid var(--border); background:var(--card); border-radius:8px; padding:2px 6px; font-size:.75rem; margin-left:8px; cursor:pointer}
+    .age-good{border-color:var(--good)} .age-warn{border-color:var(--warn)} .age-bad{border-color:var(--bad)}
+
+    /* Closest panel — tighter vertical spacing */
+    .closest-item{border:2px solid var(--border); border-radius:10px; margin:6px 0; overflow:hidden; background:var(--card); cursor:pointer}
+    .closest-head{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; background:var(--card-alt); border-bottom:1px solid var(--border)}
+    .closest-head .cname{font-weight:900; font-size:.95rem; line-height:1.1}
+    .closest-body{padding:4px 8px}
+    .closerow{display:grid; grid-template-columns:22px 1fr 72px 62px; gap:8px; align-items:center; padding:3px 0; line-height:1.1}
+    .closerow .votes, .closerow .pct{font-variant-numeric:tabular-nums; text-align:right; font-weight:800; font-size:.92rem}
+    .closerow img{height:16px; width:auto}
+    .closest-foot{padding:4px 8px; border-top:1px dashed var(--border); color:var(--muted); display:flex; justify-content:space-between; align-items:center; font-size:.9rem}
+    .closest-item:hover{background:color-mix(in oklab, var(--card) 94%, var(--bg))}
+    .closest-winner{border-left:6px solid var(--accent); padding-left:6px; background:color-mix(in oklab, var(--card) 98%, var(--jlp) 6%)}
+
+    /* Interactive map, modal, preview */
+    .interactivemap{margin:16px 0 0 0; min-height:560px; background:var(--card); border-radius:14px; border:1.5px solid var(--border); box-shadow:var(--shadow); }
+    .leaflet-container{width:100%; height:530px; border-radius:10px;}
+    .modal{display:none; position:fixed; inset:0; background:rgba(18,19,24,.64); z-index:2500; align-items:center; justify-content:center}
+    .modal.active{display:flex}
+    .modal-content{background:var(--card); border-radius:14px; max-width:500px; min-width:300px; padding:28px 24px 20px 24px; box-shadow:0 7px 48px rgba(0,0,0,.16); position:relative;}
+    .modal-close{position:absolute; right:18px; top:15px; background:none; border:none; color:var(--muted); font-size:2rem; cursor:pointer}
+
     /* Responsive */
-    @media (max-width: 720px) {
-      .race-bar, .race-labels { width: 100vw; max-width: 100vw; }
-      .constituency-wrap { padding: 0 3vw; }
+    @media (max-width: 1190px){
+      .page{grid-template-columns:0 1fr 360px 0;}
+      .rightcol{grid-column:3;}
     }
-    /* Right sidebars, ticker etc. can be styled and added below as needed */
+    @media (max-width: 900px){
+      .page{grid-template-columns:0 1fr;}
+      .main{grid-column:2;}
+      .rightcol{display:none;}
+      .tabs-inner{padding:0 4vw;}
+      .header-inner{padding:14px 4vw;}
+      .container{padding:0 4vw;}
+    }
+    @media (max-width: 600px){
+      .ap-seatbar-wrap,.battleground-wrap{margin:6px 0;}
+      .header-inner{flex-direction:column; gap:7px;align-items:flex-start;}
+      .tabs-inner{gap:13px;}
+      .ap-seatbar-labels{font-size:.99em;}
+      .ap-seatbar-barbox{height:28px;}
+      .ap-seatbar-slice{font-size:.96em;}
+      .battleground-card{padding:8px 8px;}
+      .container{padding:0 2vw;}
+      .const-grid{grid-template-columns:1fr;}
+      .sidepanel{border-radius:8px;}
+      .modal-content{padding:18px 7px;}
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <span class="brand">Jamaica Decision 2025</span>
-    <span style="font-size:1.1em;color:#999;font-weight:500;margin-left:1.2em">Live Results</span>
-  </div>
-  <!-- RACE TO 32 MAJORITY BAR -->
-  <section class="progress-wrap">
-    <div class="race-bar" id="raceBar"></div>
-    <div class="race-labels">
-      <span id="lblJLP"></span>
-      <span>Race to 32</span>
-      <span id="lblPNP"></span>
+  <div class="page">
+    <div class="main">
+      <header class="header" id="siteHeader">
+        <div class="header-inner">
+          <div class="brand">Jamaica Decision 2025 — Live Results</div>
+          <button id="modeBtn" class="mode-btn" title="Toggle light/dark">🌞 Light</button>
+          <div class="refresh">
+            <span style="color:var(--muted)">Auto-refresh:</span>
+            <select id="refreshSel">
+              <option value="15000">15s</option>
+              <option value="30000">30s</option>
+              <option value="60000" selected>1m</option>
+              <option value="120000">2m</option>
+              <option value="300000">5m</option>
+            </select>
+            <button id="btnForceRefresh" class="btn">Refresh now</button>
+          </div>
+          <div class="status-group" id="sourceStatus">
+            <div class="status-pill" id="pillMain" title="Using local 2025-data.json">
+              <span class="dot" aria-hidden="true"></span> Data <small id="mainLag">Local file</small>
+            </div>
+          </div>
+          <div class="live-pill"><span class="live-dot"></span><span id="lastUpdated">Updating…</span></div>
+        </div>
+      </header>
+      <nav class="tabs" id="siteTabs">
+        <div class="tabs-inner">
+          <div class="tab active" data-tab="constituencies">Constituencies</div>
+          <div class="tab" data-tab="interactive">Interactive Map</div>
+          <div class="tab" data-tab="national">National</div>
+        </div>
+      </nav>
+
+      <!-- AP NEWS-STYLE RACE TO 32 BAR -->
+      <section class="ap-seatbar-wrap">
+        <div class="ap-seatbar-labels">
+          <span class="ap-jlp">JLP</span>
+          <span id="seatbar-jlp-count" style="font-weight:900; margin-right:14px;">0</span>
+          <span class="ap-pnp">PNP</span>
+          <span id="seatbar-pnp-count" style="font-weight:900; margin-right:10px;">0</span>
+          <span style="margin-left:auto;color:var(--muted);font-weight:600;font-size:1em;">Race to 32</span>
+        </div>
+        <div class="ap-seatbar-barbox">
+          <div class="ap-seatbar" id="apSeatBar"></div>
+          <div class="ap-seatbar-marker"></div>
+          <div class="ap-seatbar-marker-label">Majority (32)</div>
+        </div>
+      </section>
+      <!-- AP NEWS-STYLE CLOSEST BATTLEGROUND -->
+      <section class="battleground-wrap">
+        <div style="font-weight:900; color:var(--muted); margin:8px 0 5px 0; font-size:1.06em;">Battleground: Closest 10 Races</div>
+        <div id="apBattlegroundList"></div>
+      </section>
+      <!-- Tabs: Constituencies -->
+      <div class="container" id="constituencyTab">
+        <div class="controls">
+          <input id="searchBar" type="text" placeholder="Search candidate, constituency or seat #" autocomplete="off" />
+        </div>
+        <div id="parishList"></div>
+      </div>
+      <!-- Tabs: Interactive Map -->
+      <div class="container hidden" id="interactiveTab">
+        <div class="interactivemap" id="leafletMap"></div>
+      </div>
+      <!-- Tabs: National -->
+      <div class="container hidden" id="nationalTab">
+        <div class="card">
+          <h2 style="margin-top:0;margin-bottom:18px;">National Results</h2>
+          <canvas id="nationalChart" height="100"></canvas>
+          <div id="nationalSummary" style="margin:18px 0 0 0;"></div>
+        </div>
+      </div>
     </div>
-  </section>
-  <!-- MAIN GRID -->
-  <div class="constituency-wrap">
-    <div class="battleground-grid" id="constituencyGrid"></div>
+    <div class="rightcol">
+      <div class="sidepanel">
+        <h3>Recently Updated</h3>
+        <div class="panel-body" id="recentlyUpdated"></div>
+      </div>
+      <div class="sidepanel">
+        <h3>Closest Margins</h3>
+        <div class="panel-body" id="closestMargins"></div>
+      </div>
+    </div>
   </div>
-  <!-- Right panels, etc. can go here... -->
-  <script>
-    // --- MOCK DATA FOR DEMO ---
-    const SAMPLE_CONSTITUENCIES = [
-      { num: 1, name: "Kingston East & Port Royal", winner: "JLP", winnerName: "Philip Paulwell", winnerVotes: 5100, candidates: [
-        {name: "Philip Paulwell", party: "JLP", votes: 5100, pct: 55.2},
-        {name: "Venesha Phillips", party: "PNP", votes: 4150, pct: 44.8},
-      ]},
-      { num: 2, name: "Kingston Central", winner: "PNP", winnerName: "Ronald Thwaites", winnerVotes: 4744, candidates: [
-        {name: "Ronald Thwaites", party: "PNP", votes: 4744, pct: 53.3},
-        {name: "Donovan Williams", party: "JLP", votes: 4159, pct: 46.7},
-      ]},
-      { num: 3, name: "Kingston West", winner: "JLP", winnerName: "Desmond McKenzie", winnerVotes: 6201, candidates: [
-        {name: "Desmond McKenzie", party: "JLP", votes: 6201, pct: 68.2},
-        {name: "Patricia Duncan Sutherland", party: "PNP", votes: 2892, pct: 31.8},
-      ]},
-      { num: 4, name: "St. Andrew Eastern", winner: "PNP", winnerName: "Julian Robinson", winnerVotes: 5981, candidates: [
-        {name: "Julian Robinson", party: "PNP", votes: 5981, pct: 54.1},
-        {name: "Fayval Williams", party: "JLP", votes: 5080, pct: 45.9},
-      ]},
-      // ...add up to 32 or 63, but for demo let's have 10
-      { num: 5, name: "St. Andrew Western", winner: "JLP", winnerName: "Anthony Hylton", winnerVotes: 5900, candidates: [
-        {name: "Anthony Hylton", party: "JLP", votes: 5900, pct: 53.5},
-        {name: "Paul Buchanan", party: "PNP", votes: 5122, pct: 46.5},
-      ]},
-      { num: 6, name: "St. Andrew North Central", winner: "PNP", winnerName: "Karl Samuda", winnerVotes: 5240, candidates: [
-        {name: "Karl Samuda", party: "PNP", votes: 5240, pct: 57.9},
-        {name: "Natalie Neita", party: "JLP", votes: 3815, pct: 42.1},
-      ]},
-      { num: 7, name: "St. Catherine North", winner: "PNP", winnerName: "Leslie Campbell", winnerVotes: 5050, candidates: [
-        {name: "Leslie Campbell", party: "PNP", votes: 5050, pct: 50.6},
-        {name: "Fitz Jackson", party: "JLP", votes: 4924, pct: 49.4},
-      ]},
-      { num: 8, name: "St. Catherine South", winner: "JLP", winnerName: "Fitz Jackson", winnerVotes: 5700, candidates: [
-        {name: "Fitz Jackson", party: "JLP", votes: 5700, pct: 51.7},
-        {name: "Colin Fagan", party: "PNP", votes: 5333, pct: 48.3},
-      ]},
-      { num: 9, name: "Manchester Central", winner: "PNP", winnerName: "Peter Bunting", winnerVotes: 5985, candidates: [
-        {name: "Peter Bunting", party: "PNP", votes: 5985, pct: 53.9},
-        {name: "Rhoda Moy Crawford", party: "JLP", votes: 5112, pct: 46.1},
-      ]},
-      { num: 10, name: "Manchester North Western", winner: "JLP", winnerName: "Mikael Phillips", winnerVotes: 6100, candidates: [
-        {name: "Mikael Phillips", party: "JLP", votes: 6100, pct: 56.5},
-        {name: "Damion Crawford", party: "PNP", votes: 4700, pct: 43.5},
-      ]},
-    ];
-    // Map party key for style
-    function partyClass(p) {
-      if (!p) return 'other';
-      const x = p.toLowerCase();
-      if (x === 'jlp') return 'jlp';
-      if (x === 'pnp') return 'pnp';
-      return 'other';
-    }
-    // --- Race-to-majority segmented bar ---
-    function renderRaceBar(data) {
-      const bar = document.getElementById('raceBar');
-      bar.innerHTML = '';
-      let jlpSeats = 0, pnpSeats = 0;
-      data.forEach((c, idx) => {
-        if (partyClass(c.winner) === 'jlp') jlpSeats++;
-        else if (partyClass(c.winner) === 'pnp') pnpSeats++;
-        const seg = document.createElement('div');
-        seg.className = 'race-seg ' + partyClass(c.winner);
-        seg.title = `#${c.num} - ${c.name}\nWinner: ${c.winnerName} (${c.winner})`;
-        seg.innerHTML = `<span style="font-size:.93em">${c.num}</span>`;
-        seg.onclick = () => {
-          // Scroll to battleground card
-          const target = document.querySelector(`.battle-card[data-num="${c.num}"]`);
-          if (target) target.scrollIntoView({behavior:'smooth', block:'center'});
-          document.querySelectorAll('.battle-card').forEach(x=>x.classList.remove('focused'));
-          if (target) target.classList.add('focused');
-          // Highlight bar
-          document.querySelectorAll('.race-seg').forEach(x=>x.classList.remove('focused'));
-          seg.classList.add('focused');
-          setTimeout(()=>seg.classList.remove('focused'), 2200);
-          setTimeout(()=>target.classList.remove('focused'), 2300);
-        };
-        bar.appendChild(seg);
-      });
-      // Labels
-      document.getElementById('lblJLP').textContent = `JLP: ${jlpSeats}`;
-      document.getElementById('lblPNP').textContent = `PNP: ${pnpSeats}`;
-    }
-    // --- Modern Battleground Block Grid ---
-    function renderGrid(data) {
-      const grid = document.getElementById('constituencyGrid');
-      grid.innerHTML = '';
-      data.forEach(c => {
-        const card = document.createElement('div');
-        card.className = `battle-card ${partyClass(c.winner)}`;
-        card.dataset.num = c.num;
-        card.innerHTML = `
-          <div class="battle-header">
-            <span class="battle-name">${c.name} <span style="font-size:.91em;color:#64748b;">(#${c.num})</span></span>
-            <span class="battle-winner">
-              <span class="winner-check">✓</span>
-              ${c.winnerName} (${c.winner})
-            </span>
+
+  <!-- MODAL PREVIEW -->
+  <div class="modal" id="previewModal" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+      <button class="modal-close" id="closeModal" title="Close" aria-label="Close">&times;</button>
+      <div id="modalDetails"></div>
+    </div>
+  </div>
+
+<script>
+/* ========== Helper Data (Party colors, logos, etc) ========== */
+const PARTY_COLORS = {
+  "JLP": "var(--jlp)",
+  "PNP": "var(--pnp)",
+  "JPP": "var(--jpp)",
+  "UIC": "var(--uic)",
+  "OTHER": "var(--other)"
+};
+const PARTY_LOGO = {
+  "JLP": "https://jamaicadecides.com/assets/jlp.png",
+  "PNP": "https://jamaicadecides.com/assets/pnp.png",
+  "JPP": "https://jamaicadecides.com/assets/jpp.png",
+  "UIC": "https://jamaicadecides.com/assets/uic.png"
+};
+const partyShort = p => p === "JLP" || p === "PNP" ? p : (p === "JPP" || p === "UIC" ? p : "Other");
+const partyColor = p => PARTY_COLORS[partyShort(p)] || "var(--other)";
+const partyLogo = p => PARTY_LOGO[partyShort(p)] || "https://jamaicadecides.com/assets/indep.png";
+
+const seatCount = 63;
+const majority = 32;
+let constituencies = [];
+let parishGroups = [];
+let lastUpdated = "";
+let recentUpdateList = [];
+let closestList = [];
+let map, geoLayer, activeConstNo = null, geojson = null, chart = null;
+
+async function fetchData(){
+  // You should have 2025-data.json and geojson (ECJ)
+  const data = await fetch('2025-data.json').then(r=>r.json());
+  constituencies = data.constituencies || [];
+  lastUpdated = data.updated || "";
+  build();
+  updateNational();
+  updateSeatBar();
+  updateBattleground();
+  buildParishes();
+  buildSidebars();
+}
+async function fetchGeo(){
+  // You should have ecj_constituencies.geojson (or your shape file)
+  if(geojson) return geojson;
+  geojson = await fetch('ecj_constituencies.geojson').then(r=>r.json());
+  return geojson;
+}
+
+/* ========== AP-NEWS "RACE TO 32" BAR ========== */
+function updateSeatBar(){
+  // Slices: width proportional to polygon area (not just 1/63)
+  // We'll use a fixed area table for demo, but you can load from GeoJSON
+  // Or just use equal widths if you don't have area data
+  let seatbar = document.getElementById('apSeatBar');
+  seatbar.innerHTML = '';
+  let jlp=0, pnp=0;
+  let totalArea = constituencies.reduce((a,c)=>a+(c.area||1),0);
+  let seatSlices = [];
+  for(let c of constituencies){
+    let area = c.area || 1; // ideally, you set .area from geo
+    let style = `background:${partyColor(c.winner_party)};flex:${area} 0 0;position:relative;`;
+    seatSlices.push(`<div class="ap-seatbar-slice" style="${style}" tabindex="0" data-const="${c.no}">
+      <span></span>
+      <div class="ap-seatbar-tooltip">
+        <b>${c.name}</b><br>
+        <span style="font-size:.97em;">${c.winner_party ? `Won by <span style="color:${partyColor(c.winner_party)};font-weight:700;">${c.winner_party}</span> (${c.winner_name})` : 'No declared winner.'}</span>
+        <br><span style="color:var(--muted);">Margin: ${c.margin!=null?c.margin.toLocaleString():"–"} votes</span>
+      </div>
+    </div>`);
+    if(c.winner_party==="JLP")jlp++;
+    if(c.winner_party==="PNP")pnp++;
+  }
+  seatbar.innerHTML = seatSlices.join('');
+  document.getElementById('seatbar-jlp-count').textContent = jlp;
+  document.getElementById('seatbar-pnp-count').textContent = pnp;
+  // Marker at 32
+  let marker = document.querySelector('.ap-seatbar-marker');
+  let markerLbl = document.querySelector('.ap-seatbar-marker-label');
+  marker.style.left = ((majority/seatCount)*100).toFixed(2)+'%';
+  markerLbl.style.left = marker.style.left;
+  // Hover/click/focus
+  seatbar.querySelectorAll('.ap-seatbar-slice').forEach(el=>{
+    el.addEventListener('click',()=>showModal(+el.dataset.const));
+    el.addEventListener('keydown',e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.const)}});
+  });
+}
+
+/* ========== AP-NEWS "BATTLEGROUND: 10 CLOSEST" ========== */
+function updateBattleground(){
+  // List top 10 closest margins, undecided seats at top
+  let apb = document.getElementById('apBattlegroundList');
+  if(!apb) return;
+  let byMargin = [...constituencies]
+    .filter(c=>c.total_votes>0)
+    .sort((a,b)=>{
+      if((a.winner_party?"1":"0")!== (b.winner_party?"1":"0")){
+        // Put undecided (no winner) at top
+        return (a.winner_party?1:0)-(b.winner_party?1:0);
+      }
+      if(a.margin!=null&&b.margin!=null)return Math.abs(a.margin)-Math.abs(b.margin);
+      return 1;
+    }).slice(0,10);
+  apb.innerHTML = byMargin.map(c=>{
+    let rows = c.candidates.map(x=>`
+      <div class="battleground-row">
+        <img src="${partyLogo(x.party)}" class="battleground-partylogo" alt="${x.party}" />
+        <span class="battleground-party" style="background:${partyColor(x.party)};color:#fff">${x.party}</span>
+        <span style="font-weight:800">${x.name}</span>
+        <span class="votes" style="min-width:45px; text-align:right">${x.votes?.toLocaleString()||"—"}</span>
+        <span class="pct" style="min-width:38px; text-align:right">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
+      </div>
+    `).join('');
+    let gap = (c.margin==null||c.margin==0)?"—":`${Math.abs(c.margin).toLocaleString()} vote${Math.abs(c.margin)==1?"":"s"}`;
+    return `<div class="battleground-card${c.margin==0?' battleground-card-winner':''}" tabindex="0" onclick="showModal(${c.no})">
+      <span class="battleground-seatno">#${c.no}</span>
+      <span class="battleground-name">${c.name}</span>
+      <div class="battleground-rows">${rows}</div>
+      <div class="battleground-gap">Gap: <b>${gap}</b> ${c.winner_party?`<span style="color:${partyColor(c.winner_party)};font-weight:900;">${c.winner_party}</span>`:""}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ========== CONSTITUENCY GRID (BY PARISH) ========== */
+function buildParishes(){
+  // Build groupings
+  let byParish = {};
+  for(let c of constituencies){
+    if(!byParish[c.parish]) byParish[c.parish]=[];
+    byParish[c.parish].push(c);
+  }
+  let html = '';
+  for(let p of Object.keys(byParish)){
+    let group = byParish[p];
+    html += `<div class="parish"><h2>${p}</h2>
+      <div class="const-grid">`+
+      group.map(c=>constCard(c)).join('')+
+      `</div></div>`;
+  }
+  document.getElementById('parishList').innerHTML = html;
+  // Click/keyboard
+  document.querySelectorAll('.const').forEach(el=>{
+    el.onclick=()=>showModal(+el.dataset.no);
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.no)}};
+  });
+}
+
+/* ========== CONSTITUENCY CARD (GRID) ========== */
+function constCard(c){
+  let win = c.winner_party;
+  let winColor = partyColor(win);
+  let winName = c.winner_name;
+  let badge = win
+    ? `<span class="winner-badge" style="border-color:${winColor};background:color-mix(in oklab, var(--card) 95%, ${winColor});color:${winColor};"><span class="check">✓</span>${win} <span style="color:var(--text);font-weight:700">${winName||""}</span></span>`
+    : '';
+  return `<div class="const" tabindex="0" data-no="${c.no}">
+    <div class="const-head">
+      <span class="const-name">#${c.no} ${c.name}</span>
+      <span class="updated">${c.updated || ""}<span>${c.final?"FINAL":"Live"}</span></span>
+    </div>
+    <div class="const-body">
+      ${badge}
+      <div class="boxline">Boxes: <b>${c.boxes_reported||0}</b>/${c.boxes_total||"?"} (${c.boxes_total?Math.round(100*(c.boxes_reported||0)/c.boxes_total):'–'}%)</div>
+      <div class="rows">
+        ${c.candidates.map(x=>`
+          <div class="row" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
+            <img src="${partyLogo(x.party)}" class="party-icon" alt="${x.party}" />
+            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
+            <span class="party">${x.party}</span>
+            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
+            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
           </div>
-          <div class="candidates-list">
-            ${c.candidates.map(can=>`
-              <div class="candidate-row ${partyClass(can.party)}">
-                <span class="candidate-party">${can.party[0]}</span>
-                <span class="candidate-name">${can.name}</span>
-                <span class="candidate-votes">${can.votes.toLocaleString()}</span>
-                <span class="candidate-pct">${can.pct}%</span>
-              </div>
-            `).join('')}
+        `).join('')}
+      </div>
+      <div class="boxline">Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b></div>
+    </div>
+  </div>`;
+}
+
+/* ========== SIDE PANELS (RECENTLY UPDATED / CLOSEST) ========== */
+function buildSidebars(){
+  // Recently updated
+  let list = [...constituencies].sort((a,b)=>(b.updated_time||0)-(a.updated_time||0)).slice(0,10);
+  document.getElementById('recentlyUpdated').innerHTML =
+    list.map(c=>`<div class="sideitem" onclick="showModal(${c.no})">
+      <span>${c.name} <small>#${c.no}</small></span>
+      <small>${c.updated||""}</small>
+    </div>`).join('') || '<div class="empty">No updates yet.</div>';
+  // Closest
+  let closest = [...constituencies].filter(c=>c.margin!=null).sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin)).slice(0,10);
+  document.getElementById('closestMargins').innerHTML =
+    closest.map(c=>`<div class="closest-item" onclick="showModal(${c.no})">
+      <div class="closest-head">
+        <span class="cname">${c.name} <small>#${c.no}</small></span>
+        <span style="color:${partyColor(c.winner_party)};font-weight:900;">${c.winner_party||""}</span>
+      </div>
+      <div class="closest-body">
+        ${c.candidates.map(x=>`
+          <div class="closerow" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
+            <img src="${partyLogo(x.party)}" />
+            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
+            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
+            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
+          </div>`).join('')}
+      </div>
+      <div class="closest-foot">
+        Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b>
+        <span>${c.boxes_reported||0}/${c.boxes_total||"?"} boxes</span>
+      </div>
+    </div>`).join('') || '<div class="empty">—</div>';
+}
+
+/* ========== SEARCH ========== */
+document.getElementById('searchBar').oninput = function(){
+  let q = this.value.toLowerCase();
+  let hits = constituencies.filter(c=>
+    c.name.toLowerCase().includes(q)
+    || (c.no+"")===q
+    || (c.candidates.some(x=>x.name.toLowerCase().includes(q)))
+  );
+  // Show only matching parishes
+  let byParish = {};
+  for(let c of hits){
+    if(!byParish[c.parish]) byParish[c.parish]=[];
+    byParish[c.parish].push(c);
+  }
+  let html = '';
+  for(let p of Object.keys(byParish)){
+    let group = byParish[p];
+    html += `<div class="parish"><h2>${p}</h2>
+      <div class="const-grid">`+
+      group.map(c=>constCard(c)).join('')+
+      `</div></div>`;
+  }
+  document.getElementById('parishList').innerHTML = html;
+  document.querySelectorAll('.const').forEach(el=>{
+    el.onclick=()=>showModal(+el.dataset.no);
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){showModal(+el.dataset.no)}};
+  });
+};
+
+/* ========== MODAL (PREVIEW DETAILS) ========== */
+function showModal(no){
+  let c = constituencies.find(x=>x.no==no);
+  if(!c) return;
+  document.body.classList.add('modal-open');
+  let m = document.getElementById('previewModal');
+  m.classList.add('active');
+  document.getElementById('modalDetails').innerHTML = `
+    <h2 style="margin:0 0 12px 0">${c.name} <small>#${c.no}</small></h2>
+    <div style="font-size:.98em; margin-bottom:7px;">
+      <b>Parish:</b> ${c.parish} &middot; <b>Boxes:</b> ${c.boxes_reported||0}/${c.boxes_total||"?"} (${c.boxes_total?Math.round(100*(c.boxes_reported||0)/c.boxes_total):'–'}%)
+    </div>
+    <div style="margin-bottom:7px;">${c.winner_party?`<span class="winner-badge" style="border-color:${partyColor(c.winner_party)};background:color-mix(in oklab, var(--card) 93%, ${partyColor(c.winner_party)});color:${partyColor(c.winner_party)};"><span class="check">✓</span>${c.winner_party} <span style="color:var(--text);font-weight:700">${c.winner_name||""}</span></span>`:"<b>No winner declared.</b>"}</div>
+    <div>
+      <div class="rows">
+        ${c.candidates.map(x=>`
+          <div class="row" style="background:${c.winner_party==x.party?'color-mix(in oklab, var(--card) 92%, '+partyColor(x.party)+')':''}">
+            <img src="${partyLogo(x.party)}" class="party-icon" alt="${x.party}" />
+            <span class="nm" style="color:${partyColor(x.party)}">${x.name}</span>
+            <span class="party">${x.party}</span>
+            <span class="votes">${x.votes?.toLocaleString()||"—"}</span>
+            <span class="pct">${x.pct!=null?x.pct.toFixed(1)+"%":"—"}</span>
           </div>
-          <div class="battle-footer">
-            <span>Winner: <b style="color:var(--accent)">${c.winnerName}</b></span>
-            <span>Total votes: <b>${c.candidates.reduce((s,x)=>s+x.votes,0).toLocaleString()}</b></span>
-          </div>
-        `;
-        card.onclick = () => {
-          // Focus highlight (for mobile/desktop)
-          document.querySelectorAll('.battle-card').forEach(x=>x.classList.remove('focused'));
-          card.classList.add('focused');
-          setTimeout(()=>card.classList.remove('focused'), 1700);
-        };
-        grid.appendChild(card);
-      });
+        `).join('')}
+      </div>
+      <div style="font-size:.98em; color:var(--muted); margin:7px 0 0 0">Margin: <b>${c.margin==null?"—":Math.abs(c.margin).toLocaleString()}</b></div>
+    </div>
+    <div style="margin-top:9px;font-size:.96em;">
+      <b>Last updated:</b> ${c.updated||""}
+    </div>
+  `;
+}
+document.getElementById('closeModal').onclick = function(){
+  document.getElementById('previewModal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+}
+window.onclick = function(e){
+  if(e.target.classList && e.target.classList.contains('modal')){
+    document.getElementById('previewModal').classList.remove('active');
+    document.body.classList.remove('modal-open');
+  }
+}
+
+/* ========== NATIONAL CHART ========== */
+function updateNational(){
+  let totals = {JLP:0,PNP:0,JPP:0,UIC:0,OTHER:0};
+  let totalVotes = 0;
+  for(let c of constituencies){
+    for(let x of c.candidates){
+      if(totals.hasOwnProperty(x.party)){
+        totals[x.party]+=(x.votes||0);
+      }else{
+        totals.OTHER+=(x.votes||0);
+      }
+      totalVotes+=(x.votes||0);
     }
-    // --- Render all ---
-    renderRaceBar(SAMPLE_CONSTITUENCIES);
-    renderGrid(SAMPLE_CONSTITUENCIES);
-  </script>
+  }
+  let ctx = document.getElementById('nationalChart').getContext('2d');
+  if(chart)chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(totals),
+      datasets: [{
+        label: 'Votes',
+        data: Object.values(totals),
+        backgroundColor: Object.keys(totals).map(partyColor)
+      }]
+    },
+    options: {
+      plugins:{
+        legend:{display:false}
+      },
+      scales:{
+        y:{beginAtZero:true,ticks:{color:'var(--text)'}},
+        x:{ticks:{color:'var(--text)'}}
+      }
+    }
+  });
+  document.getElementById('nationalSummary').innerHTML =
+    Object.entries(totals).map(([p,v])=>
+      `<span style="margin-right:18px;display:inline-block;"><b style="color:${partyColor(p)};">${p}</b>: ${v.toLocaleString()}</span>`
+    ).join('');
+}
+
+/* ========== INTERACTIVE MAP ========== */
+async function buildMap(){
+  await fetchGeo();
+  if(map)return;
+  map = L.map('leafletMap',{scrollWheelZoom:false,zoomControl:true}).setView([18.05,-77.25],7.4);
+  geoLayer = L.geoJSON(geojson,{
+    style:feat=>{
+      let c = constituencies.find(x=>x.no==feat.properties.SEATNO);
+      return {
+        color: partyColor(c?.winner_party),
+        fillColor: partyColor(c?.winner_party),
+        fillOpacity:.53, weight:2,
+        opacity:.98
+      }
+    },
+    onEachFeature:(feat,layer)=>{
+      let c = constituencies.find(x=>x.no==feat.properties.SEATNO);
+      let name = feat.properties.SEATNAME;
+      layer.bindTooltip(`#${feat.properties.SEATNO} ${name}`,{sticky:true});
+      layer.on('click',()=>showModal(feat.properties.SEATNO));
+    }
+  }).addTo(map);
+}
+document.querySelectorAll('.tab').forEach(el=>{
+  el.onclick=function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    let tab = el.dataset.tab;
+    document.getElementById('constituencyTab').classList.toggle('hidden',tab!=="constituencies");
+    document.getElementById('interactiveTab').classList.toggle('hidden',tab!=="interactive");
+    document.getElementById('nationalTab').classList.toggle('hidden',tab!=="national");
+    if(tab==="interactive"){buildMap();}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+});
+
+/* ========== MODE/DARK ========= */
+document.getElementById('modeBtn').onclick = function(){
+  let html = document.documentElement;
+  if(html.getAttribute('data-theme')==="dark"){
+    html.setAttribute('data-theme','light');
+    this.innerHTML = "🌞 Light";
+  }else{
+    html.setAttribute('data-theme','dark');
+    this.innerHTML = "🌚 Dark";
+  }
+}
+
+/* ========== AUTO-REFRESH ========== */
+let interval = 60000, timer;
+function setAutoRefresh(ms){
+  clearInterval(timer);
+  timer = setInterval(()=>{fetchData()},ms);
+}
+document.getElementById('refreshSel').onchange = function(){
+  interval = +this.value;
+  setAutoRefresh(interval);
+};
+document.getElementById('btnForceRefresh').onclick = ()=>fetchData();
+setAutoRefresh(interval);
+
+/* ========== INITIAL LOAD ========== */
+fetchData();
+
+</script>
 </body>
 </html>
