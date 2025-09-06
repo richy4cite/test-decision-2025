@@ -1037,9 +1037,30 @@ function applySortRebuild(){
 /* ===== Start ===== */
 (async function start(){
   initTheme();
- document.getElementById('densityBtn')?.addEventListener('click', ()=>{
-  document.body.classList.toggle('compact');
-});
+  initDensity();           // ← add this line
+  updateStickyOffsets();
+  ...
+})();
+ /* ===== Density toggle (Comfortable / Compact) ===== */
+function applyDensity(mode){
+  const m = (mode === 'compact') ? 'compact' : 'comfortable';
+  document.documentElement.setAttribute('data-density', m);
+  const btn = document.getElementById('densityBtn');
+  if (btn) btn.textContent = '↔ Density: ' + (m === 'compact' ? 'Compact' : 'Comfortable');
+  localStorage.setItem('density', m);
+}
+
+function initDensity(){
+  const saved = localStorage.getItem('density') || 'comfortable';
+  applyDensity(saved);
+  const btn = document.getElementById('densityBtn');
+  if (btn){
+    btn.addEventListener('click', ()=>{
+      const curr = document.documentElement.getAttribute('data-density') || 'comfortable';
+      applyDensity(curr === 'compact' ? 'comfortable' : 'compact');
+    });
+  }
+}
   updateStickyOffsets();
   try{ await loadECJBoundaries(); }catch(_){}
   initNationalMap(); initInteractiveMap();
