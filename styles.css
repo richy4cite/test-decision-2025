@@ -294,14 +294,46 @@ body.compact .const-name{ /* ... */ }
 /* Ensure Leaflet panes don’t exceed sticky UI */
 .leaflet-pane{z-index:400}
 
-/* === AP-style party tinted headers + compact typography === */
+/* === AP-style party tinted headers + COMPACT density (scoped) === */
+html[data-density="compact"] .const { border-radius: 12px; overflow: hidden; background: var(--card); border-width: 2px; }
 
-.const {
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card);
-  border-width: 2px; /* already set, keep */
+html[data-density="compact"] .const-head{
+  padding: 8px 10px; /* compact spacing */
+  border-bottom: 1px solid var(--border);
+  /* layered background inspired by AP tiles */
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--win) 20%, transparent) 0%,
+      color-mix(in oklab, var(--win) 6%, transparent) 85%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(135deg,
+      color-mix(in oklab, var(--win) 10%, transparent) 0 10px,
+      transparent 10px 20px
+    ),
+    radial-gradient(1200px 1200px at -20% -50%,
+      color-mix(in oklab, var(--win) 10%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--card) 85%, var(--bg)) 0%,
+      color-mix(in oklab, var(--card) 92%, var(--bg)) 100%
+    );
 }
+html[data-density="compact"] .const-name{ font-size:.90rem; padding:2px 7px; border-radius:8px; }
+html[data-density="compact"] .updated{ font-size:.82rem; gap:2px; }
+html[data-density="compact"] .const-body{ padding:10px; gap:6px }
+html[data-density="compact"] .winner-badge{ font-size:.86rem; padding:1px 8px }
+html[data-density="compact"] .rows{ margin-top:4px }
+html[data-density="compact"] .row{
+  grid-template-columns: 24px 1fr 38px 64px 46px;
+  gap:10px; padding:8px 4px; min-height:36px;
+}
+html[data-density="compact"] .party-icon{ height:16px }
+html[data-density="compact"] .nm{ -webkit-line-clamp:2; font-size:.92rem }
+html[data-density="compact"] .party{ font-size:.82rem }
+html[data-density="compact"] .votes{ font-size:.92rem }
+html[data-density="compact"] .pct{ font-size:.82rem }
 
 /* Header tint + diagonal “fabric” */
 .const-head{
