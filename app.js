@@ -494,6 +494,7 @@ function renderParishBlocks(detailsByConst, rawData){
       el.dataset.cno = cNo;
 
       el.style.borderColor = bg;
+      el.style.setProperty('--win', bg);
 
       const ageMs = Date.now() - (updatedTs||Date.now());
       let dotColor = 'var(--bad)';
@@ -1036,6 +1037,9 @@ function applySortRebuild(){
 /* ===== Start ===== */
 (async function start(){
   initTheme();
+ document.getElementById('densityBtn')?.addEventListener('click', ()=>{
+  document.body.classList.toggle('compact');
+});
   updateStickyOffsets();
   try{ await loadECJBoundaries(); }catch(_){}
   initNationalMap(); initInteractiveMap();
