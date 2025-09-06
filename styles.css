@@ -204,5 +204,88 @@ html[data-theme="dark"] .ticker{background:#0b1220}
 }
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+/* === AP-style party tinted headers + compact typography === */
+
+/* Use the winner party color (we'll set --win from JS) */
+.const {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+  border-width: 2px; /* already set, keep */
+}
+
+/* Header tint + diagonal “fabric” */
+.const-head{
+  /* compact spacing */
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+
+  /* layered background inspired by AP tiles */
+  /* 1) soft vertical wash of the winner color */
+  /* 2) faint diagonal stripes */
+  /* 3) tiny noise speckles */
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--win) 20%, transparent) 0%,
+      color-mix(in oklab, var(--win) 6%, transparent) 85%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(135deg,
+      color-mix(in oklab, var(--win) 10%, transparent) 0 10px,
+      transparent 10px 20px
+    ),
+    radial-gradient(1200px 1200px at -20% -50%,
+      color-mix(in oklab, var(--win) 10%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--card) 85%, var(--bg)) 0%,
+      color-mix(in oklab, var(--card) 92%, var(--bg)) 100%
+    );
+}
+
+/* Name chip smaller and stronger */
+.const-name{
+  font-size: .90rem;        /* was 1rem */
+  padding: 2px 7px;         /* tighter */
+  border-radius: 8px;
+}
+
+/* “Last updated” cluster smaller */
+.updated{
+  font-size: .82rem;        /* was .85 */
+  gap: 2px;
+}
+
+/* Body spacing tighter */
+.const-body{ padding: 10px; gap: 6px }
+
+/* Winner/Leading badge more compact */
+.winner-badge{
+  font-size: .86rem;
+  padding: 1px 8px;
+}
+
+/* Row compaction (AP-like density) */
+.rows{ margin-top: 4px }
+.row{
+  grid-template-columns: 24px 1fr 38px 64px 46px; /* narrower columns */
+  gap: 10px;
+  padding: 8px 4px;
+  min-height: 36px;         /* was 44px */
+}
+.party-icon{ height:16px }
+.nm{ -webkit-line-clamp: 2; font-size: .92rem; }
+.party{ font-size: .82rem }
+.votes{ font-size: .92rem }
+.pct{ font-size: .82rem }
+
+/* Sidebar recent cards a touch smaller too (optional) */
+.sideitem small{ font-size: .82em }
+
+/* Topline + scoreboard slight tighten (optional) */
+.tstats{ font-size: .94rem }
+.pmain{ font-size: 1.4rem }
+
 /* Ensure Leaflet panes don’t exceed sticky UI */
 .leaflet-pane{z-index:400}
