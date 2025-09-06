@@ -4,7 +4,7 @@ const ECJ_GEOJSON =
  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=*&f=geojson';
 const JAMAICA_BOUNDS = L.latLngBounds([17.6, -78.6], [18.6, -76.0]);
 
-/* Party theming (unchanged) */
+/* Party theming */
 const PARTY_COLORS = { JLP:'#2e8b57', PNP:'#ff8c00', JPP:'#6a0dad', UIC:'#008b8b', Other:'#1e90ff' };
 const PARTY_LOGOS = {
   JLP:"https://www.ecj.com.jm/wp-content/uploads/2025/03/JLP_logo-300x98.png",
@@ -25,7 +25,7 @@ const TICKER_MAX_AGE = 15*60*1000;
 const SIDEBAR_MAX_AGE = 25*60*1000;
 
 /* ===== Local data source ===== */
-const DATA_URL = './2025-data.json';  // ←————— local file
+const DATA_URL = './2025-data.json';  // local file
 
 /* ===== Normalizer + Name Aliases with metadata ===== */
 function norm(s){ return String(s||'').toLowerCase().replace(/[\s\-\u2013\u2014'’.]/g,'').replace(/&/g,'and'); }
@@ -44,13 +44,24 @@ let lastSeats = JSON.parse(localStorage.getItem('lastSeats') || '{}');
 let lastConstHashes = JSON.parse(localStorage.getItem('constituencyHashes')||'{}');
 let lastConstUpdated = JSON.parse(localStorage.getItem('constituencyUpdated')||'{}');
 
+/* Cached nodes for fast filtering (search/filters) without re-querying DOM */
+let __CONST_NODES = [];
+function cacheConstNodes(){
+  __CONST_NODES = Array.from(document.querySelectorAll('.const'));
+}
+
 /* ===== Preview modal state ===== */
-let previewMap=null, previewLayer=null, previewKey=null, previewPulseTimer=null;
+let previewMap=null, previewLayer=null, previewKey=null;
 
 /* ===== Utils ===== */
 function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
 function contrastText(hex){ try{ const c=hex.replace('#',''); const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16); return ((r*299+g*587+b*114)/1000>=140)?'#0b1220':'#ffffff'; }catch{ return '#0b1220'; } }
 function fmtHHMMSS(ms){ const s=Math.max(0,Math.floor(ms/1000)); const hh=String(Math.floor(s/3600)).padStart(2,'0'); const mm=String(Math.floor((s%3600)/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${hh}:${mm}:${ss}`; }
+// Debounce helper
+function debounce(fn, delay=150){
+  let t; 
+  return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); };
+}
 function makeHash(cands){ return cands.map(k=>`${(k.Party||'Other').toUpperCase()}|${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}|${Number(k.Votes||0)}`).join(';'); }
 const partyKey = p => { const P = String(p||'Other').toUpperCase(); if (P.startsWith('INDA') || P.startsWith('INDB')) return 'Other'; return ['JLP','PNP','JPP','UIC'].includes(P) ? P : 'Other'; };
 const bust = url => url + (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
@@ -531,7 +542,7 @@ function renderParishBlocks(detailsByConst, rawData){
           <div class="rows">${rowsHTML}</div>
         </div>
       `;
-      /* OPEN PREVIEW (first click) */
+      // OPEN PREVIEW (first click)
       el.addEventListener('click', ()=> openPreviewForKey(key));
       grid.appendChild(el);
     });
@@ -539,21 +550,56 @@ function renderParishBlocks(detailsByConst, rawData){
     if (grid.children.length) document.getElementById('parishContainer').appendChild(wrap);
   });
 
-  // Text search
+  // Text search (fast: cached nodes + debounced input)
   const sb = document.getElementById('searchBar');
   function applyTextFilter(){
     const q = sb.value.trim().toLowerCase();
-    document.querySelectorAll('.const').forEach(card=>{
-      const hit = !q || card.dataset.search.includes(q);
-      card.style.display = hit ? '' : 'none';
-    });
-    document.querySelectorAll('.parish').forEach(p=>{
-      const any = p.querySelector('.const-grid').children.length &&
-                  Array.from(p.querySelectorAll('.const')).some(x=> x.style.display!=='none');
-      p.style.display = any ? '' : 'none';
+    let anyVisible = false;
+    window.requestAnimationFrame(()=>{
+      __CONST_NODES.forEach(card=>{
+        const hit = !q || (card.dataset.search || '').includes(q);
+        card.style.display = hit ? '' : 'none';
+        if (hit) anyVisible = true;
+      });
+      document.querySelectorAll('.parish').forEach(p=>{
+        const vis = Array.from(p.querySelectorAll('.const')).some(x=> x.style.display!=='none');
+        p.style.display = vis ? '' : 'none';
+      });
+      const host = document.getElementById('parishContainer');
+      const empty = document.getElementById('emptyMsg');
+      if (!anyVisible){
+        if (!empty){
+          host.insertAdjacentHTML('beforeend',
+            '<div id="emptyMsg" class="card" style="padding:16px; color:var(--muted)">No results — try clearing filters or search.</div>');
+        }
+      } else {
+        if (empty) empty.remove();
+      }
     });
   }
-  sb.oninput = applyTextFilter;
+  sb.oninput = debounce(applyTextFilter, 150);
+}
+
+/* ===== Fast facet filters (parish/party/#) — no rebuild ===== */
+function applyFacetFilters(){
+  const parishSelVal = document.getElementById('parishFilter').value;
+  const partySelVal  = document.getElementById('partyFilter').value;
+  const cnoVal       = document.getElementById('cnoFilter').value.trim();
+
+  window.requestAnimationFrame(()=>{
+    __CONST_NODES.forEach(card=>{
+      const parishOk = !parishSelVal || card.dataset.parish === parishSelVal;
+      const partyOk  = !partySelVal || (card.dataset.parties || '').split('|').includes(partySelVal);
+      const cnoOk    = !cnoVal || (card.dataset.cno || '').startsWith(cnoVal);
+      const show     = parishOk && partyOk && cnoOk;
+      card.style.display = show ? '' : 'none';
+    });
+
+    document.querySelectorAll('.parish').forEach(p=>{
+      const vis = Array.from(p.querySelectorAll('.const')).some(x=> x.style.display!=='none');
+      p.style.display = vis ? '' : 'none';
+    });
+  });
 }
 
 /* ===== Periodic timers + sidebar + ticker ===== */
@@ -621,7 +667,7 @@ function tickTimersAndRecent(){
   }
 }
 
-/* ===== Robust fetch helpers ===== */
+/* ===== Robust fetch helper ===== */
 async function fetchOne(url){
   try{
     const r = await fetch(bust(url), {cache:'no-store'});
@@ -712,6 +758,9 @@ async function loadECJAndData(){
     updateFocusOutline();
 
     document.getElementById('lastUpdated').textContent = "Live • " + new Date().toLocaleTimeString();
+
+    // Cache nodes after rendering for fast filters/search
+    cacheConstNodes();
 
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(tickTimersAndRecent, 1000);
@@ -904,7 +953,7 @@ function openPreviewForKey(key){
     }
   }).addTo(previewMap);
 
-  // Fit to parish bounds, then zoom in +1
+  // Fit to parish bounds, then extra zoom
   let target=null, parish=null;
   previewLayer.eachLayer(l=>{
     const nm = l.feature?.properties?.CONST_NAME || '';
@@ -948,7 +997,6 @@ document.addEventListener('keydown', (e)=>{
     const k = previewKey; closePreview(); if (k) gotoInteractiveKey(k);
   }
 });
-// Close if clicking backdrop
 document.getElementById('previewModal').addEventListener('click', (e)=>{
   if (e.target.id === 'previewModal') closePreview();
 });
@@ -958,6 +1006,31 @@ function setupAutoRefresh(){
   if (refreshTimer) clearInterval(refreshTimer);
   const ms = Number(localStorage.getItem('refreshIntervalMs')||sel.value||AUTO_DEFAULT);
   refreshTimer = setInterval(loadECJAndData, ms);
+}
+
+/* ===== Sort re-render (then re-cache) ===== */
+function applySortRebuild(){
+  const data = window.__rawData || {};
+  const detailsByConst={};
+  Object.values(data).forEach(c=>{
+    const cname=c?.Name||''; const cData=Array.isArray(c?.Data)? c.Data[0] : c?.Data;
+    const cand = Array.isArray(cData?.Candidates)? cData.Candidates : [];
+    if(!cname || !cand.length) return;
+    let key = canonKey(norm(cname));
+    const safePct  = (x)=> Number(x)||0;
+    const safeVote = (x)=> Number(x)||0;
+    const winner = cand.reduce((m,x)=> safeVote(x.Votes)>safeVote(m.Votes)? x : m, cand[0]);
+    const sorted = cand.slice().sort((a,b)=> safePct(b.Percentage)-safePct(a.Percentage)).map(k=>({
+      name:`${(k["First Name"]||'').trim()} ${(k["Last Name"]||'').trim()}`.trim(),
+      party:partyKey(k.Party),
+      votes:safeVote(k.Votes),
+      pct:safePct(k.Percentage)
+    }));
+    detailsByConst[key] = { party:partyKey(winner?.Party), all: sorted };
+  });
+  renderParishBlocks(detailsByConst, data);
+  cacheConstNodes();           // important: refresh cache
+  applyFacetFilters();         // keep current filters active
 }
 
 /* ===== Start ===== */
@@ -973,4 +1046,11 @@ function setupAutoRefresh(){
   // Update the single pill to show local state
   const pill = document.getElementById('pillMain');
   if (pill){ pill.title = 'Using local 2025-data.json'; document.getElementById('mainLag').textContent = 'Local file'; }
+
+  // Wire up filters & sort
+  document.getElementById('parishFilter').addEventListener('change', applyFacetFilters);
+  document.getElementById('partyFilter').addEventListener('change', applyFacetFilters);
+  document.getElementById('cnoFilter').addEventListener('input', debounce(applyFacetFilters, 150));
+  document.getElementById('sortField').addEventListener('change', applySortRebuild);
+  document.getElementById('sortDir').addEventListener('change', applySortRebuild);
 })();
