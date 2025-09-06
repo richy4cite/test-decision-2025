@@ -280,6 +280,10 @@ html[data-theme="dark"] .ticker{background:#0b1220}
 .votes{ font-size: .92rem }
 .pct{ font-size: .82rem }
 
+body.compact .const-head{ /* ... */ }
+body.compact .const-name{ /* ... */ }
+/* etc. Or simply wrap the whole override block in body.compact { ... } */
+
 /* Sidebar recent cards a touch smaller too (optional) */
 .sideitem small{ font-size: .82em }
 
