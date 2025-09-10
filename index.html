@@ -5,129 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Election Results</title>
 <meta name="color-scheme" content="light dark" />
-<!-- Condensed display face for a newsroom feel -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0c0f;
-    --panel:#14161b;
-    --muted:#8a90a2;
-    --text:#e8ebf3;
-    --ink:#0b0c0f;
-    --ink-2:#1b1f29;
-    --border:#242836;
-    --accent:#3b82f6;
-
-    /* Party palette (Jamaica) */
-    --pnp:#ff7f00;
-    --jlp:#009b3a;
-    --uic:#6d28d9;
-    --jpp:#9aa3b2;
-    --ind:#9ca3af;
-
+    --bg:#0b0c0f; --panel:#14161b; --muted:#8a90a2; --text:#e8ebf3;
+    --ink:#0b0c0f; --ink-2:#1b1f29; --border:#242836; --accent:#3b82f6;
+    --pnp:#ff7f00; --jlp:#009b3a; --uic:#6d28d9; --jpp:#9aa3b2; --ind:#9ca3af;
     --bar-bg:#2b2f3a;
-
-    /* Type scale */
     --h1: clamp(1.45rem, 1.1rem + 1.6vw, 2.35rem);
-    --h2: clamp(1.05rem, 0.95rem + .6vw, 1.35rem);
+    --h2: clamp(1.05rem, .95rem + .6vw, 1.35rem);
     --h3: clamp(.95rem, .9rem + .4vw, 1.1rem);
-    --t1: 14px;
-    --t2: 12px;
+    --t1:14px; --t2:12px;
   }
   @media (prefers-color-scheme: light){
-    :root{
-      --bg:#f4f6fb;
-      --panel:#ffffff;
-      --muted:#596079;
-      --text:#0e1320;
-      --ink:#ffffff;
-      --ink-2:#f7f8fb;
-      --border:#e7e9f2;
-      --bar-bg:#eef1f7;
-    }
+    :root{ --bg:#f4f6fb; --panel:#fff; --muted:#596079; --text:#0e1320; --ink:#fff; --ink-2:#f7f8fb; --border:#e7e9f2; --bar-bg:#eef1f7; }
   }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--ink-2); color:var(--text);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    line-height:1.25;
-  }
+  body{ margin:0; background:var(--ink-2); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; line-height:1.25; }
 
-  /* ===== Masthead ===== */
-  header.site{
-    position:sticky; top:0; z-index:20; backdrop-filter: blur(10px);
-    background: color-mix(in oklab, var(--ink) 80%, transparent);
-    border-bottom:1px solid var(--border);
-  }
+  header.site{ position:sticky; top:0; z-index:20; backdrop-filter: blur(10px);
+    background: color-mix(in oklab, var(--ink) 80%, transparent); border-bottom:1px solid var(--border); }
   .wrap{max-width:1200px; margin:0 auto; padding:12px 16px;}
-  .mast{
-    display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-  }
-  .brand{
-    display:flex; gap:12px; align-items:center
-  }
-  .brand .flag{
-    width:30px; height:30px; border-radius:6px; overflow:hidden; display:grid; place-items:center;
-    border:2px solid color-mix(in oklab, var(--text) 85%, transparent);
-  }
+  .mast{ display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .brand{ display:flex; gap:12px; align-items:center }
+  .brand .flag{ width:30px; height:30px; border-radius:6px; overflow:hidden; display:grid; place-items:center;
+    border:2px solid color-mix(in oklab, var(--text) 85%, transparent); }
   .brand .flag svg{width:100%; height:100%}
-  .brand h1{
-    margin:0; font-family:"Roboto Condensed", system-ui, sans-serif; font-weight:700; letter-spacing:.2px;
-    font-size:var(--h1);
-  }
+  .brand h1{ margin:0; font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; letter-spacing:.2px; font-size:var(--h1);}
   .subtle{color:var(--muted); font-size:var(--t1)}
   .totals{ display:flex; gap:18px; flex-wrap:wrap; }
   .t-box{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; min-width:150px; }
-  .t-box .k{font-size:var(--h2); font-weight:700; font-family:"Roboto Condensed", system-ui, sans-serif}
+  .t-box .k{font-size:var(--h2); font-weight:700; font-family:"Roboto Condensed",system-ui,sans-serif}
   .t-box .v{font-size:var(--t1); color:var(--muted)}
 
-  /* Simple sub-nav (desktop first) */
-  nav.sub{
-    display:flex; gap:10px; margin-top:8px; overflow:auto; padding-bottom:6px;
-  }
-  nav.sub a{
-    text-decoration:none; color:var(--text); border:1px solid var(--border);
-    padding:8px 12px; border-radius:999px; font-family:"Roboto Condensed", system-ui, sans-serif; font-weight:700;
-    background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 70%, transparent), color-mix(in oklab, var(--panel) 100%, transparent));
-    white-space:nowrap;
-  }
+  nav.sub{ display:flex; gap:10px; margin-top:8px; overflow:auto; padding-bottom:6px; }
+  nav.sub a{ text-decoration:none; color:var(--text); border:1px solid var(--border); padding:8px 12px; border-radius:999px;
+    font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 70%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); white-space:nowrap; }
   nav.sub a[aria-current="page"]{ outline:2px solid var(--accent); outline-offset:0; }
 
-  /* ===== Toolbar ===== */
   .toolbar{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap }
-  .toolbar input[type="search"],
-  .toolbar select, .toolbar button{
-    padding:10px 12px; border-radius:10px; border:1px solid var(--border);
-    background:var(--panel); color:var(--text);
+  .toolbar input[type="search"], .toolbar select, .toolbar button{
+    padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--text);
   }
   .toolbar input[type="search"]{ flex:1 1 260px; outline:none; }
 
-  /* ===== Layout ===== */
   main{padding:14px 0 40px}
-  .two-col{ display:grid; grid-template-columns: minmax(280px, 430px) 1fr; gap:16px; align-items:start; }
+  .two-col{ display:grid; grid-template-columns: minmax(300px, 460px) 1fr; gap:16px; align-items:start; }
   @media (max-width: 980px){ .two-col{ grid-template-columns: 1fr; } }
 
-  /* ===== Map panel ===== */
-  .map-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden;
-  }
-  .map-card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .map-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .map-card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px }
   .map-wrap{ padding:8px 8px 12px; }
   svg#jmmap{ width:100%; height:auto; display:block; }
   .map-legend{ display:flex; gap:10px; padding:0 12px 12px; flex-wrap:wrap; color:var(--muted); font-size:12px }
   .chip{ display:inline-flex; align-items:center; gap:6px; }
   .dot{ width:12px; height:12px; border-radius:2px; display:inline-block }
   .dot.pnp{ background:var(--pnp) } .dot.jlp{ background:var(--jlp) } .dot.uic{ background:var(--uic) } .dot.jpp{ background:var(--jpp) } .dot.ind{ background:var(--ind) }
-  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width: .8; cursor: pointer; }
+  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width:.8; cursor:pointer; }
   .poly:hover{ filter: brightness(1.1); outline: 1px solid var(--accent); }
 
-  /* ===== Cards grid ===== */
+  .layer-toggle{ display:flex; gap:8px; align-items:center; padding:8px 12px; }
+  .layer-toggle select{ padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--panel); color:var(--text) }
+
   .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
   .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
   .card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .ccap{ font-weight:700; font-size:var(--h3); font-family:"Roboto Condensed", system-ui, sans-serif; letter-spacing:.2px }
+  .ccap{ font-weight:700; font-size:var(--h3); font-family:"Roboto Condensed",system-ui,sans-serif; letter-spacing:.2px }
   .boxes{ font-size:var(--t2); color:var(--muted); white-space:nowrap }
   .leader{ padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .leader .name{font-weight:700}
@@ -153,7 +98,6 @@
     <div class="mast">
       <div class="brand">
         <div class="flag" aria-hidden="true" title="Jamaica flag">
-          <!-- Jamaica flag -->
           <svg viewBox="0 0 3 2" aria-hidden="true" focusable="false">
             <path d="M0 0h3v2H0z" fill="#009B3A"/><path d="M0 0l3 2M3 0L0 2" stroke="#FED100" stroke-width=".35"/>
             <path d="M0 0h3v.9L0 0zM0 2h3v-.9L0 2z" fill="#000"/>
@@ -195,11 +139,22 @@
   <!-- MAP COLUMN -->
   <section class="map-card" id="map" aria-label="Map of constituencies">
     <header>
-      <div class="ccap">Jamaica — Constituency Leaders</div>
+      <div class="ccap">Map — Leaders by Area</div>
       <div class="boxes subtle" id="mapStatus">Loading map…</div>
     </header>
+
+    <div class="layer-toggle">
+      <label for="layerSel" class="subtle">Boundary level:</label>
+      <select id="layerSel">
+        <option value="const">Constituencies (63)</option>
+        <option value="parish">Parishes (14)</option>
+        <option value="ed">Electoral Divisions</option>
+        <option value="pd">Polling Divisions (many)</option>
+      </select>
+    </div>
+
     <div class="map-wrap">
-      <svg id="jmmap" viewBox="0 0 900 480" role="img" aria-label="Jamaica constituencies map"></svg>
+      <svg id="jmmap" viewBox="0 0 900 480" role="img" aria-label="Jamaica map"></svg>
     </div>
     <div class="map-legend">
       <span class="chip"><i class="dot pnp"></i> PNP</span>
@@ -207,7 +162,7 @@
       <span class="chip"><i class="dot uic"></i> UIC</span>
       <span class="chip"><i class="dot jpp"></i> JPP</span>
       <span class="chip"><i class="dot ind"></i> Other/IND</span>
-      <span class="subtle">Data: EOJ boundaries (live), your results JSON.</span>
+      <span class="subtle">Boundaries © EOJ. Results: your JSON.</span>
     </div>
   </section>
 
@@ -220,13 +175,19 @@
 
 <script>
 /* ============================================================
-   1) Fetch your results JSON from 2025-data.json
-   2) Fetch EOJ constituency GeoJSON (reprojected to WGS84)
-   3) Render: totals, cards, and interactive SVG map
-   ============================================================ */
+   Load:
+     - 2025-data.json (results)
+     - EOJ ArcGIS layers (GeoJSON, WGS84): parish/const/ed/pd
+   Render:
+     - totals, list, and an SVG map with layer switching
+   Notes:
+     - Constituencies colored by their leading party.
+     - ED/PD inherit parent constituency leader via CONST_NAME (join).
+============================================================ */
 
 const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
 const fmt = n => (isFinite(n) ? n.toLocaleString() : '—');
+
 const els = {
   grid: document.getElementById('list'),
   empty: document.getElementById('empty'),
@@ -237,26 +198,30 @@ const els = {
   reset: document.getElementById('reset'),
   map: document.getElementById('jmmap'),
   mapStatus: document.getElementById('mapStatus'),
+  layerSel: document.getElementById('layerSel'),
 };
 
-const GEOJSON_URL =
-  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27/query' +
-  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAM,OBJECTID&f=geojson&outSR=4326'; // EOJ constituency outlines  [oai_citation:1‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27)
+const EOJ = {
+  parish: 'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/5/query?where=1%3D1&outFields=PARISH_NAM&f=geojson&outSR=4326',
+  const:  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326',
+  ed:     'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/8/query?where=1%3D1&outFields=ED_NAME,ED_NO,CONST_NAME,PARISH_NAM&f=geojson&outSR=4326',
+  pd:     'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/10/query?where=1%3D1&outFields=PD_NO_,ED_NAME,CONST_NAME,PARISH_NAM&f=geojson&outSR=4326'
+};
 
-/* ---------- Load data ---------- */
+const cache = { geo: {}, rows: null, nameIndex: null };
+
+/* ---------- Load all UI ---------- */
 Promise.all([
-  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); }),
-  fetch(GEOJSON_URL).then(r=>{ if(!r.ok) throw new Error('Failed to load EOJ GeoJSON'); return r.json(); })
-]).then(([raw, geo])=>{
+  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); })
+]).then(([raw])=>{
   const rows = flatten(raw);
-  const nameIndex = indexByName(rows);
+  cache.rows = rows;
+  cache.nameIndex = indexByName(rows);
   renderTotals(rows);
   renderList(rows);
-  renderMap(geo, nameIndex);
-}).catch(err=>{
-  console.error(err);
-  els.mapStatus.textContent = 'Map/data load error.';
-});
+  // default map: constituencies
+  loadLayer('const');
+}).catch(e=>{ console.error(e); els.mapStatus.textContent = 'Data load error.'; });
 
 /* ---------- Transformers ---------- */
 function flatten(data){
@@ -297,9 +262,8 @@ function indexByName(rows){
 }
 function normalizeName(s=''){
   let t = s.toUpperCase().replace(/\s+/g,' ').trim();
-  // Normalize Saint / St.
   t = t.replace(/^ST[.\s]/,'SAINT ');
-  t = t.replace(/\./g,''); // remove punctuation for loose match
+  t = t.replace(/\./g,'');
   return t;
 }
 function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
@@ -307,11 +271,7 @@ function partyLabel(p){ return p || 'IND'; }
 
 /* ---------- Totals & List ---------- */
 function computeTotals(rows){
-  const byLead = rows.reduce((acc,r)=>{
-    const p = r.leader.party || 'OTHER';
-    acc[p] = (acc[p]||0) + 1;
-    return acc;
-  },{});
+  const byLead = rows.reduce((acc,r)=>{ const p = r.leader.party || 'OTHER'; acc[p] = (acc[p]||0)+1; return acc; },{});
   const totalVotes = rows.reduce((s,r)=>s + (r.totalVotes||0),0);
   const avgTurnout = (rows.reduce((s,r)=>s + (r.turnout||0),0) / (rows.length||1));
   return { byLead, totalVotes, avgTurnout: Math.round(avgTurnout) };
@@ -325,15 +285,8 @@ function renderTotals(rows){
       <div class="k"><span class="badge pnp">PNP</span> ${pnp} • <span class="badge jlp">JLP</span> ${jlp} <span class="subtle">(+${other} other)</span></div>
       <div class="v">Constituency leads</div>
     </div>
-    <div class="t-box">
-      <div class="k">${fmt(totalVotes)}</div>
-      <div class="v">Total votes counted</div>
-    </div>
-    <div class="t-box">
-      <div class="k">${avgTurnout}%</div>
-      <div class="v">Avg. turnout</div>
-    </div>
-  `;
+    <div class="t-box"><div class="k">${fmt(totalVotes)}</div><div class="v">Total votes counted</div></div>
+    <div class="t-box"><div class="k">${avgTurnout}%</div><div class="v">Avg. turnout</div></div>`;
 }
 function rowHTML(r){
   const leader = r.leader;
@@ -351,15 +304,11 @@ function rowHTML(r){
         </div>
         <div class="bar" aria-hidden="true"><span class="${slug}" style="width:${c.pct}%;"></span></div>
         <div class="pct">${c.pct.toFixed(Math.abs(c.pct- Math.round(c.pct))<0.01?0:1)}%</div>
-      </div>
-    `;
+      </div>`;
   }).join('');
   return `
   <article class="card" id="card-${r.nameKey}">
-    <header>
-      <div class="ccap">${r.name}</div>
-      <div class="boxes">${r.boxes}</div>
-    </header>
+    <header><div class="ccap">${r.name}</div><div class="boxes">${r.boxes}</div></header>
     <div class="leader">
       <div>
         <div class="name">${leaderName || '—'}</div>
@@ -377,11 +326,6 @@ function rowHTML(r){
   </article>`;
 }
 function renderList(rows){
-  const filtered = applyFilters(rows);
-  els.grid.innerHTML = filtered.map(rowHTML).join('');
-  els.empty.hidden = filtered.length>0;
-}
-function applyFilters(rows){
   const q = (els.q.value||'').trim().toLowerCase();
   const leadSel = els.partyFilter.value;
   let out = rows.filter(r=>{
@@ -400,104 +344,104 @@ function applyFilters(rows){
     case 'turnout': out.sort((a,b)=>b.turnout - a.turnout); break;
     default: out.sort((a,b)=>a.name.localeCompare(b.name));
   }
-  return out;
+  els.grid.innerHTML = out.map(rowHTML).join('');
+  els.empty.hidden = out.length>0;
 }
 
-/* ---------- Map ---------- */
-/* Tiny equirectangular-ish fitter: convert lon/lat to SVG coords by bbox scaling */
-function makeProject(features, viewBoxW=900, viewBoxH=480, pad=10){
-  // collect bbox in lon/lat
-  let minLon= Infinity, minLat= Infinity, maxLon= -Infinity, maxLat= -Infinity;
-  features.forEach(f=>{
-    walkCoords(f.geometry.coordinates, ([lon,lat])=>{
-      if(lon<minLon) minLon=lon;
-      if(lat<minLat) minLat=lat;
-      if(lon>maxLon) maxLon=lon;
-      if(lat>maxLat) maxLat=lat;
-    });
-  });
-  const w = maxLon - minLon;
-  const h = maxLat - minLat;
-  const sx = (viewBoxW - pad*2) / w;
-  const sy = (viewBoxH - pad*2) / h;
-  const s = Math.min(sx, sy);
-  const ox = (viewBoxW - s*w)/2 - s*minLon;
-  const oy = (viewBoxH - s*h)/2 + s*maxLat; // flip Y for SVG
-  return (lon,lat)=>[ s*lon + ox, -s*lat + oy ];
-}
-function walkCoords(coords, cb){
-  // recurse through MultiPolygon/Polygon arrays
-  if(typeof coords[0] === 'number'){ cb(coords); return; }
-  coords.forEach(c=>walkCoords(c, cb));
-}
-function pathFromRings(rings, project){
-  return rings.map(ring=>{
-    return ring.map(([lon,lat],i)=>{
-      const [x,y] = project(lon,lat);
-      return (i?'L':'M') + x.toFixed(2) + ' ' + y.toFixed(2);
-    }).join(' ') + 'Z';
-  }).join(' ');
-}
-function renderMap(geojson, nameIndex){
+/* ---------- Map layer logic ---------- */
+els.layerSel.addEventListener('change', ()=> loadLayer(els.layerSel.value));
+
+async function loadLayer(kind){
   try{
-    const svg = els.map;
-    const features = geojson.features || [];
-    const project = makeProject(features, 900, 480, 8);
-    svg.innerHTML = ''; // clear
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    svg.appendChild(g);
-
-    features.forEach((feat)=>{
-      const cnameRaw = (feat.properties.CONST_NAME || '').toString();
-      const nameKey = normalizeName(cnameRaw);
-      const result = nameIndex.get(nameKey);
-      const party = result?.leader?.party || 'OTHER';
-      const slug = PARTY_COLORS[party] ? partySlug(party) : 'ind';
-      const rings = feat.geometry.type === 'Polygon'
-        ? feat.geometry.coordinates
-        : (feat.geometry.type === 'MultiPolygon'
-            ? feat.geometry.coordinates.flat()
-            : []);
-      const d = pathFromRings(rings, project);
-      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-      p.setAttribute('class', `poly ${slug}`);
-      p.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(`--${slug}`).trim() || '#999');
-      p.setAttribute('d', d);
-      p.setAttribute('data-name', cnameRaw);
-      p.setAttribute('tabindex','0');
-      p.setAttribute('role','img');
-      p.setAttribute('aria-label', `${cnameRaw}: ${result ? partyLabel(result.leader.party) + ' leading' : 'no data'}`);
-
-      // hover title
-      const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-      title.textContent = result
-        ? `${cnameRaw} — ${result.leader.first} ${result.leader.last} (${partyLabel(result.leader.party)})`
-        : `${cnameRaw} — no result data`;
-      p.appendChild(title);
-
-      // Click -> scroll to card, focus
-      p.addEventListener('click', ()=>{
-        const targetId = `card-${nameKey}`;
-        const el = document.getElementById(targetId);
-        if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
-      });
-
-      // Keyboard support
-      p.addEventListener('keydown', (e)=>{
-        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); p.click(); }
-      });
-
-      g.appendChild(p);
-    });
-
-    els.mapStatus.textContent = `Loaded ${features.length} shapes`;
+    els.mapStatus.textContent = 'Loading ' + labelFor(kind) + '…';
+    const url = EOJ[kind];
+    if(!cache.geo[kind]){
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Layer fetch failed: '+kind);
+      cache.geo[kind] = await res.json();
+    }
+    renderMap(cache.geo[kind], kind);
+    els.mapStatus.textContent = 'Showing ' + labelFor(kind);
   }catch(e){
-    console.error(e);
-    els.mapStatus.textContent = 'Map render error';
+    console.error(e); els.mapStatus.textContent = 'Map load error';
   }
 }
 
-/* ---------- Events ---------- */
+function labelFor(kind){
+  return kind==='parish' ? 'Parishes'
+    : kind==='const' ? 'Constituencies'
+    : kind==='ed' ? 'Electoral Divisions'
+    : 'Polling Divisions';
+}
+
+/* Simple bbox-to-viewBox projection */
+function makeProject(features, viewBoxW=900, viewBoxH=480, pad=10){
+  let minLon= Infinity, minLat= Infinity, maxLon= -Infinity, maxLat= -Infinity;
+  features.forEach(f=> walkCoords(f.geometry.coordinates, ([lon,lat])=>{
+    if(lon<minLon) minLon=lon; if(lat<minLat) minLat=lat;
+    if(lon>maxLon) maxLon=lon; if(lat>maxLat) maxLat=lat;
+  }));
+  const w = maxLon - minLon, h = maxLat - minLat;
+  const s = Math.min((viewBoxW - pad*2)/w, (viewBoxH - pad*2)/h);
+  const ox = (viewBoxW - s*w)/2 - s*minLon;
+  const oy = (viewBoxH - s*h)/2 + s*maxLat;
+  return (lon,lat)=>[ s*lon + ox, -s*lat + oy ];
+}
+function walkCoords(coords, cb){ if(typeof coords[0] === 'number'){ cb(coords); return; } coords.forEach(c=>walkCoords(c, cb)); }
+function pathFromRings(rings, project){
+  return rings.map(ring=> ring.map(([lon,lat],i)=>{
+    const [x,y] = project(lon,lat); return (i?'L':'M') + x.toFixed(2) + ' ' + y.toFixed(2);
+  }).join(' ') + 'Z').join(' ');
+}
+
+function renderMap(geojson, kind){
+  const svg = els.map; svg.innerHTML='';
+  const feats = geojson.features||[];
+  const project = makeProject(feats, 900, 480, 8);
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g'); svg.appendChild(g);
+
+  feats.forEach(feat=>{
+    const props = feat.properties||{};
+    const cname = (props.CONST_NAME || props.PARISH_NAM || props.ED_NAME || '').toString();
+    const nameKey = normalizeName(props.CONST_NAME || cname);
+    const result = cache.nameIndex.get(nameKey); // for parish/ED/PD we still use constituency leader via CONST_NAME when present
+    const party = (result && result.leader && result.leader.party) || 'OTHER';
+    const slug = partySlug(party);
+
+    const rings = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates
+                : feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat()
+                : [];
+    const d = pathFromRings(rings, project);
+    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('class', `poly ${slug}`);
+    p.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(`--${slug}`).trim() || '#999');
+    p.setAttribute('d', d);
+
+    // Accessible title per shape
+    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    const label = kind==='parish' ? (props.PARISH_NAM||cname)
+                : kind==='const' ? (props.CONST_NAME||cname)
+                : kind==='ed' ? `${props.ED_NAME||'ED'} — ${props.CONST_NAME||'Const.'}`
+                : `PD ${props.PD_NO_||''} — ${props.ED_NAME||'ED'} — ${props.CONST_NAME||'Const.'}`;
+    title.textContent = result
+      ? `${label} — ${result.leader.first} ${result.leader.last} (${partyLabel(result.leader.party)})`
+      : `${label} — no result data`;
+    p.appendChild(title);
+
+    // Click-to-scroll only when we can resolve a constituency card
+    if(result){
+      p.style.cursor = 'pointer';
+      p.addEventListener('click', ()=>{
+        const el = document.getElementById(`card-${nameKey}`);
+        if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
+      });
+    }
+
+    g.appendChild(p);
+  });
+}
+
+/* ---------- Filters ---------- */
 ['input','change'].forEach(ev=>{
   els.q.addEventListener(ev, onFilters);
   els.partyFilter.addEventListener(ev, onFilters);
@@ -507,18 +451,9 @@ els.reset.addEventListener('click', ()=>{
   els.q.value=''; els.partyFilter.value='all'; els.sort.value='name'; onFilters();
 });
 function onFilters(){
-  // Re-render list only; map coloring stays as-is (leaders don’t change with filters)
-  const allRows = Array.from(document.querySelectorAll('[id^="card-"]')).length
-    ? null // already rendered; do nothing here (we need original rows but we don’t store). In a larger app keep a global.
-    : null;
-  // Since we didn’t keep rows globally, easiest is to refetch and rerender list quickly
-  fetch('2025-data.json').then(r=>r.json()).then(raw=>{
-    const rows = flatten(raw);
-    renderList(rows);
-  });
+  // re-render list using cached rows
+  renderList(cache.rows || []);
 }
 </script>
-
-<!-- Tiny note: the EOJ has an ArcGIS layer exposing the 63 constituency outlines; we query it as GeoJSON.  [oai_citation:2‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27) -->
 </body>
 </html>
