@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Election Results</title>
+<title>Constituencies Map</title>
 <meta name="color-scheme" content="light dark" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,83 +13,39 @@
     --bg:#0b0c0f; --panel:#14161b; --muted:#8a90a2; --text:#e8ebf3;
     --ink:#0b0c0f; --ink-2:#1b1f29; --border:#242836; --accent:#3b82f6;
     --pnp:#ff7f00; --jlp:#009b3a; --uic:#6d28d9; --jpp:#9aa3b2; --ind:#9ca3af;
-    --bar-bg:#2b2f3a;
-    --h1: clamp(1.45rem, 1.1rem + 1.6vw, 2.35rem);
-    --h2: clamp(1.05rem, .95rem + .6vw, 1.35rem);
-    --h3: clamp(.95rem, .9rem + .4vw, 1.1rem);
-    --t1:14px; --t2:12px;
   }
   @media (prefers-color-scheme: light){
-    :root{ --bg:#f4f6fb; --panel:#fff; --muted:#596079; --text:#0e1320; --ink:#fff; --ink-2:#f7f8fb; --border:#e7e9f2; --bar-bg:#eef1f7; }
+    :root{ --bg:#f4f6fb; --panel:#fff; --muted:#596079; --text:#0e1320; --ink:#fff; --ink-2:#f7f8fb; --border:#e7e9f2; }
   }
   *{box-sizing:border-box}
-  body{ margin:0; background:var(--ink-2); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; line-height:1.25; }
+  body{ margin:0; background:var(--ink-2); color:var(--text);
+        font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+  header{ position:sticky; top:0; z-index:5; backdrop-filter:blur(10px);
+          background: color-mix(in oklab, var(--ink) 85%, transparent);
+          border-bottom:1px solid var(--border); }
+  .wrap{ max-width:1200px; margin:0 auto; padding:12px 16px; }
+  .mast{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .flag{ width:30px; height:30px; border:2px solid color-mix(in oklab, var(--text) 85%, transparent);
+         border-radius:6px; overflow:hidden; }
+  h1{ margin:0; font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; letter-spacing:.2px; }
+  .subtle{ color:var(--muted); }
 
-  header.site{ position:sticky; top:0; z-index:20; backdrop-filter: blur(10px);
-    background: color-mix(in oklab, var(--ink) 80%, transparent); border-bottom:1px solid var(--border); }
-  .wrap{max-width:1200px; margin:0 auto; padding:12px 16px;}
-  .mast{ display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-  .brand{ display:flex; gap:12px; align-items:center }
-  .brand .flag{ width:30px; height:30px; border-radius:6px; overflow:hidden; display:grid; place-items:center;
-    border:2px solid color-mix(in oklab, var(--text) 85%, transparent); }
-  .brand .flag svg{width:100%; height:100%}
-  .brand h1{ margin:0; font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; letter-spacing:.2px; font-size:var(--h1);}
-  .subtle{color:var(--muted); font-size:var(--t1)}
-  .totals{ display:flex; gap:18px; flex-wrap:wrap; }
-  .t-box{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; min-width:150px; }
-  .t-box .k{font-size:var(--h2); font-weight:700; font-family:"Roboto Condensed",system-ui,sans-serif}
-  .t-box .v{font-size:var(--t1); color:var(--muted)}
+  main{ padding:14px 0 28px; }
+  .map-shell{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .toolbar{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); }
+  .toolbar .btn{ padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--ink);
+                 color:var(--text); cursor:pointer; }
+  .toolbar .sep{ flex:1 }
+  .status{ font-size:12px; color:var(--muted); }
 
-  nav.sub{ display:flex; gap:10px; margin-top:8px; overflow:auto; padding-bottom:6px; }
-  nav.sub a{ text-decoration:none; color:var(--text); border:1px solid var(--border); padding:8px 12px; border-radius:999px;
-    font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 70%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); white-space:nowrap; }
-  nav.sub a[aria-current="page"]{ outline:2px solid var(--accent); outline-offset:0; }
+  .canvas{ position:relative; aspect-ratio: 900 / 520; }
+  svg{ width:100%; height:100%; display:block; background:color-mix(in oklab, var(--ink-2) 80%, var(--ink) 20%); }
+  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width:.85; cursor:crosshair; }
+  .poly:hover{ filter:brightness(1.07); outline:1px solid var(--accent); }
 
-  .toolbar{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap }
-  .toolbar input[type="search"], .toolbar select, .toolbar button{
-    padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--text);
-  }
-  .toolbar input[type="search"]{ flex:1 1 260px; outline:none; }
-
-  main{padding:14px 0 40px}
-  .two-col{ display:grid; grid-template-columns: minmax(300px, 460px) 1fr; gap:16px; align-items:start; }
-  @media (max-width: 980px){ .two-col{ grid-template-columns: 1fr; } }
-
-  .map-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-  .map-card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px }
-  .map-wrap{ padding:8px 8px 12px; position:relative; }
-  svg#jmmap{ width:100%; height:auto; display:block; }
-  .map-legend{ display:flex; gap:10px; padding:0 12px 12px; flex-wrap:wrap; color:var(--muted); font-size:12px }
-  .chip{ display:inline-flex; align-items:center; gap:6px; }
-  .dot{ width:12px; height:12px; border-radius:2px; display:inline-block }
-  .dot.pnp{ background:var(--pnp) } .dot.jlp{ background:var(--jlp) } .dot.uic{ background:var(--uic) } .dot.jpp{ background:var(--jpp) } .dot.ind{ background:var(--ind) }
-  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width:.8; cursor:pointer; }
-  .poly:hover{ filter: brightness(1.1); outline: 1px solid var(--accent); }
-
-  .layer-toggle{ display:flex; gap:8px; align-items:center; padding:8px 12px; }
-  .layer-toggle select{ padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--panel); color:var(--text) }
-
-  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
-  .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
-  .card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .ccap{ font-weight:700; font-size:var(--h3); font-family:"Roboto Condensed",system-ui,sans-serif; letter-spacing:.2px }
-  .boxes{ font-size:var(--t2); color:var(--muted); white-space:nowrap }
-  .leader{ padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .leader .name{font-weight:700}
-  .badge{ padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#fff; letter-spacing:.2px }
-  .badge.pnp{ background:var(--pnp) } .badge.jlp{ background:var(--jlp) } .badge.uic{ background:var(--uic) } .badge.jpp{ background:var(--jpp) } .badge.ind{ background:var(--ind) }
-  .bars{ padding:8px 12px; display:grid; gap:6px }
-  .row{ display:grid; grid-template-columns: minmax(80px,1.2fr) 3fr auto; align-items:center; gap:8px }
-  .cname{ font-size:13px; color:var(--muted) }
-  .bar{ position:relative; height:10px; background:var(--bar-bg); border-radius:6px; overflow:hidden }
-  .bar > span{ position:absolute; inset:0 auto 0 0; width:0; border-radius:6px }
-  .bar .pnp{ background: var(--pnp) } .bar .jlp{ background: var(--jlp) } .bar .uic{ background: var(--uic) } .bar .jpp{ background: var(--jpp) } .bar .ind{ background: var(--ind) }
-  .pct{ font-weight:700; font-size:12px; text-align:right }
-  .meta{ display:flex; gap:10px; padding:10px 12px; border-top:1px dashed var(--border); color:var(--muted); font-size:12px; flex-wrap:wrap }
-  .kpi{ background: color-mix(in oklab, var(--accent) 14%, transparent); border:1px solid var(--border); padding:6px 8px; border-radius:8px; color:var(--text) }
-  .empty{color:var(--muted); text-align:center; padding:40px 10px}
-  .pill{padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:var(--panel);}
-  .sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+  .pnp{ fill: var(--pnp) } .jlp{ fill: var(--jlp) } .uic{ fill: var(--uic) }
+  .jpp{ fill: var(--jpp) } .ind{ fill: var(--ind) }
 
   /* Tooltip */
   .tip{
@@ -97,156 +53,100 @@
     background:color-mix(in oklab, var(--panel) 96%, #000 4%);
     border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:12px;
     pointer-events:none; box-shadow:0 6px 24px color-mix(in oklab, #000 35%, transparent);
-    max-width:280px;
+    max-width:300px; line-height:1.25;
   }
   .tip .t{font-weight:800; font-family:"Roboto Condensed",system-ui,sans-serif; margin-bottom:4px}
-  .tip .line{display:flex; justify-content:space-between; gap:10px; margin-top:2px}
-  .tip .k{color:var(--muted)}
+  .line{display:flex; justify-content:space-between; gap:10px; margin-top:2px}
+  .k{color:var(--muted)}
 </style>
 </head>
 <body>
-<header class="site">
-  <div class="wrap">
-    <div class="mast">
-      <div class="brand">
-        <div class="flag" aria-hidden="true" title="Jamaica flag">
-          <svg viewBox="0 0 3 2" aria-hidden="true" focusable="false">
-            <path d="M0 0h3v2H0z" fill="#009B3A"/><path d="M0 0l3 2M3 0L0 2" stroke="#FED100" stroke-width=".35"/>
-            <path d="M0 0h3v.9L0 0zM0 2h3v-.9L0 2z" fill="#000"/>
-          </svg>
-        </div>
-        <div>
-          <h1>Election Results</h1>
-          <div class="subtle">Live parliamentary constituencies</div>
-        </div>
+<header>
+  <div class="wrap mast">
+    <div class="brand">
+      <div class="flag" aria-hidden="true">
+        <svg viewBox="0 0 3 2" aria-hidden="true">
+          <path d="M0 0h3v2H0z" fill="#009B3A"/><path d="M0 0l3 2M3 0L0 2" stroke="#FED100" stroke-width=".35"/>
+          <path d="M0 0h3v.9L0 0zM0 2h3v-.9L0 2z" fill="#000"/>
+        </svg>
       </div>
-      <div class="totals" id="totals"></div>
+      <div>
+        <h1>Constituencies Map</h1>
+        <div class="subtle">Hover to see the leader and stats • Wheel to zoom • Drag to pan</div>
+      </div>
     </div>
-
-    <nav class="sub" aria-label="Sections">
-      <a href="#map" aria-current="page">Map</a>
-      <a href="#list">All constituencies</a>
-      <a href="#filters">Filters</a>
-    </nav>
-
-    <div class="toolbar" id="filters">
-      <input id="q" type="search" placeholder="Search constituency or candidate…" aria-label="Search constituencies">
-      <select id="partyFilter" aria-label="Filter by leading party">
-        <option value="all">All leads</option>
-        <option value="PNP">PNP leads</option>
-        <option value="JLP">JLP leads</option>
-        <option value="Other">Other leads</option>
-      </select>
-      <select id="sort" aria-label="Sort results">
-        <option value="name">A–Z</option>
-        <option value="closest">Closest</option>
-        <option value="turnout">Turnout</option>
-      </select>
-      <button id="reset">Reset</button>
-    </div>
+    <a class="subtle" href="./">Back to results</a>
   </div>
 </header>
 
-<main class="wrap two-col">
-  <!-- MAP COLUMN -->
-  <section class="map-card" id="map" aria-label="Map of constituencies">
-    <header>
-      <div class="ccap">Map — Leaders by Area</div>
-      <div class="boxes subtle" id="mapStatus">Loading map…</div>
-    </header>
-
-    <div class="layer-toggle">
-      <label for="layerSel" class="subtle">Boundary level:</label>
-      <select id="layerSel">
-        <option value="const">Constituencies (63)</option>
-        <option value="parish">Parishes (14)</option>
-        <option value="ed">Electoral Divisions</option>
-        <option value="pd">Polling Divisions (many)</option>
-      </select>
+<main class="wrap">
+  <div class="map-shell">
+    <div class="toolbar">
+      <button id="zoomIn" class="btn" title="Zoom in">＋</button>
+      <button id="zoomOut" class="btn" title="Zoom out">－</button>
+      <button id="reset" class="btn" title="Reset view">Reset</button>
+      <div class="sep"></div>
+      <div id="status" class="status">Loading…</div>
     </div>
-
-    <div class="map-wrap">
-      <svg id="jmmap" viewBox="0 0 900 480" role="img" aria-label="Jamaica map"></svg>
-      <div id="tooltip" class="tip" role="status" aria-live="polite"></div>
+    <div class="canvas" id="canvas">
+      <svg id="map" viewBox="0 0 900 520" role="img" aria-label="Jamaica constituencies map">
+        <g id="layer" transform="translate(0,0) scale(1)"></g>
+      </svg>
+      <div id="tip" class="tip" role="status" aria-live="polite"></div>
     </div>
-    <div class="map-legend" id="legend">
-      <span class="chip"><i class="dot pnp"></i> PNP</span>
-      <span class="chip"><i class="dot jlp"></i> JLP</span>
-      <span class="chip"><i class="dot uic"></i> UIC</span>
-      <span class="chip"><i class="dot jpp"></i> JPP</span>
-      <span class="chip"><i class="dot ind"></i> Other/IND</span>
-      <span class="subtle" id="legendNote">Constituencies colored by current leader.</span>
-    </div>
-  </section>
-
-  <!-- LIST COLUMN -->
-  <section>
-    <div id="list" class="grid" aria-live="polite"></div>
-    <div id="empty" class="empty" hidden>No constituencies match your filters.</div>
-  </section>
+  </div>
 </main>
 
 <script>
-/* ============================================================
-   Load:
-     - 2025-data.json (results)
-     - EOJ ArcGIS layers (GeoJSON, WGS84): parish/const/ed/pd
-   Render:
-     - totals, list, and an SVG map with layer switching
-   Additions:
-     - Parish rollup winner (by majority of constituency leaders)
-     - Tooltips with boxes counted, turnout, totals
-============================================================ */
-
+/* ====================== CONFIG ====================== */
 const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
+const CONSTITUENCY_GEOJSON_URL =
+  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/6/query' +
+  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326';
+
 const fmt = n => (isFinite(n) ? n.toLocaleString() : '—');
+const normalize = s=>{
+  let t = String(s||'').toUpperCase().replace(/\s+/g,' ').trim();
+  t = t.replace(/^ST[.\s]/,'SAINT ');
+  return t.replace(/\./g,'');
+};
 
+/* ====================== STATE & ELs ====================== */
 const els = {
-  grid: document.getElementById('list'),
-  empty: document.getElementById('empty'),
-  totals: document.getElementById('totals'),
-  q: document.getElementById('q'),
-  partyFilter: document.getElementById('partyFilter'),
-  sort: document.getElementById('sort'),
+  svg: document.getElementById('map'),
+  layer: document.getElementById('layer'),
+  tip: document.getElementById('tip'),
+  status: document.getElementById('status'),
+  canvas: document.getElementById('canvas'),
+  zoomIn: document.getElementById('zoomIn'),
+  zoomOut: document.getElementById('zoomOut'),
   reset: document.getElementById('reset'),
-  map: document.getElementById('jmmap'),
-  mapStatus: document.getElementById('mapStatus'),
-  layerSel: document.getElementById('layerSel'),
-  tip: document.getElementById('tooltip'),
-  legendNote: document.getElementById('legendNote')
+};
+const state = {
+  rows: null, index: null,
+  // pan/zoom
+  scale: 1, minScale: .9, maxScale: 12,
+  tx: 0, ty: 0, // translation
+  dragging: false, lastX: 0, lastY: 0,
+  // projection (computed)
+  project: null
 };
 
-const EOJ = {
-  parish: 'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/5/query?where=1%3D1&outFields=PARISH_NAM&f=geojson&outSR=4326',
-  const:  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/6/query?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326',
-  ed:     'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/8/query?where=1%3D1&outFields=ED_NAME,ED_NO,CONST_NAME,PARISH_NAM&f=geojson&outSR=4326',
-  pd:     'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/10/query?where=1%3D1&outFields=PD_NO_,ED_NAME,CONST_NAME,PARISH_NAM&f=geojson&outSR=4326'
-};
-
-const cache = {
-  geo: {},           // { kind: geojson }
-  rows: null,        // flattened results rows
-  nameIndex: null,   // Map<CONST_NAME normalized, row>
-  parishRollup: null,// Map<PARISH_NAME normalized, {winner, counts, totalSeats, boxes, turnoutAvg, totalVotes}>
-  constToParish: null// Map<CONST normalized, PARISH raw>
-};
-
-/* ---------- Load base UI ---------- */
+/* ====================== LOAD DATA ====================== */
 Promise.all([
-  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); })
-]).then(([raw])=>{
-  const rows = flatten(raw);
-  cache.rows = rows;
-  cache.nameIndex = indexByName(rows);
-  renderTotals(rows);
-  renderList(rows);
-  // default map: constituencies (also needed later for parish rollup)
-  return loadLayer('const');
-}).then(()=>{
-  // good to go
-}).catch(e=>{ console.error(e); els.mapStatus.textContent = 'Data load error.'; });
+  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); }),
+  fetch(CONSTITUENCY_GEOJSON_URL).then(r=>{ if(!r.ok) throw new Error('Failed to load constituency GeoJSON'); return r.json(); })
+]).then(([raw, geo])=>{
+  state.rows = flatten(raw);
+  state.index = new Map(state.rows.map(r => [normalize(r.name), r]));
+  drawMap(geo);
+  els.status.textContent = `Loaded ${geo.features?.length || 0} constituencies`;
+}).catch(err=>{
+  console.error(err);
+  els.status.textContent = 'Load error';
+});
 
-/* ---------- Transformers ---------- */
+/* ====================== TRANSFORMERS ====================== */
 function flatten(data){
   return Object.entries(data).map(([id, rec])=>{
     const entry = rec.Data?.[0] ?? {};
@@ -256,357 +156,160 @@ function flatten(data){
       last:(c["Last Name"]||'').trim(),
       pct:Number(c.Percentage)||0,
       votes:Number(c.Votes)||0
-    }));
-    cand.sort((a,b)=>b.pct-a.pct || b.votes-a.votes);
-    const leader = cand[0] || {};
-    const runner = cand[1] || {};
-    const leadVotes = leader.votes - (runner.votes||0);
-    const leadPct = leader.pct - (runner.pct||0);
+    })).sort((a,b)=>b.pct-a.pct || b.votes-a.votes);
+    const leader = cand[0]||{}, runner = cand[1]||{};
+    const leadVotes = (leader.votes||0) - (runner.votes||0);
+    const leadPct = (leader.pct||0) - (runner.pct||0);
     return {
-      id,
-      name: rec.Name,
-      nameKey: normalizeName(rec.Name),
-      boxes: entry["Boxes Counted"],
-      boxesPct: Number(entry["Box Counted Percentage"])||0,
-      eligible: Number(entry["Eligible Voter"])||0,
-      turnout: Number(entry["Voter Turnout%"])||0,
+      id, name: rec.Name, nameKey: normalize(rec.Name),
+      boxes: entry["Boxes Counted"], turnout: Number(entry["Voter Turnout%"])||0,
       totalVotes: Number(entry["Total Voting"])||0,
       marginVotes: Number(entry.Margin)||leadVotes,
       marginPct: Math.max(0, Number((leadPct).toFixed(1))),
-      candidates: cand,
-      leader
+      leader, candidates: cand
     };
   });
 }
-function indexByName(rows){
-  const m = new Map();
-  rows.forEach(r=>m.set(r.nameKey, r));
-  return m;
-}
-function normalizeName(s=''){
-  let t = s.toUpperCase().replace(/\s+/g,' ').trim();
-  t = t.replace(/^ST[.\s]/,'SAINT ');
-  t = t.replace(/\./g,'');
-  return t;
-}
-const normalizeParish = normalizeName;
 function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
-function partyLabel(p){ return p || 'IND'; }
-function parseBoxes(str=''){
-  // "90 of 90" -> {counted:90,total:90}
-  const m = String(str).match(/(\d+)\s*of\s*(\d+)/i);
-  return m ? {counted:+m[1], total:+m[2]} : {counted:0,total:0};
-}
 
-/* ---------- Totals & List ---------- */
-function computeTotals(rows){
-  const byLead = rows.reduce((acc,r)=>{ const p = r.leader.party || 'OTHER'; acc[p] = (acc[p]||0)+1; return acc; },{});
-  const totalVotes = rows.reduce((s,r)=>s + (r.totalVotes||0),0);
-  const avgTurnout = (rows.reduce((s,r)=>s + (r.turnout||0),0) / (rows.length||1));
-  return { byLead, totalVotes, avgTurnout: Math.round(avgTurnout) };
-}
-function renderTotals(rows){
-  const {byLead, totalVotes, avgTurnout} = computeTotals(rows);
-  const pnp = byLead.PNP||0, jlp = byLead.JLP||0;
-  const other = Object.entries(byLead).filter(([k])=>!['PNP','JLP'].includes(k)).reduce((s, [,v])=>s+v,0);
-  els.totals.innerHTML = `
-    <div class="t-box">
-      <div class="k"><span class="badge pnp">PNP</span> ${pnp} • <span class="badge jlp">JLP</span> ${jlp} <span class="subtle">(+${other} other)</span></div>
-      <div class="v">Constituency leads</div>
-    </div>
-    <div class="t-box"><div class="k">${fmt(totalVotes)}</div><div class="v">Total votes counted</div></div>
-    <div class="t-box"><div class="k">${avgTurnout}%</div><div class="v">Avg. turnout</div></div>`;
-}
-function rowHTML(r){
-  const leader = r.leader;
-  const leaderParty = partySlug(leader.party);
-  const leaderName = `${leader.first} ${leader.last}`.trim();
-  const bars = r.candidates.slice(0,4).map(c=>{
-    const slug = partySlug(c.party);
-    return `
-      <div class="row">
-        <div class="cname">
-          <span class="pill" style="border-color:transparent; background:transparent">
-            <span class="badge ${slug}">${partyLabel(c.party)}</span>
-          </span>
-          <span>${(c.first + ' ' + c.last).trim()}</span>
-        </div>
-        <div class="bar" aria-hidden="true"><span class="${slug}" style="width:${c.pct}%;"></span></div>
-        <div class="pct">${c.pct.toFixed(Math.abs(c.pct- Math.round(c.pct))<0.01?0:1)}%</div>
-      </div>`;
-  }).join('');
-  return `
-  <article class="card" id="card-${r.nameKey}">
-    <header><div class="ccap">${r.name}</div><div class="boxes">${r.boxes}</div></header>
-    <div class="leader">
-      <div>
-        <div class="name">${leaderName || '—'}</div>
-        <div class="subtle">Leading • <span class="badge ${leaderParty}">${partyLabel(leader.party)}</span></div>
-      </div>
-      <div class="subtle" title="Vote margin">+${fmt(r.marginVotes)} votes</div>
-    </div>
-    <div class="bars">${bars}</div>
-    <div class="meta">
-      <div class="kpi">Turnout: <b>${r.turnout}%</b></div>
-      <div class="kpi">Total votes: <b>${fmt(r.totalVotes)}</b></div>
-      <div class="kpi">Lead: <b>${r.marginPct ? r.marginPct+'%' : '—'}</b></div>
-      <div class="subtle">Eligible: ${fmt(r.eligible)}</div>
-    </div>
-  </article>`;
-}
-function renderList(rows){
-  const q = (els.q.value||'').trim().toLowerCase();
-  const leadSel = els.partyFilter.value;
-  let out = rows.filter(r=>{
-    const nameHit = r.name.toLowerCase().includes(q);
-    const candHit = r.candidates.some(c => (`${c.first} ${c.last}`.toLowerCase().includes(q)));
-    return !q || nameHit || candHit;
-  });
-  if(leadSel!=='all'){
-    out = out.filter(r=>{
-      const p = r.leader.party || 'Other';
-      return leadSel==='Other' ? !['PNP','JLP'].includes(p) : p===leadSel;
-    });
-  }
-  switch(els.sort.value){
-    case 'closest': out.sort((a,b)=>(a.marginPct - b.marginPct) || (a.marginVotes - b.marginVotes)); break;
-    case 'turnout': out.sort((a,b)=>b.turnout - a.turnout); break;
-    default: out.sort((a,b)=>a.name.localeCompare(b.name));
-  }
-  els.grid.innerHTML = out.map(rowHTML).join('');
-  els.empty.hidden = out.length>0;
-}
-
-/* ---------- Map layer logic + rollup ---------- */
-els.layerSel.addEventListener('change', ()=> loadLayer(els.layerSel.value));
-
-async function loadLayer(kind){
-  try{
-    els.mapStatus.textContent = 'Loading ' + labelFor(kind) + '…';
-    const url = EOJ[kind];
-    if(!cache.geo[kind]){
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('Layer fetch failed: '+kind);
-      cache.geo[kind] = await res.json();
-      if(kind==='const') buildConstToParishAndRollup();
-    }
-    if(kind==='parish' && (!cache.parishRollup || !cache.constToParish)){
-      // ensure constituency layer present to compute rollup
-      if(!cache.geo.const){
-        const res = await fetch(EOJ.const);
-        if(!res.ok) throw new Error('Failed to fetch constituencies for rollup');
-        cache.geo.const = await res.json();
-      }
-      buildConstToParishAndRollup();
-    }
-    renderMap(cache.geo[kind], kind);
-    els.mapStatus.textContent = 'Showing ' + labelFor(kind);
-    els.legendNote.textContent = kind==='parish'
-      ? 'Parishes colored by party leading in most constituencies (rollup).'
-      : (kind==='const'
-          ? 'Constituencies colored by current leader.'
-          : 'Electoral/Polling divisions inherit their parent constituency’s leader.');
-  }catch(e){
-    console.error(e); els.mapStatus.textContent = 'Map load error';
-  }
-}
-
-function labelFor(kind){
-  return kind==='parish' ? 'Parishes'
-    : kind==='const' ? 'Constituencies'
-    : kind==='ed' ? 'Electoral Divisions'
-    : 'Polling Divisions';
-}
-
-/* Build:
-   - constToParish: CONST_NAME -> PARISH_NAME
-   - parishRollup: PARISH -> { winner, counts, totalSeats, boxes, turnoutAvg, totalVotes }  */
-function buildConstToParishAndRollup(){
-  const cfeats = cache.geo.const?.features || [];
-  const constToParish = new Map();
-  const parishAgg = new Map(); // key: parishNorm -> agg object
-
-  cfeats.forEach(f=>{
-    const p = f.properties||{};
-    const cname = String(p.CONST_NAME||'');
-    const parishRaw = String(p.PARISH_NAME||p.PARISH_NAM||'');
-    const parishNorm = normalizeParish(parishRaw);
-    const nameKey = normalizeName(cname);
-    constToParish.set(nameKey, parishRaw);
-
-    const row = cache.nameIndex.get(nameKey);
-    const party = (row?.leader?.party) || 'OTHER';
-    const boxes = parseBoxes(row?.boxes||'0 of 0');
-    const entry = parishAgg.get(parishNorm) || {
-      parishRaw, counts:{}, totalSeats:0, boxesCounted:0, boxesTotal:0, turnoutSum:0, totalVotes:0
-    };
-    entry.counts[party] = (entry.counts[party]||0)+1;
-    entry.totalSeats += 1;
-    entry.boxesCounted += boxes.counted;
-    entry.boxesTotal += boxes.total;
-    entry.turnoutSum += (row?.turnout || 0);
-    entry.totalVotes += (row?.totalVotes || 0);
-    parishAgg.set(parishNorm, entry);
-  });
-
-  // decide winners + aggregates
-  parishAgg.forEach((v, k)=>{
-    const winner = Object.entries(v.counts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'OTHER';
-    v.winner = winner;
-    v.turnoutAvg = v.totalSeats ? Math.round(v.turnoutSum / v.totalSeats) : 0;
-  });
-
-  cache.constToParish = constToParish;
-  cache.parishRollup = parishAgg;
-}
-
-/* Simple bbox-to-viewBox projection */
-function makeProject(features, viewBoxW=900, viewBoxH=480, pad=10){
+/* ====================== GEOMETRY HELPERS ====================== */
+function walkCoords(coords, cb){ if(typeof coords[0] === 'number'){ cb(coords); return; } coords.forEach(c=>walkCoords(c, cb)); }
+function bbox(features){
   let minLon= Infinity, minLat= Infinity, maxLon= -Infinity, maxLat= -Infinity;
   features.forEach(f=> walkCoords(f.geometry.coordinates, ([lon,lat])=>{
     if(lon<minLon) minLon=lon; if(lat<minLat) minLat=lat;
     if(lon>maxLon) maxLon=lon; if(lat>maxLat) maxLat=lat;
   }));
+  return [minLon,minLat,maxLon,maxLat];
+}
+function makeProject(features, vw=900, vh=520, pad=10){
+  const [minLon,minLat,maxLon,maxLat] = bbox(features);
   const w = maxLon - minLon, h = maxLat - minLat;
-  const s = Math.min((viewBoxW - pad*2)/w, (viewBoxH - pad*2)/h);
-  const ox = (viewBoxW - s*w)/2 - s*minLon;
-  const oy = (viewBoxH - s*h)/2 + s*maxLat;
+  const s = Math.min((vw - pad*2)/w, (vh - pad*2)/h);
+  const ox = (vw - s*w)/2 - s*minLon;
+  const oy = (vh - s*h)/2 + s*maxLat;
   return (lon,lat)=>[ s*lon + ox, -s*lat + oy ];
 }
-function walkCoords(coords, cb){ if(typeof coords[0] === 'number'){ cb(coords); return; } coords.forEach(c=>walkCoords(c, cb)); }
 function pathFromRings(rings, project){
   return rings.map(ring=> ring.map(([lon,lat],i)=>{
     const [x,y] = project(lon,lat); return (i?'L':'M') + x.toFixed(2) + ' ' + y.toFixed(2);
   }).join(' ') + 'Z').join(' ');
 }
 
-/* Tooltip helpers */
+/* ====================== DRAW MAP ====================== */
+function drawMap(geo){
+  const feats = geo.features || [];
+  state.project = makeProject(feats);
+  els.layer.innerHTML = '';
+
+  for(const feat of feats){
+    const props = feat.properties || {};
+    const cname = (props.CONST_NAME || '').toString();
+    const row = state.index.get(normalize(cname));
+    const party = (row?.leader?.party) || 'OTHER';
+    const slug = partySlug(party);
+
+    const rings = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates
+                : feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat()
+                : [];
+    const d = pathFromRings(rings, state.project);
+
+    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('class', `poly ${slug}`);
+    p.setAttribute('d', d);
+    p.dataset.constName = cname;
+
+    // Hover tooltip (results on hover only)
+    p.addEventListener('mousemove', (e)=>{
+      if(!row){ hideTip(); return; }
+      const html = `
+        <div class="t">${cname}</div>
+        <div class="line"><span class="k">Leader</span><span><b>${row.leader.first||''} ${row.leader.last||''}</b> (${row.leader.party||'—'})</span></div>
+        <div class="line"><span class="k">Lead</span><span>${fmt(row.marginVotes)} votes${row.marginPct?` (${row.marginPct}%)`:''}</span></div>
+        <div class="line"><span class="k">Turnout</span><span>${row.turnout}%</span></div>
+        <div class="line"><span class="k">Boxes</span><span>${row.boxes||'—'}</span></div>
+        <div class="line"><span class="k">Votes</span><span>${fmt(row.totalVotes)}</span></div>
+      `;
+      showTip(html, e);
+    });
+    p.addEventListener('mouseleave', hideTip);
+
+    els.layer.appendChild(p);
+  }
+  resetView();
+}
+
+/* ====================== TOOLTIP ====================== */
 function showTip(html, evt){
   els.tip.innerHTML = html;
   const pad = 14;
   const {clientX:x, clientY:y} = evt;
   const rect = els.tip.getBoundingClientRect();
   const vw = window.innerWidth, vh = window.innerHeight;
-  // position to the right/below cursor, clamped to viewport
   const left = Math.min(vw - rect.width - pad, x + pad);
   const top  = Math.min(vh - rect.height - pad, y + pad);
   els.tip.style.transform = `translate(${left}px, ${top}px)`;
 }
 function hideTip(){ els.tip.style.transform = 'translate(-9999px,-9999px)'; }
 
-function renderMap(geojson, kind){
-  const svg = els.map; svg.innerHTML='';
-  const feats = geojson.features||[];
-  const project = makeProject(feats, 900, 480, 8);
-  const g = document.createElementNS('http://www.w3.org/2000/svg','g'); svg.appendChild(g);
+/* ====================== ZOOM & PAN ====================== */
+function applyTransform(){
+  els.layer.setAttribute('transform', `translate(${state.tx},${state.ty}) scale(${state.scale})`);
+}
+function resetView(){
+  state.scale = 1; state.tx = 0; state.ty = 0; applyTransform();
+}
+function zoomAt(cx, cy, factor){
+  const prev = state.scale;
+  const next = Math.max(state.minScale, Math.min(state.maxScale, prev * factor));
+  if(next === prev) return;
 
-  feats.forEach(feat=>{
-    const props = feat.properties||{};
-    const cname = (props.CONST_NAME || props.PARISH_NAM || props.PARISH_NAME || props.ED_NAME || '').toString();
-    const nameKey = normalizeName(props.CONST_NAME || cname);
-    const row = cache.nameIndex.get(nameKey);
-
-    // Decide color logic
-    let party = 'OTHER';
-    if(kind==='parish'){
-      const pr = normalizeParish(props.PARISH_NAM || props.PARISH_NAME || cname);
-      const roll = cache.parishRollup?.get(pr);
-      party = roll?.winner || 'OTHER';
-    }else{
-      party = (row?.leader?.party) || 'OTHER';
-    }
-    const slug = partySlug(party);
-
-    // Build path
-    const rings = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates
-                : feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat()
-                : [];
-    const d = pathFromRings(rings, project);
-    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-    p.setAttribute('class', `poly ${slug}`);
-    p.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(`--${slug}`).trim() || '#999');
-    p.setAttribute('d', d);
-
-    // Tooltip content
-    p.addEventListener('mousemove', (evt)=>{
-      let html = '';
-      if(kind==='const'){
-        const boxes = parseBoxes(row?.boxes||'0 of 0');
-        html = `
-          <div class="t">${props.CONST_NAME||cname}</div>
-          <div class="line"><span class="k">Leader</span><span><b>${row?.leader?.first||''} ${row?.leader?.last||''}</b> (${partyLabel(row?.leader?.party)})</span></div>
-          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
-          <div class="line"><span class="k">Turnout</span><span>${row?.turnout ?? 0}%</span></div>
-          <div class="line"><span class="k">Votes</span><span>${fmt(row?.totalVotes)}</span></div>
-        `;
-      }else if(kind==='parish'){
-        const prName = props.PARISH_NAM || props.PARISH_NAME || cname;
-        const roll = cache.parishRollup?.get(normalizeParish(prName));
-        const boxes = roll ? `${roll.boxesCounted} of ${roll.boxesTotal}` : '—';
-        html = `
-          <div class="t">${prName}</div>
-          <div class="line"><span class="k">Rollup leader</span><span><b>${partyLabel(roll?.winner)}</b></span></div>
-          <div class="line"><span class="k">Seats</span><span>${Object.entries(roll?.counts||{}).map(([pp,v])=>`${pp}:${v}`).join(' · ') || '—'} (total ${roll?.totalSeats||0})</span></div>
-          <div class="line"><span class="k">Boxes</span><span>${boxes}</span></div>
-          <div class="line"><span class="k">Avg turnout</span><span>${roll?.turnoutAvg ?? 0}%</span></div>
-          <div class="line"><span class="k">Votes counted</span><span>${fmt(roll?.totalVotes||0)}</span></div>
-        `;
-      }else if(kind==='ed'){
-        // Inherit from parent constituency
-        const parent = cache.nameIndex.get(normalizeName(props.CONST_NAME||'')) || null;
-        const boxes = parseBoxes(parent?.boxes||'0 of 0');
-        html = `
-          <div class="t">${props.ED_NAME||'Electoral Division'}</div>
-          <div class="line"><span class="k">Constituency</span><span>${props.CONST_NAME||'—'}</span></div>
-          <div class="line"><span class="k">Leader</span><span><b>${parent?.leader?.first||''} ${parent?.leader?.last||''}</b> (${partyLabel(parent?.leader?.party)})</span></div>
-          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
-          <div class="line"><span class="k">Turnout</span><span>${parent?.turnout ?? 0}%</span></div>
-        `;
-      }else{ // pd
-        const parent = cache.nameIndex.get(normalizeName(props.CONST_NAME||'')) || null;
-        const boxes = parseBoxes(parent?.boxes||'0 of 0');
-        html = `
-          <div class="t">PD ${props.PD_NO_||''}</div>
-          <div class="line"><span class="k">ED</span><span>${props.ED_NAME||'—'}</span></div>
-          <div class="line"><span class="k">Constituency</span><span>${props.CONST_NAME||'—'}</span></div>
-          <div class="line"><span class="k">Leader</span><span><b>${parent?.leader?.first||''} ${parent?.leader?.last||''}</b> (${partyLabel(parent?.leader?.party)})</span></div>
-          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
-          <div class="line"><span class="k">Turnout</span><span>${parent?.turnout ?? 0}%</span></div>
-        `;
-      }
-      showTip(html, evt);
-    });
-    p.addEventListener('mouseleave', hideTip);
-
-    // Click-to-scroll (when applicable)
-    const targetConst = kind==='parish' ? null : (props.CONST_NAME || cname);
-    if(targetConst){
-      const key = normalizeName(targetConst);
-      const hasCard = !!document.getElementById(`card-${key}`);
-      if(hasCard){
-        p.addEventListener('click', ()=>{
-          const el = document.getElementById(`card-${key}`);
-          if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
-        });
-      }
-    }
-
-    g.appendChild(p);
-  });
+  // cursor-centric zoom: adjust translation so the point under cursor stays put
+  // convert screen coords to current layer coords:
+  const svgRect = els.svg.getBoundingClientRect();
+  const x = cx - svgRect.left, y = cy - svgRect.top;
+  state.tx = x - (x - state.tx) * (next/prev);
+  state.ty = y - (y - state.ty) * (next/prev);
+  state.scale = next;
+  applyTransform();
 }
 
-/* ---------- Filters ---------- */
-['input','change'].forEach(ev=>{
-  els.q.addEventListener(ev, onFilters);
-  els.partyFilter.addEventListener(ev, onFilters);
-  els.sort.addEventListener(ev, onFilters);
+// wheel zoom
+els.svg.addEventListener('wheel', (e)=>{
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.15 : 1/1.15;
+  zoomAt(e.clientX, e.clientY, factor);
+}, {passive:false});
+
+// drag to pan
+els.svg.addEventListener('pointerdown', (e)=>{
+  state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
+  els.svg.setPointerCapture(e.pointerId);
 });
-els.reset.addEventListener('click', ()=>{
-  els.q.value=''; els.partyFilter.value='all'; els.sort.value='name'; onFilters();
+els.svg.addEventListener('pointermove', (e)=>{
+  if(!state.dragging) return;
+  const dx = e.clientX - state.lastX, dy = e.clientY - state.lastY;
+  state.lastX = e.clientX; state.lastY = e.clientY;
+  state.tx += dx; state.ty += dy;
+  applyTransform();
 });
-function onFilters(){
-  renderList(cache.rows || []);
-}
+els.svg.addEventListener('pointerup', (e)=>{
+  state.dragging = false;
+  els.svg.releasePointerCapture?.(e.pointerId);
+});
+els.svg.addEventListener('pointerleave', ()=>{ state.dragging = false; });
+
+// buttons
+els.zoomIn.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1.25));
+els.zoomOut.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1/1.25));
+els.reset.addEventListener('click', resetView);
+
+// keyboard shortcuts
+window.addEventListener('keydown', (e)=>{
+  if(e.key === '+') els.zoomIn.click();
+  if(e.key === '-') els.zoomOut.click();
+  if(e.key.toLowerCase() === '0') els.reset.click();
+});
 </script>
 </body>
 </html>
