@@ -57,7 +57,7 @@
 
   .map-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
   .map-card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px }
-  .map-wrap{ padding:8px 8px 12px; }
+  .map-wrap{ padding:8px 8px 12px; position:relative; }
   svg#jmmap{ width:100%; height:auto; display:block; }
   .map-legend{ display:flex; gap:10px; padding:0 12px 12px; flex-wrap:wrap; color:var(--muted); font-size:12px }
   .chip{ display:inline-flex; align-items:center; gap:6px; }
@@ -90,6 +90,18 @@
   .empty{color:var(--muted); text-align:center; padding:40px 10px}
   .pill{padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:var(--panel);}
   .sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+
+  /* Tooltip */
+  .tip{
+    position:absolute; inset:auto auto 0 0; transform:translate(-9999px,-9999px);
+    background:color-mix(in oklab, var(--panel) 96%, #000 4%);
+    border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:12px;
+    pointer-events:none; box-shadow:0 6px 24px color-mix(in oklab, #000 35%, transparent);
+    max-width:280px;
+  }
+  .tip .t{font-weight:800; font-family:"Roboto Condensed",system-ui,sans-serif; margin-bottom:4px}
+  .tip .line{display:flex; justify-content:space-between; gap:10px; margin-top:2px}
+  .tip .k{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -155,14 +167,15 @@
 
     <div class="map-wrap">
       <svg id="jmmap" viewBox="0 0 900 480" role="img" aria-label="Jamaica map"></svg>
+      <div id="tooltip" class="tip" role="status" aria-live="polite"></div>
     </div>
-    <div class="map-legend">
+    <div class="map-legend" id="legend">
       <span class="chip"><i class="dot pnp"></i> PNP</span>
       <span class="chip"><i class="dot jlp"></i> JLP</span>
       <span class="chip"><i class="dot uic"></i> UIC</span>
       <span class="chip"><i class="dot jpp"></i> JPP</span>
       <span class="chip"><i class="dot ind"></i> Other/IND</span>
-      <span class="subtle">Boundaries © EOJ. Results: your JSON.</span>
+      <span class="subtle" id="legendNote">Constituencies colored by current leader.</span>
     </div>
   </section>
 
@@ -180,9 +193,9 @@
      - EOJ ArcGIS layers (GeoJSON, WGS84): parish/const/ed/pd
    Render:
      - totals, list, and an SVG map with layer switching
-   Notes:
-     - Constituencies colored by their leading party.
-     - ED/PD inherit parent constituency leader via CONST_NAME (join).
+   Additions:
+     - Parish rollup winner (by majority of constituency leaders)
+     - Tooltips with boxes counted, turnout, totals
 ============================================================ */
 
 const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
@@ -199,6 +212,8 @@ const els = {
   map: document.getElementById('jmmap'),
   mapStatus: document.getElementById('mapStatus'),
   layerSel: document.getElementById('layerSel'),
+  tip: document.getElementById('tooltip'),
+  legendNote: document.getElementById('legendNote')
 };
 
 const EOJ = {
@@ -208,9 +223,15 @@ const EOJ = {
   pd:     'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/10/query?where=1%3D1&outFields=PD_NO_,ED_NAME,CONST_NAME,PARISH_NAM&f=geojson&outSR=4326'
 };
 
-const cache = { geo: {}, rows: null, nameIndex: null };
+const cache = {
+  geo: {},           // { kind: geojson }
+  rows: null,        // flattened results rows
+  nameIndex: null,   // Map<CONST_NAME normalized, row>
+  parishRollup: null,// Map<PARISH_NAME normalized, {winner, counts, totalSeats, boxes, turnoutAvg, totalVotes}>
+  constToParish: null// Map<CONST normalized, PARISH raw>
+};
 
-/* ---------- Load all UI ---------- */
+/* ---------- Load base UI ---------- */
 Promise.all([
   fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); })
 ]).then(([raw])=>{
@@ -219,8 +240,10 @@ Promise.all([
   cache.nameIndex = indexByName(rows);
   renderTotals(rows);
   renderList(rows);
-  // default map: constituencies
-  loadLayer('const');
+  // default map: constituencies (also needed later for parish rollup)
+  return loadLayer('const');
+}).then(()=>{
+  // good to go
 }).catch(e=>{ console.error(e); els.mapStatus.textContent = 'Data load error.'; });
 
 /* ---------- Transformers ---------- */
@@ -266,8 +289,14 @@ function normalizeName(s=''){
   t = t.replace(/\./g,'');
   return t;
 }
+const normalizeParish = normalizeName;
 function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
 function partyLabel(p){ return p || 'IND'; }
+function parseBoxes(str=''){
+  // "90 of 90" -> {counted:90,total:90}
+  const m = String(str).match(/(\d+)\s*of\s*(\d+)/i);
+  return m ? {counted:+m[1], total:+m[2]} : {counted:0,total:0};
+}
 
 /* ---------- Totals & List ---------- */
 function computeTotals(rows){
@@ -348,7 +377,7 @@ function renderList(rows){
   els.empty.hidden = out.length>0;
 }
 
-/* ---------- Map layer logic ---------- */
+/* ---------- Map layer logic + rollup ---------- */
 els.layerSel.addEventListener('change', ()=> loadLayer(els.layerSel.value));
 
 async function loadLayer(kind){
@@ -359,9 +388,24 @@ async function loadLayer(kind){
       const res = await fetch(url);
       if(!res.ok) throw new Error('Layer fetch failed: '+kind);
       cache.geo[kind] = await res.json();
+      if(kind==='const') buildConstToParishAndRollup();
+    }
+    if(kind==='parish' && (!cache.parishRollup || !cache.constToParish)){
+      // ensure constituency layer present to compute rollup
+      if(!cache.geo.const){
+        const res = await fetch(EOJ.const);
+        if(!res.ok) throw new Error('Failed to fetch constituencies for rollup');
+        cache.geo.const = await res.json();
+      }
+      buildConstToParishAndRollup();
     }
     renderMap(cache.geo[kind], kind);
     els.mapStatus.textContent = 'Showing ' + labelFor(kind);
+    els.legendNote.textContent = kind==='parish'
+      ? 'Parishes colored by party leading in most constituencies (rollup).'
+      : (kind==='const'
+          ? 'Constituencies colored by current leader.'
+          : 'Electoral/Polling divisions inherit their parent constituency’s leader.');
   }catch(e){
     console.error(e); els.mapStatus.textContent = 'Map load error';
   }
@@ -372,6 +416,48 @@ function labelFor(kind){
     : kind==='const' ? 'Constituencies'
     : kind==='ed' ? 'Electoral Divisions'
     : 'Polling Divisions';
+}
+
+/* Build:
+   - constToParish: CONST_NAME -> PARISH_NAME
+   - parishRollup: PARISH -> { winner, counts, totalSeats, boxes, turnoutAvg, totalVotes }  */
+function buildConstToParishAndRollup(){
+  const cfeats = cache.geo.const?.features || [];
+  const constToParish = new Map();
+  const parishAgg = new Map(); // key: parishNorm -> agg object
+
+  cfeats.forEach(f=>{
+    const p = f.properties||{};
+    const cname = String(p.CONST_NAME||'');
+    const parishRaw = String(p.PARISH_NAME||p.PARISH_NAM||'');
+    const parishNorm = normalizeParish(parishRaw);
+    const nameKey = normalizeName(cname);
+    constToParish.set(nameKey, parishRaw);
+
+    const row = cache.nameIndex.get(nameKey);
+    const party = (row?.leader?.party) || 'OTHER';
+    const boxes = parseBoxes(row?.boxes||'0 of 0');
+    const entry = parishAgg.get(parishNorm) || {
+      parishRaw, counts:{}, totalSeats:0, boxesCounted:0, boxesTotal:0, turnoutSum:0, totalVotes:0
+    };
+    entry.counts[party] = (entry.counts[party]||0)+1;
+    entry.totalSeats += 1;
+    entry.boxesCounted += boxes.counted;
+    entry.boxesTotal += boxes.total;
+    entry.turnoutSum += (row?.turnout || 0);
+    entry.totalVotes += (row?.totalVotes || 0);
+    parishAgg.set(parishNorm, entry);
+  });
+
+  // decide winners + aggregates
+  parishAgg.forEach((v, k)=>{
+    const winner = Object.entries(v.counts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'OTHER';
+    v.winner = winner;
+    v.turnoutAvg = v.totalSeats ? Math.round(v.turnoutSum / v.totalSeats) : 0;
+  });
+
+  cache.constToParish = constToParish;
+  cache.parishRollup = parishAgg;
 }
 
 /* Simple bbox-to-viewBox projection */
@@ -394,6 +480,20 @@ function pathFromRings(rings, project){
   }).join(' ') + 'Z').join(' ');
 }
 
+/* Tooltip helpers */
+function showTip(html, evt){
+  els.tip.innerHTML = html;
+  const pad = 14;
+  const {clientX:x, clientY:y} = evt;
+  const rect = els.tip.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  // position to the right/below cursor, clamped to viewport
+  const left = Math.min(vw - rect.width - pad, x + pad);
+  const top  = Math.min(vh - rect.height - pad, y + pad);
+  els.tip.style.transform = `translate(${left}px, ${top}px)`;
+}
+function hideTip(){ els.tip.style.transform = 'translate(-9999px,-9999px)'; }
+
 function renderMap(geojson, kind){
   const svg = els.map; svg.innerHTML='';
   const feats = geojson.features||[];
@@ -402,12 +502,22 @@ function renderMap(geojson, kind){
 
   feats.forEach(feat=>{
     const props = feat.properties||{};
-    const cname = (props.CONST_NAME || props.PARISH_NAM || props.ED_NAME || '').toString();
+    const cname = (props.CONST_NAME || props.PARISH_NAM || props.PARISH_NAME || props.ED_NAME || '').toString();
     const nameKey = normalizeName(props.CONST_NAME || cname);
-    const result = cache.nameIndex.get(nameKey); // for parish/ED/PD we still use constituency leader via CONST_NAME when present
-    const party = (result && result.leader && result.leader.party) || 'OTHER';
+    const row = cache.nameIndex.get(nameKey);
+
+    // Decide color logic
+    let party = 'OTHER';
+    if(kind==='parish'){
+      const pr = normalizeParish(props.PARISH_NAM || props.PARISH_NAME || cname);
+      const roll = cache.parishRollup?.get(pr);
+      party = roll?.winner || 'OTHER';
+    }else{
+      party = (row?.leader?.party) || 'OTHER';
+    }
     const slug = partySlug(party);
 
+    // Build path
     const rings = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates
                 : feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat()
                 : [];
@@ -417,24 +527,68 @@ function renderMap(geojson, kind){
     p.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(`--${slug}`).trim() || '#999');
     p.setAttribute('d', d);
 
-    // Accessible title per shape
-    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-    const label = kind==='parish' ? (props.PARISH_NAM||cname)
-                : kind==='const' ? (props.CONST_NAME||cname)
-                : kind==='ed' ? `${props.ED_NAME||'ED'} — ${props.CONST_NAME||'Const.'}`
-                : `PD ${props.PD_NO_||''} — ${props.ED_NAME||'ED'} — ${props.CONST_NAME||'Const.'}`;
-    title.textContent = result
-      ? `${label} — ${result.leader.first} ${result.leader.last} (${partyLabel(result.leader.party)})`
-      : `${label} — no result data`;
-    p.appendChild(title);
+    // Tooltip content
+    p.addEventListener('mousemove', (evt)=>{
+      let html = '';
+      if(kind==='const'){
+        const boxes = parseBoxes(row?.boxes||'0 of 0');
+        html = `
+          <div class="t">${props.CONST_NAME||cname}</div>
+          <div class="line"><span class="k">Leader</span><span><b>${row?.leader?.first||''} ${row?.leader?.last||''}</b> (${partyLabel(row?.leader?.party)})</span></div>
+          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
+          <div class="line"><span class="k">Turnout</span><span>${row?.turnout ?? 0}%</span></div>
+          <div class="line"><span class="k">Votes</span><span>${fmt(row?.totalVotes)}</span></div>
+        `;
+      }else if(kind==='parish'){
+        const prName = props.PARISH_NAM || props.PARISH_NAME || cname;
+        const roll = cache.parishRollup?.get(normalizeParish(prName));
+        const boxes = roll ? `${roll.boxesCounted} of ${roll.boxesTotal}` : '—';
+        html = `
+          <div class="t">${prName}</div>
+          <div class="line"><span class="k">Rollup leader</span><span><b>${partyLabel(roll?.winner)}</b></span></div>
+          <div class="line"><span class="k">Seats</span><span>${Object.entries(roll?.counts||{}).map(([pp,v])=>`${pp}:${v}`).join(' · ') || '—'} (total ${roll?.totalSeats||0})</span></div>
+          <div class="line"><span class="k">Boxes</span><span>${boxes}</span></div>
+          <div class="line"><span class="k">Avg turnout</span><span>${roll?.turnoutAvg ?? 0}%</span></div>
+          <div class="line"><span class="k">Votes counted</span><span>${fmt(roll?.totalVotes||0)}</span></div>
+        `;
+      }else if(kind==='ed'){
+        // Inherit from parent constituency
+        const parent = cache.nameIndex.get(normalizeName(props.CONST_NAME||'')) || null;
+        const boxes = parseBoxes(parent?.boxes||'0 of 0');
+        html = `
+          <div class="t">${props.ED_NAME||'Electoral Division'}</div>
+          <div class="line"><span class="k">Constituency</span><span>${props.CONST_NAME||'—'}</span></div>
+          <div class="line"><span class="k">Leader</span><span><b>${parent?.leader?.first||''} ${parent?.leader?.last||''}</b> (${partyLabel(parent?.leader?.party)})</span></div>
+          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
+          <div class="line"><span class="k">Turnout</span><span>${parent?.turnout ?? 0}%</span></div>
+        `;
+      }else{ // pd
+        const parent = cache.nameIndex.get(normalizeName(props.CONST_NAME||'')) || null;
+        const boxes = parseBoxes(parent?.boxes||'0 of 0');
+        html = `
+          <div class="t">PD ${props.PD_NO_||''}</div>
+          <div class="line"><span class="k">ED</span><span>${props.ED_NAME||'—'}</span></div>
+          <div class="line"><span class="k">Constituency</span><span>${props.CONST_NAME||'—'}</span></div>
+          <div class="line"><span class="k">Leader</span><span><b>${parent?.leader?.first||''} ${parent?.leader?.last||''}</b> (${partyLabel(parent?.leader?.party)})</span></div>
+          <div class="line"><span class="k">Boxes</span><span>${boxes.counted} of ${boxes.total}</span></div>
+          <div class="line"><span class="k">Turnout</span><span>${parent?.turnout ?? 0}%</span></div>
+        `;
+      }
+      showTip(html, evt);
+    });
+    p.addEventListener('mouseleave', hideTip);
 
-    // Click-to-scroll only when we can resolve a constituency card
-    if(result){
-      p.style.cursor = 'pointer';
-      p.addEventListener('click', ()=>{
-        const el = document.getElementById(`card-${nameKey}`);
-        if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
-      });
+    // Click-to-scroll (when applicable)
+    const targetConst = kind==='parish' ? null : (props.CONST_NAME || cname);
+    if(targetConst){
+      const key = normalizeName(targetConst);
+      const hasCard = !!document.getElementById(`card-${key}`);
+      if(hasCard){
+        p.addEventListener('click', ()=>{
+          const el = document.getElementById(`card-${key}`);
+          if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
+        });
+      }
     }
 
     g.appendChild(p);
@@ -451,7 +605,6 @@ els.reset.addEventListener('click', ()=>{
   els.q.value=''; els.partyFilter.value='all'; els.sort.value='name'; onFilters();
 });
 function onFilters(){
-  // re-render list using cached rows
   renderList(cache.rows || []);
 }
 </script>
