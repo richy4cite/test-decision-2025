@@ -3,8 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Election Results — AP-style</title>
+<title>Election Results</title>
 <meta name="color-scheme" content="light dark" />
+<!-- Condensed display face for a newsroom feel -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0b0c0f;
@@ -13,23 +17,20 @@
     --text:#e8ebf3;
     --ink:#0b0c0f;
     --ink-2:#1b1f29;
-    --accent:#3b82f6;
     --border:#242836;
+    --accent:#3b82f6;
 
-    /* Party colors (Jamaica) */
-    --pnp:#ff7f00;         /* orange */
-    --jlp:#009b3a;         /* green */
-    --uic:#6d28d9;         /* purple-ish */
-    --jpp:#9aa3b2;         /* neutral gray */
-    --ind:#9ca3af;         /* indie gray */
+    /* Party palette (Jamaica) */
+    --pnp:#ff7f00;
+    --jlp:#009b3a;
+    --uic:#6d28d9;
+    --jpp:#9aa3b2;
+    --ind:#9ca3af;
 
-    /* Bars */
-    --bar-bg: #2b2f3a;
-    --win: #00d47e;
-    --lose: #ef4444;
+    --bar-bg:#2b2f3a;
 
-    /* AP-style typographic scale */
-    --h1: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
+    /* Type scale */
+    --h1: clamp(1.45rem, 1.1rem + 1.6vw, 2.35rem);
     --h2: clamp(1.05rem, 0.95rem + .6vw, 1.35rem);
     --h3: clamp(.95rem, .9rem + .4vw, 1.1rem);
     --t1: 14px;
@@ -50,104 +51,99 @@
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--ink-2); color:var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
     line-height:1.25;
   }
+
+  /* ===== Masthead ===== */
   header.site{
-    position:sticky; top:0; z-index:10; backdrop-filter: blur(10px);
+    position:sticky; top:0; z-index:20; backdrop-filter: blur(10px);
     background: color-mix(in oklab, var(--ink) 80%, transparent);
     border-bottom:1px solid var(--border);
   }
-  .wrap{max-width:1100px; margin:0 auto; padding:12px 16px;}
+  .wrap{max-width:1200px; margin:0 auto; padding:12px 16px;}
   .mast{
     display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap;
   }
-  .brand{display:flex; gap:10px; align-items:center}
-  .brand .logo{
-    width:28px; height:28px; border:2px solid var(--text); color:var(--text);
-    font-weight:800; display:grid; place-items:center; border-radius:4px;
+  .brand{
+    display:flex; gap:12px; align-items:center
   }
-  .brand h1{margin:0; font-size:var(--h1); letter-spacing:.2px}
+  .brand .flag{
+    width:30px; height:30px; border-radius:6px; overflow:hidden; display:grid; place-items:center;
+    border:2px solid color-mix(in oklab, var(--text) 85%, transparent);
+  }
+  .brand .flag svg{width:100%; height:100%}
+  .brand h1{
+    margin:0; font-family:"Roboto Condensed", system-ui, sans-serif; font-weight:700; letter-spacing:.2px;
+    font-size:var(--h1);
+  }
   .subtle{color:var(--muted); font-size:var(--t1)}
-  .totals{
-    display:flex; gap:18px; flex-wrap:wrap;
-  }
-  .t-box{
-    background:var(--panel); border:1px solid var(--border); border-radius:10px;
-    padding:10px 12px; min-width:150px;
-  }
-  .t-box .k{font-size:var(--h2); font-weight:700}
+  .totals{ display:flex; gap:18px; flex-wrap:wrap; }
+  .t-box{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; min-width:150px; }
+  .t-box .k{font-size:var(--h2); font-weight:700; font-family:"Roboto Condensed", system-ui, sans-serif}
   .t-box .v{font-size:var(--t1); color:var(--muted)}
-  .toolbar{
-    display:flex; gap:10px; margin-top:10px; flex-wrap:wrap
+
+  /* Simple sub-nav (desktop first) */
+  nav.sub{
+    display:flex; gap:10px; margin-top:8px; overflow:auto; padding-bottom:6px;
   }
-  .toolbar input[type="search"]{
-    flex:1 1 240px; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
-    background:var(--panel); color:var(--text); outline:none;
+  nav.sub a{
+    text-decoration:none; color:var(--text); border:1px solid var(--border);
+    padding:8px 12px; border-radius:999px; font-family:"Roboto Condensed", system-ui, sans-serif; font-weight:700;
+    background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 70%, transparent), color-mix(in oklab, var(--panel) 100%, transparent));
+    white-space:nowrap;
   }
+  nav.sub a[aria-current="page"]{ outline:2px solid var(--accent); outline-offset:0; }
+
+  /* ===== Toolbar ===== */
+  .toolbar{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap }
+  .toolbar input[type="search"],
   .toolbar select, .toolbar button{
     padding:10px 12px; border-radius:10px; border:1px solid var(--border);
-    background:var(--panel); color:var(--text); cursor:pointer;
+    background:var(--panel); color:var(--text);
   }
-  .toolbar .seg{
-    display:flex; border:1px solid var(--border); border-radius:10px; overflow:hidden
-  }
-  .toolbar .seg button{
-    border:0; background:transparent; padding:10px 12px; color:var(--muted)
-  }
-  .toolbar .seg button.active{background:var(--accent); color:#fff}
+  .toolbar input[type="search"]{ flex:1 1 260px; outline:none; }
+
+  /* ===== Layout ===== */
   main{padding:14px 0 40px}
-  .grid{
-    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px;
-  }
-  .card{
+  .two-col{ display:grid; grid-template-columns: minmax(280px, 430px) 1fr; gap:16px; align-items:start; }
+  @media (max-width: 980px){ .two-col{ grid-template-columns: 1fr; } }
+
+  /* ===== Map panel ===== */
+  .map-card{
     background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden;
-    display:flex; flex-direction:column;
   }
-  .card header{
-    padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
-  .ccap{ font-weight:700; font-size:var(--h3); }
+  .map-card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .map-wrap{ padding:8px 8px 12px; }
+  svg#jmmap{ width:100%; height:auto; display:block; }
+  .map-legend{ display:flex; gap:10px; padding:0 12px 12px; flex-wrap:wrap; color:var(--muted); font-size:12px }
+  .chip{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:12px; height:12px; border-radius:2px; display:inline-block }
+  .dot.pnp{ background:var(--pnp) } .dot.jlp{ background:var(--jlp) } .dot.uic{ background:var(--uic) } .dot.jpp{ background:var(--jpp) } .dot.ind{ background:var(--ind) }
+  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width: .8; cursor: pointer; }
+  .poly:hover{ filter: brightness(1.1); outline: 1px solid var(--accent); }
+
+  /* ===== Cards grid ===== */
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
+  .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .card header{ padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .ccap{ font-weight:700; font-size:var(--h3); font-family:"Roboto Condensed", system-ui, sans-serif; letter-spacing:.2px }
   .boxes{ font-size:var(--t2); color:var(--muted); white-space:nowrap }
-  .leader{
-    padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
+  .leader{ padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .leader .name{font-weight:700}
-  .leader .badge{
-    padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#fff; letter-spacing:.2px
-  }
-  .badge.pnp{ background:var(--pnp) }
-  .badge.jlp{ background:var(--jlp) }
-  .badge.uic{ background:var(--uic) }
-  .badge.jpp{ background:var(--jpp) }
-  .badge.ind{ background:var(--ind) }
+  .badge{ padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#fff; letter-spacing:.2px }
+  .badge.pnp{ background:var(--pnp) } .badge.jlp{ background:var(--jlp) } .badge.uic{ background:var(--uic) } .badge.jpp{ background:var(--jpp) } .badge.ind{ background:var(--ind) }
   .bars{ padding:8px 12px; display:grid; gap:6px }
-  .row{
-    display:grid; grid-template-columns: minmax(80px,1.2fr) 3fr auto; align-items:center; gap:8px
-  }
+  .row{ display:grid; grid-template-columns: minmax(80px,1.2fr) 3fr auto; align-items:center; gap:8px }
   .cname{ font-size:13px; color:var(--muted) }
-  .bar{
-    position:relative; height:10px; background:var(--bar-bg); border-radius:6px; overflow:hidden
-  }
-  .bar > span{
-    position:absolute; inset:0 auto 0 0; width:0; border-radius:6px
-  }
-  .bar .pnp{ background: var(--pnp) }
-  .bar .jlp{ background: var(--jlp) }
-  .bar .uic{ background: var(--uic) }
-  .bar .jpp{ background: var(--jpp) }
-  .bar .ind{ background: var(--ind) }
+  .bar{ position:relative; height:10px; background:var(--bar-bg); border-radius:6px; overflow:hidden }
+  .bar > span{ position:absolute; inset:0 auto 0 0; width:0; border-radius:6px }
+  .bar .pnp{ background: var(--pnp) } .bar .jlp{ background: var(--jlp) } .bar .uic{ background: var(--uic) } .bar .jpp{ background: var(--jpp) } .bar .ind{ background: var(--ind) }
   .pct{ font-weight:700; font-size:12px; text-align:right }
-  .meta{
-    display:flex; gap:10px; padding:10px 12px; border-top:1px dashed var(--border); color:var(--muted); font-size:12px; flex-wrap:wrap
-  }
-  .kpi{
-    background: color-mix(in oklab, var(--accent) 14%, transparent);
-    border:1px solid var(--border); padding:6px 8px; border-radius:8px; color:var(--text)
-  }
+  .meta{ display:flex; gap:10px; padding:10px 12px; border-top:1px dashed var(--border); color:var(--muted); font-size:12px; flex-wrap:wrap }
+  .kpi{ background: color-mix(in oklab, var(--accent) 14%, transparent); border:1px solid var(--border); padding:6px 8px; border-radius:8px; color:var(--text) }
   .empty{color:var(--muted); text-align:center; padding:40px 10px}
   .pill{padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:var(--panel);}
-  .muted{color:var(--muted)}
   .sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
 </style>
 </head>
@@ -156,123 +152,120 @@
   <div class="wrap">
     <div class="mast">
       <div class="brand">
-        <div class="logo" aria-hidden="true">AP</div>
+        <div class="flag" aria-hidden="true" title="Jamaica flag">
+          <!-- Jamaica flag -->
+          <svg viewBox="0 0 3 2" aria-hidden="true" focusable="false">
+            <path d="M0 0h3v2H0z" fill="#009B3A"/><path d="M0 0l3 2M3 0L0 2" stroke="#FED100" stroke-width=".35"/>
+            <path d="M0 0h3v.9L0 0zM0 2h3v-.9L0 2z" fill="#000"/>
+          </svg>
+        </div>
         <div>
-          <h1>Election Results <span class="subtle">AP-style</span></h1>
-          <div class="subtle">Live Jamaica parliamentary constituencies</div>
+          <h1>Election Results</h1>
+          <div class="subtle">Live parliamentary constituencies</div>
         </div>
       </div>
-      <div class="totals" id="totals">
-        <!-- Injected -->
-      </div>
+      <div class="totals" id="totals"></div>
     </div>
 
-    <div class="toolbar">
+    <nav class="sub" aria-label="Sections">
+      <a href="#map" aria-current="page">Map</a>
+      <a href="#list">All constituencies</a>
+      <a href="#filters">Filters</a>
+    </nav>
+
+    <div class="toolbar" id="filters">
       <input id="q" type="search" placeholder="Search constituency or candidate…" aria-label="Search constituencies">
-      <div class="seg" role="tablist" aria-label="Sort">
-        <button class="active" data-sort="name" role="tab" aria-selected="true">A–Z</button>
-        <button data-sort="closest" role="tab">Closest</button>
-        <button data-sort="turnout" role="tab">Turnout</button>
-      </div>
       <select id="partyFilter" aria-label="Filter by leading party">
         <option value="all">All leads</option>
         <option value="PNP">PNP leads</option>
         <option value="JLP">JLP leads</option>
         <option value="Other">Other leads</option>
       </select>
+      <select id="sort" aria-label="Sort results">
+        <option value="name">A–Z</option>
+        <option value="closest">Closest</option>
+        <option value="turnout">Turnout</option>
+      </select>
       <button id="reset">Reset</button>
     </div>
   </div>
 </header>
 
-<main class="wrap">
-  <div id="grid" class="grid" aria-live="polite"></div>
-  <div id="empty" class="empty" hidden>No constituencies match your filters.</div>
+<main class="wrap two-col">
+  <!-- MAP COLUMN -->
+  <section class="map-card" id="map" aria-label="Map of constituencies">
+    <header>
+      <div class="ccap">Jamaica — Constituency Leaders</div>
+      <div class="boxes subtle" id="mapStatus">Loading map…</div>
+    </header>
+    <div class="map-wrap">
+      <svg id="jmmap" viewBox="0 0 900 480" role="img" aria-label="Jamaica constituencies map"></svg>
+    </div>
+    <div class="map-legend">
+      <span class="chip"><i class="dot pnp"></i> PNP</span>
+      <span class="chip"><i class="dot jlp"></i> JLP</span>
+      <span class="chip"><i class="dot uic"></i> UIC</span>
+      <span class="chip"><i class="dot jpp"></i> JPP</span>
+      <span class="chip"><i class="dot ind"></i> Other/IND</span>
+      <span class="subtle">Data: EOJ boundaries (live), your results JSON.</span>
+    </div>
+  </section>
+
+  <!-- LIST COLUMN -->
+  <section>
+    <div id="list" class="grid" aria-live="polite"></div>
+    <div id="empty" class="empty" hidden>No constituencies match your filters.</div>
+  </section>
 </main>
 
-<!-- === Data (from your JSON) === -->
 <script>
-/* The dataset below is embedded so the page runs without a server.
-   Source: your uploaded JSON (trimmed keys preserved). */
-const DATA = {
-  "1":{"Name":"KINGSTON WESTERN","Data":[{"Boxes Counted":"90 of 90","Box Counted Percentage":100,"Eligible Voter":24701,"Total Voting":9873,"Voter Turnout%":40,"Margin":7111,"Candidates":[{"Last Name":"McKenzie","First Name":"Desmond","Party":"JLP","Votes":8475,"Titles":"","Percentage":86},{"Last Name":"Witter","First Name":"Joseph ","Party":"PNP","Votes":1364,"Titles":"","Percentage":14},{"Last Name":"Williams","First Name":"Ricardo","Party":"JPP","Votes":34,"Titles":"","Percentage":0}]}]},
-  "2":{"Name":"KINGSTON CENTRAL","Data":[{"Boxes Counted":"80 of 80","Box Counted Percentage":100,"Eligible Voter":23060,"Total Voting":9489,"Voter Turnout%":41,"Margin":12,"Candidates":[{"Last Name":"McGregor","First Name":"Steve ","Party":"PNP","Votes":4739,"Titles":"","Percentage":49.9},{"Last Name":"Williams","First Name":"Donavan ","Party":"JLP","Votes":4727,"Titles":"","Percentage":49.8},{"Last Name":"Barnett","First Name":"Garth","Party":"UIC","Votes":23,"Titles":"","Percentage":0.2}]}]},
-  "3":{"Name":"KINGSTON EAST AND PORT ROYAL","Data":[{"Boxes Counted":"91 of 91","Box Counted Percentage":100,"Eligible Voter":27127,"Total Voting":7831,"Voter Turnout%":29,"Margin":4783,"Candidates":[{"Last Name":"Paulwell","First Name":"Phillip","Party":"PNP","Votes":6255,"Titles":"","Percentage":80},{"Last Name":"Burnett","First Name":"Courtney","Party":"JLP","Votes":1472,"Titles":"","Percentage":19},{"Last Name":"Williams","First Name":"George","Party":"JPP","Votes":104,"Titles":"","Percentage":1}]}]},
-  "4":{"Name":"ST. ANDREW WEST RURAL","Data":[{"Boxes Counted":"140 of 140","Box Counted Percentage":100,"Eligible Voter":41703,"Total Voting":15718,"Voter Turnout%":38,"Margin":1179,"Candidates":[{"Last Name":"Cuthbert-Flynn","First Name":"Juliet","Party":"JLP","Votes":8414,"Titles":"","Percentage":54},{"Last Name":"Gordon-Webley","First Name":"Joan","Party":"PNP","Votes":7235,"Titles":"","Percentage":46},{"Last Name":"Roach","First Name":"George","Party":"JPP","Votes":69,"Titles":"","Percentage":0}]}]},
-  "5":{"Name":"ST. ANDREW WESTERN","Data":[{"Boxes Counted":"134 of 134","Box Counted Percentage":100,"Eligible Voter":39208,"Total Voting":12642,"Voter Turnout%":32,"Margin":3672,"Candidates":[{"Last Name":"Hylton","First Name":"George","Party":"PNP","Votes":8115,"Titles":"","Percentage":64},{"Last Name":"Dunkley","First Name":"Corey","Party":"JLP","Votes":4443,"Titles":"","Percentage":35},{"Last Name":"Francis-Edie","First Name":"Carla","Party":"JPP","Votes":84,"Titles":"","Percentage":1}]}]},
-  "6":{"Name":"ST. ANDREW WEST CENTRAL","Data":[{"Boxes Counted":"105 of 105","Box Counted Percentage":100,"Eligible Voter":32213,"Total Voting":12007,"Voter Turnout%":37,"Margin":2101,"Candidates":[{"Last Name":"Holness","First Name":"Andrew","Party":"JLP","Votes":7054,"Titles":"","Percentage":59},{"Last Name":"Buchanan","First Name":"Paul","Party":"PNP","Votes":4953,"Titles":"","Percentage":41}]}]},
-  "7":{"Name":"ST. ANDREW EAST CENTRAL","Data":[{"Boxes Counted":"113 of 113","Box Counted Percentage":100,"Eligible Voter":32518,"Total Voting":10967,"Voter Turnout%":34,"Margin":2538,"Candidates":[{"Last Name":"Gordon","First Name":"Dennis","Party":"PNP","Votes":6709,"Titles":"","Percentage":61},{"Last Name":"Vassel","First Name":"Davion","Party":"JLP","Votes":4171,"Titles":"","Percentage":38},{"Last Name":"Ford","First Name":"Princess","Party":"JPP","Votes":87,"Titles":"","Percentage":1}]}]},
-  "8":{"Name":"ST. ANDREW SOUTH WESTERN","Data":[{"Boxes Counted":"95 of 95","Box Counted Percentage":100,"Eligible Voter":27055,"Total Voting":9191,"Voter Turnout%":34,"Margin":7992,"Candidates":[{"Last Name":"Brown-Burke","First Name":"Angela","Party":"PNP","Votes":8575,"Titles":"","Percentage":93},{"Last Name":"Lorne","First Name":"Moureen ","Party":"JLP","Votes":583,"Titles":"","Percentage":6},{"Last Name":"Watson","First Name":"Jahmar","Party":"INDB","Votes":17,"Titles":"","Percentage":0},{"Last Name":"Wint","First Name":"Antonio","Party":"JPP","Votes":16,"Titles":"","Percentage":0}]}]},
-  "9":{"Name":"ST. ANDREW SOUTHERN","Data":[{"Boxes Counted":"86 of 86","Box Counted Percentage":100,"Eligible Voter":25939,"Total Voting":10554,"Voter Turnout%":41,"Margin":8188,"Candidates":[{"Last Name":"Golding","First Name":"Mark ","Party":"PNP","Votes":9371,"Titles":"","Percentage":89},{"Last Name":"Allen","First Name":"Carlton","Party":"JLP","Votes":1183,"Titles":"","Percentage":11}]}]},
-  "10":{"Name":"ST. ANDREW SOUTH EASTERN","Data":[{"Boxes Counted":"88 of 88","Box Counted Percentage":100,"Eligible Voter":22593,"Total Voting":8589,"Voter Turnout%":38,"Margin":2281,"Candidates":[{"Last Name":"Robinson","First Name":"Julian","Party":"PNP","Votes":5418,"Titles":"","Percentage":63},{"Last Name":"Frith","First Name":"Kevin","Party":"JLP","Votes":3137,"Titles":"","Percentage":37},{"Last Name":"Lynch","First Name":"Kemoy","Party":"UIC","Votes":34,"Titles":"","Percentage":0}]}]},
-  "11":{"Name":"ST. ANDREW EASTERN","Data":[{"Boxes Counted":"111 of 111","Box Counted Percentage":100,"Eligible Voter":29557,"Total Voting":13283,"Voter Turnout%":45,"Margin":438,"Candidates":[{"Last Name":"Williams","First Name":"Fayval","Party":"JLP","Votes":6824,"Titles":"","Percentage":51},{"Last Name":"Duncan-Sutherland","First Name":"Patricia","Party":"PNP","Votes":6386,"Titles":"","Percentage":48},{"Last Name":"Cargill","First Name":"Carl","Party":"JPP","Votes":73,"Titles":"","Percentage":1}]}]},
-  "12":{"Name":"ST. ANDREW NORTH EASTERN","Data":[{"Boxes Counted":"79 of 79","Box Counted Percentage":100,"Eligible Voter":22098,"Total Voting":9001,"Voter Turnout%":41,"Margin":1587,"Candidates":[{"Last Name":"Chuck","First Name":"Delroy","Party":"JLP","Votes":5294,"Titles":"","Percentage":59},{"Last Name":"Knight","First Name":"Stacey ","Party":"PNP","Votes":3707,"Titles":"","Percentage":41}]}]},
-  "13":{"Name":"ST. ANDREW NORTH CENTRAL","Data":[{"Boxes Counted":"79 of 79","Box Counted Percentage":100,"Eligible Voter":23523,"Total Voting":9086,"Voter Turnout%":39,"Margin":2452,"Candidates":[{"Last Name":"Seiveright","First Name":"Delano","Party":"JLP","Votes":5769,"Titles":"","Percentage":63},{"Last Name":"Henry","First Name":"Christopher","Party":"PNP","Votes":3317,"Titles":"","Percentage":37}]}]},
-  "14":{"Name":"ST. ANDREW NORTH WESTERN","Data":[{"Boxes Counted":"112 of 112","Box Counted Percentage":100,"Eligible Voter":32301,"Total Voting":11103,"Voter Turnout%":34,"Margin":2103,"Candidates":[{"Last Name":"Smith","First Name":"Duane","Party":"JLP","Votes":6546,"Titles":"","Percentage":59},{"Last Name":"Miller-Simpson","First Name":"Ethnie","Party":"PNP","Votes":4443,"Titles":"","Percentage":40},{"Last Name":"Robinson","First Name":"Orlando","Party":"JPP","Votes":114,"Titles":"","Percentage":1}]}]},
-  "15":{"Name":"ST. ANDREW EAST RURAL","Data":[{"Boxes Counted":"137 of 137","Box Counted Percentage":100,"Eligible Voter":42782,"Total Voting":17959,"Voter Turnout%":42,"Margin":866,"Candidates":[{"Last Name":"Holness","First Name":"Juliet","Party":"JLP","Votes":9364,"Titles":"","Percentage":52},{"Last Name":"Peterkin","First Name":"Patrick","Party":"PNP","Votes":8498,"Titles":"","Percentage":47},{"Last Name":"Hendricks","First Name":"Kemesha","Party":"UIC","Votes":50,"Titles":"","Percentage":0},{"Last Name":"Jackson","First Name":"Purcell","Party":"JPP","Votes":47,"Titles":"","Percentage":0}]}]},
-  "16":{"Name":"ST. THOMAS WESTERN","Data":[{"Boxes Counted":"163 of 163","Box Counted Percentage":100,"Eligible Voter":43087,"Total Voting":17034,"Voter Turnout%":40,"Margin":1528,"Candidates":[{"Last Name":"Robertson","First Name":"James","Party":"JLP","Votes":9252,"Titles":"","Percentage":54},{"Last Name":"Williams","First Name":"Hubert","Party":"PNP","Votes":7724,"Titles":"","Percentage":45},{"Last Name":"Afflick","First Name":"Karlene","Party":"JPP","Votes":58,"Titles":"","Percentage":0}]}]},
-  "17":{"Name":"ST. THOMAS EASTERN","Data":[{"Boxes Counted":"128 of 128","Box Counted Percentage":100,"Eligible Voter":33611,"Total Voting":14370,"Voter Turnout%":43,"Margin":419,"Candidates":[{"Last Name":"Shaw","First Name":"Yvonne","Party":"PNP","Votes":7356,"Titles":"","Percentage":51},{"Last Name":"Charles","First Name":"Michelle ","Party":"JLP","Votes":6937,"Titles":"","Percentage":48},{"Last Name":"Wong","First Name":"Claudius","Party":"INDA","Votes":46,"Titles":"","Percentage":0},{"Last Name":"Blair","First Name":"Jovian","Party":"JPP","Votes":31,"Titles":"","Percentage":0}]}]},
-  "18":{"Name":"PORTLAND EASTERN","Data":[{"Boxes Counted":"140 of 140","Box Counted Percentage":100,"Eligible Voter":39751,"Total Voting":16526,"Voter Turnout%":42,"Margin":135,"Candidates":[{"Last Name":"Buchanan","First Name":"Isat","Party":"PNP","Votes":8316,"Titles":"","Percentage":50.3},{"Last Name":"Vaz","First Name":"Ann-Marie ","Party":"JLP","Votes":8181,"Titles":"","Percentage":49.5},{"Last Name":"Gillespie-Harris","First Name":"Tracy-Ann","Party":"JPP","Votes":29,"Titles":"","Percentage":0.2}]}]},
-  "19":{"Name":"PORTLAND WESTERN","Data":[{"Boxes Counted":"104 of 104","Box Counted Percentage":100,"Eligible Voter":24493,"Total Voting":11071,"Voter Turnout%":45,"Margin":1174,"Candidates":[{"Last Name":"Vaz","First Name":"Daryl","Party":"JLP","Votes":6111,"Titles":"","Percentage":55},{"Last Name":"Campbell","First Name":"Doreen","Party":"PNP","Votes":4937,"Titles":"","Percentage":45},{"Last Name":"Aiken","First Name":"Michael","Party":"JPP","Votes":23,"Titles":"","Percentage":0}]}]},
-  "20":{"Name":"ST. MARY SOUTH EASTERN","Data":[{"Boxes Counted":"112 of 112","Box Counted Percentage":100,"Eligible Voter":26393,"Total Voting":13299,"Voter Turnout%":50,"Margin":11,"Candidates":[{"Last Name":"Brown","First Name":"Christopher","Party":"PNP","Votes":6642,"Titles":"","Percentage":49.9},{"Last Name":"Dunn","First Name":"Norman","Party":"JLP","Votes":6631,"Titles":"","Percentage":49.9},{"Last Name":"Hutchinson","First Name":"Mark","Party":"JPP","Votes":26,"Titles":"","Percentage":0.2}]}]},
-  "21":{"Name":"ST. MARY CENTRAL","Data":[{"Boxes Counted":"105 of 105","Box Counted Percentage":100,"Eligible Voter":28804,"Total Voting":12963,"Voter Turnout%":45,"Margin":1431,"Candidates":[{"Last Name":"Newell","First Name":"Omar","Party":"PNP","Votes":7191,"Titles":"","Percentage":55},{"Last Name":"Maragh","First Name":"Nathaniel","Party":"JLP","Votes":5760,"Titles":"","Percentage":44},{"Last Name":"Rose-Cargill","First Name":"Rena","Party":"JPP","Votes":12,"Titles":"","Percentage":0}]}]},
-  "22":{"Name":"ST. MARY WESTERN","Data":[{"Boxes Counted":"147 of 147","Box Counted Percentage":100,"Eligible Voter":40403,"Total Voting":17880,"Voter Turnout%":44,"Margin":943,"Candidates":[{"Last Name":"Montague","First Name":"Robert","Party":"JLP","Votes":9394,"Titles":"","Percentage":53},{"Last Name":"Woodbine","First Name":"Omar","Party":"PNP","Votes":8451,"Titles":"","Percentage":47},{"Last Name":"Neil","First Name":"Chase","Party":"UIC","Votes":35,"Titles":"","Percentage":0}]}]},
-  "23":{"Name":"ST. ANN SOUTH EASTERN","Data":[{"Boxes Counted":"131 of 131","Box Counted Percentage":100,"Eligible Voter":32921,"Total Voting":12216,"Voter Turnout%":37,"Margin":2768,"Candidates":[{"Last Name":"Russell","First Name":"Kenneth","Party":"PNP","Votes":7492,"Titles":"","Percentage":61},{"Last Name":"Peart","First Name":"Adion","Party":"JLP","Votes":4724,"Titles":"","Percentage":39}]}]},
-  "24":{"Name":"ST. ANN NORTH EASTERN","Data":[{"Boxes Counted":"147 of 147","Box Counted Percentage":100,"Eligible Voter":44637,"Total Voting":16327,"Voter Turnout%":37,"Margin":2729,"Candidates":[{"Last Name":"Samuda","First Name":"Matthew","Party":"JLP","Votes":9528,"Titles":"","Percentage":58},{"Last Name":"Simpson","First Name":"Ryan","Party":"PNP","Votes":6799,"Titles":"","Percentage":42}]}]},
-  "25":{"Name":"ST. ANN NORTH WESTERN","Data":[{"Boxes Counted":"135 of 135","Box Counted Percentage":100,"Eligible Voter":41186,"Total Voting":15538,"Voter Turnout%":38,"Margin":562,"Candidates":[{"Last Name":"Lee","First Name":"Krystal ","Party":"JLP","Votes":8050,"Titles":"","Percentage":52},{"Last Name":"Morris","First Name":"Gabriela","Party":"PNP","Votes":7488,"Titles":"","Percentage":48}]}]},
-  "26":{"Name":"ST. ANN SOUTH WESTERN","Data":[{"Boxes Counted":"105 of 105","Box Counted Percentage":100,"Eligible Voter":28425,"Total Voting":12292,"Voter Turnout%":43,"Margin":2179,"Candidates":[{"Last Name":"Mayne","First Name":"Zavia","Party":"JLP","Votes":7218,"Titles":"","Percentage":59},{"Last Name":"Williams","First Name":"Danishka","Party":"PNP","Votes":5039,"Titles":"","Percentage":41},{"Last Name":"Edwards","First Name":"Clive","Party":"JPP","Votes":35,"Titles":"","Percentage":0}]}]},
-  "27":{"Name":"TRELAWNY NORTHERN","Data":[{"Boxes Counted":"146 of 146","Box Counted Percentage":100,"Eligible Voter":38331,"Total Voting":15979,"Voter Turnout%":42,"Margin":339,"Candidates":[{"Last Name":"Hamilton","First Name":"Tova ","Party":"JLP","Votes":8159,"Titles":"","Percentage":51},{"Last Name":"McNeil","First Name":"Wykeham","Party":"PNP","Votes":7820,"Titles":"","Percentage":49}]}]},
-  "28":{"Name":"TRELAWNY SOUTHERN","Data":[{"Boxes Counted":"96 of 96","Box Counted Percentage":100,"Eligible Voter":25339,"Total Voting":12047,"Voter Turnout%":48,"Margin":1617,"Candidates":[{"Last Name":"Dalrymple-Philibert","First Name":"Marisa","Party":"JLP","Votes":6832,"Titles":"","Percentage":57},{"Last Name":"Patmore","First Name":"Paul","Party":"PNP","Votes":5215,"Titles":"","Percentage":43}]}]},
-  "29":{"Name":"ST. JAMES EAST CENTRAL","Data":[{"Boxes Counted":"117 of 117","Box Counted Percentage":100,"Eligible Voter":34192,"Total Voting":12012,"Voter Turnout%":35,"Margin":2926,"Candidates":[{"Last Name":"Bartlett","First Name":"Edmund","Party":"JLP","Votes":7469,"Titles":"","Percentage":62},{"Last Name":"Reid-Knott","First Name":"Rushell","Party":"PNP","Votes":4543,"Titles":"","Percentage":38}]}]},
-  "30":{"Name":"ST. JAMES NORTH WESTERN","Data":[{"Boxes Counted":"99 of 99","Box Counted Percentage":100,"Eligible Voter":31157,"Total Voting":9826,"Voter Turnout%":32,"Margin":2798,"Candidates":[{"Last Name":"Chang","First Name":"Horace","Party":"JLP","Votes":6312,"Titles":"","Percentage":64},{"Last Name":"Bernard","First Name":"Allan","Party":"PNP","Votes":3514,"Titles":"","Percentage":36}]}]},
-  "31":{"Name":"ST. JAMES CENTRAL","Data":[{"Boxes Counted":"104 of 104","Box Counted Percentage":100,"Eligible Voter":32520,"Total Voting":11222,"Voter Turnout%":35,"Margin":1912,"Candidates":[{"Last Name":"Clarke","First Name":"Heroy","Party":"JLP","Votes":6567,"Titles":"","Percentage":59},{"Last Name":"Allen","First Name":"Janice","Party":"PNP","Votes":4655,"Titles":"","Percentage":41}]}]},
-  "32":{"Name":"ST. JAMES WEST CENTRAL","Data":[{"Boxes Counted":"106 of 106","Box Counted Percentage":100,"Eligible Voter":31637,"Total Voting":11576,"Voter Turnout%":37,"Margin":751,"Candidates":[{"Last Name":"Malahoo-Forte","First Name":"Marlene","Party":"JLP","Votes":6155,"Titles":"","Percentage":53},{"Last Name":"Haughton","First Name":"Andre ","Party":"PNP","Votes":5404,"Titles":"","Percentage":47},{"Last Name":"Barnett","First Name":"Clifford","Party":"INDA","Votes":17,"Titles":"","Percentage":0}]}]},
-  "33":{"Name":"ST. JAMES SOUTHERN","Data":[{"Boxes Counted":"110 of 110","Box Counted Percentage":100,"Eligible Voter":29865,"Total Voting":12776,"Voter Turnout%":43,"Margin":207,"Candidates":[{"Last Name":"Burchell","First Name":"Nekeisha","Party":"PNP","Votes":6483,"Titles":"","Percentage":50.7},{"Last Name":"Davis","First Name":"Homer","Party":"JLP","Votes":6276,"Titles":"","Percentage":49.1},{"Last Name":"Cunningham","First Name":"Leon","Party":"JPP","Votes":17,"Titles":"","Percentage":0.1}]}]},
-  "34":{"Name":"HANOVER EASTERN","Data":[{"Boxes Counted":"99 of 99","Box Counted Percentage":100,"Eligible Voter":26533,"Total Voting":11086,"Voter Turnout%":42,"Margin":767,"Candidates":[{"Last Name":"Purkiss","First Name":"Andrea","Party":"PNP","Votes":5905,"Titles":"","Percentage":53},{"Last Name":"Brown","First Name":"Dave","Party":"JLP","Votes":5138,"Titles":"","Percentage":46},{"Last Name":"Eubanks","First Name":"Craig","Party":"JPP","Votes":28,"Titles":"","Percentage":0},{"Last Name":"Cunningham","First Name":"Jordan","Party":"UIC","Votes":15,"Titles":"","Percentage":0}]}]},
-  "35":{"Name":"HANOVER WESTERN","Data":[{"Boxes Counted":"116 of 116","Box Counted Percentage":100,"Eligible Voter":34819,"Total Voting":12956,"Voter Turnout%":37,"Margin":1088,"Candidates":[{"Last Name":"Miller-Bennett","First Name":"Heatha","Party":"PNP","Votes":6995,"Titles":"","Percentage":54},{"Last Name":"Davis","First Name":"Tamika ","Party":"JLP","Votes":5907,"Titles":"","Percentage":46},{"Last Name":"Sharpe","First Name":"Leonard","Party":"JPP","Votes":54,"Titles":"","Percentage":0}]}]},
-  "36":{"Name":"WESTMORELAND WESTERN","Data":[{"Boxes Counted":"138 of 138","Box Counted Percentage":100,"Eligible Voter":40188,"Total Voting":14113,"Voter Turnout%":35,"Margin":1968,"Candidates":[{"Last Name":"Hayles","First Name":"Ian","Party":"PNP","Votes":7992,"Titles":"","Percentage":57},{"Last Name":"James","First Name":"Garfield","Party":"JLP","Votes":6024,"Titles":"","Percentage":43},{"Last Name":"James","First Name":"Gilbert","Party":"INDA","Votes":71,"Titles":"","Percentage":1},{"Last Name":"Maddan","First Name":"Bertland","Party":"JPP","Votes":26,"Titles":"","Percentage":0}]}]},
-  "37":{"Name":"WESTMORELAND CENTRAL","Data":[{"Boxes Counted":"170 of 170","Box Counted Percentage":100,"Eligible Voter":48271,"Total Voting":18378,"Voter Turnout%":38,"Margin":1531,"Candidates":[{"Last Name":"Vaz","First Name":"Dwayne","Party":"PNP","Votes":9916,"Titles":"","Percentage":54},{"Last Name":"Wright","First Name":"George","Party":"JLP","Votes":8385,"Titles":"","Percentage":46},{"Last Name":"Greenwood","First Name":"Kathleen","Party":"JPP","Votes":39,"Titles":"","Percentage":0},{"Last Name":"Foote","First Name":"Donn","Party":"INDA","Votes":38,"Titles":"","Percentage":0}]}]},
-  "38":{"Name":"WESTMORELAND EASTERN","Data":[{"Boxes Counted":"123 of 123","Box Counted Percentage":100,"Eligible Voter":31270,"Total Voting":13335,"Voter Turnout%":43,"Margin":1934,"Candidates":[{"Last Name":"Campbell","First Name":"Dayton","Party":"PNP","Votes":7558,"Titles":"","Percentage":57},{"Last Name":"Lawrence","First Name":"Daniel ","Party":"JLP","Votes":5624,"Titles":"","Percentage":42},{"Last Name":"Allen","First Name":"Dalton","Party":"JPP","Votes":73,"Titles":"","Percentage":1},{"Last Name":"Cujo","First Name":"Haile","Party":"INDA","Votes":53,"Titles":"","Percentage":0},{"Last Name":"Wright","First Name":"Winston","Party":"UIC","Votes":16,"Titles":"","Percentage":0},{"Last Name":"Robinson","First Name":"Derrick","Party":"INDB","Votes":11,"Titles":"","Percentage":0}]}]},
-  "39":{"Name":"ST. ELIZABETH NORTH WESTERN","Data":[{"Boxes Counted":"87 of 87","Box Counted Percentage":100,"Eligible Voter":23251,"Total Voting":9425,"Voter Turnout%":41,"Margin":1724,"Candidates":[{"Last Name":"Morris","First Name":"Andrew","Party":"JLP","Votes":5555,"Titles":"","Percentage":59},{"Last Name":"Scarlett-Forrester","First Name":"Patricia","Party":"PNP","Votes":3831,"Titles":"","Percentage":41},{"Last Name":"Edwards","First Name":"Jason","Party":"JPP","Votes":39,"Titles":"","Percentage":0}]}]},
-  "40":{"Name":"ST. ELIZABETH NORTH EASTERN","Data":[{"Boxes Counted":"125 of 125","Box Counted Percentage":100,"Eligible Voter":37138,"Total Voting":16097,"Voter Turnout%":43,"Margin":596,"Candidates":[{"Last Name":"Jess","First Name":"Zuleika","Party":"PNP","Votes":8331,"Titles":"","Percentage":52},{"Last Name":"Slowley","First Name":"Delroy","Party":"JLP","Votes":7735,"Titles":"","Percentage":48},{"Last Name":"Myrie","First Name":"Shawn","Party":"JPP","Votes":20,"Titles":"","Percentage":0},{"Last Name":"Patterson","First Name":"Joseph","Party":"UIC","Votes":11,"Titles":"","Percentage":0}]}]},
-  "41":{"Name":"ST. ELIZABETH SOUTH WESTERN","Data":[{"Boxes Counted":"113 of 113","Box Counted Percentage":100,"Eligible Voter":34346,"Total Voting":18167,"Voter Turnout%":53,"Margin":1243,"Candidates":[{"Last Name":"Green","First Name":"Floyd","Party":"JLP","Votes":9705,"Titles":"","Percentage":53},{"Last Name":"Wellington","First Name":"Miranda","Party":"PNP","Votes":8462,"Titles":"","Percentage":47}]}]},
-  "42":{"Name":"ST. ELIZABETH SOUTH EASTERN","Data":[{"Boxes Counted":"109 of 109","Box Counted Percentage":100,"Eligible Voter":33109,"Total Voting":16934,"Voter Turnout%":51,"Margin":1749,"Candidates":[{"Last Name":"Witter","First Name":"Franklin","Party":"JLP","Votes":9318,"Titles":"","Percentage":55},{"Last Name":"Scott","First Name":"Norman","Party":"PNP","Votes":7569,"Titles":"","Percentage":45},{"Last Name":"Dobbs","First Name":"Raymond","Party":"JPP","Votes":47,"Titles":"","Percentage":0}]}]},
-  "43":{"Name":"MANCHESTER SOUTHERN","Data":[{"Boxes Counted":"120 of 120","Box Counted Percentage":100,"Eligible Voter":35623,"Total Voting":16497,"Voter Turnout%":46,"Margin":670,"Candidates":[{"Last Name":"Bunting","First Name":"Peter","Party":"PNP","Votes":8573,"Titles":"","Percentage":52},{"Last Name":"Ives","First Name":"Ian","Party":"JLP","Votes":7903,"Titles":"","Percentage":48},{"Last Name":"Scott","First Name":"Karen","Party":"JPP","Votes":21,"Titles":"","Percentage":0}]}]},
-  "44":{"Name":"MANCHESTER CENTRAL","Data":[{"Boxes Counted":"139 of 139","Box Counted Percentage":100,"Eligible Voter":42182,"Total Voting":18014,"Voter Turnout%":43,"Margin":182,"Candidates":[{"Last Name":"Crawford","First Name":"Rhoda ","Party":"JLP","Votes":9098,"Titles":"","Percentage":50.5},{"Last Name":"Mitchell","First Name":"Donovan","Party":"PNP","Votes":8916,"Titles":"","Percentage":49.5}]}]},
-  "45":{"Name":"MANCHESTER NORTH WESTERN","Data":[{"Boxes Counted":"104 of 104","Box Counted Percentage":100,"Eligible Voter":30282,"Total Voting":12943,"Voter Turnout%":43,"Margin":1145,"Candidates":[{"Last Name":"Phillips","First Name":"Mikael","Party":"PNP","Votes":7025,"Titles":"","Percentage":54},{"Last Name":"Young","First Name":"Damion ","Party":"JLP","Votes":5880,"Titles":"","Percentage":45},{"Last Name":"Stewart-Angus","First Name":"Tretia","Party":"JPP","Votes":38,"Titles":"","Percentage":0}]}]},
-  "46":{"Name":"MANCHESTER NORTH EASTERN","Data":[{"Boxes Counted":"111 of 111","Box Counted Percentage":100,"Eligible Voter":31349,"Total Voting":14446,"Voter Turnout%":46,"Margin":1865,"Candidates":[{"Last Name":"Marks","First Name":"Audrey","Party":"JLP","Votes":8139,"Titles":"","Percentage":56},{"Last Name":"Wint","First Name":"Valenton","Party":"PNP","Votes":6274,"Titles":"","Percentage":43},{"Last Name":"Warren","First Name":"Clive","Party":"JPP","Votes":33,"Titles":"","Percentage":0}]}]},
-  "47":{"Name":"CLARENDON NORTH WESTERN","Data":[{"Boxes Counted":"108 of 108","Box Counted Percentage":100,"Eligible Voter":28701,"Total Voting":13503,"Voter Turnout%":47,"Margin":499,"Candidates":[{"Last Name":" Azan","First Name":"Richard","Party":"PNP","Votes":6989,"Titles":"","Percentage":52},{"Last Name":"Newby","First Name":"Warren","Party":"JLP","Votes":6490,"Titles":"","Percentage":48},{"Last Name":"Palmer","First Name":"Kevin","Party":"JPP","Votes":24,"Titles":"","Percentage":0}]}]},
-  "48":{"Name":"CLARENDON NORTHERN","Data":[{"Boxes Counted":"97 of 100","Box Counted Percentage":97,"Eligible Voter":25357,"Total Voting":11328,"Voter Turnout%":45,"Margin":222,"Candidates":[{"Last Name":"Hinds","First Name":"Wavell","Party":"PNP","Votes":5763,"Titles":"","Percentage":50.9},{"Last Name":"Sibblies","First Name":"Dwight ","Party":"JLP","Votes":5541,"Titles":"","Percentage":48.9},{"Last Name":"Casey-Edwards","First Name":"Judilyn","Party":"JPP","Votes":24,"Titles":"","Percentage":0.2}]}]},
-  "49":{"Name":"CLARENDON NORTH CENTRAL","Data":[{"Boxes Counted":"104 of 104","Box Counted Percentage":100,"Eligible Voter":24854,"Total Voting":10330,"Voter Turnout%":42,"Margin":1453,"Candidates":[{"Last Name":"Morgan","First Name":"Robert ","Party":"JLP","Votes":5877,"Titles":"","Percentage":57},{"Last Name":"Dixon","First Name":"Aujae","Party":"PNP","Votes":4424,"Titles":"","Percentage":43},{"Last Name":"Johnson-Roye","First Name":"Joy","Party":"JPP","Votes":29,"Titles":"","Percentage":0}]}]},
-  "50":{"Name":"CLARENDON CENTRAL","Data":[{"Boxes Counted":"112 of 112","Box Counted Percentage":100,"Eligible Voter":33321,"Total Voting":10607,"Voter Turnout%":32,"Margin":2821,"Candidates":[{"Last Name":"Williams","First Name":"Delroy","Party":"JLP","Votes":6674,"Titles":"","Percentage":63},{"Last Name":"Watt","First Name":"Carla","Party":"PNP","Votes":3853,"Titles":"","Percentage":36},{"Last Name":"Hill","First Name":"Bettina","Party":"JPP","Votes":80,"Titles":"","Percentage":1}]}]},
-  "51":{"Name":"CLARENDON SOUTH WESTERN","Data":[{"Boxes Counted":"100 of 100","Box Counted Percentage":100,"Eligible Voter":30265,"Total Voting":12385,"Voter Turnout%":41,"Margin":2312,"Candidates":[{"Last Name":"Cousins","First Name":"Lothan ","Party":"PNP","Votes":7328,"Titles":"","Percentage":59},{"Last Name":"Chin","First Name":"Robert","Party":"JLP","Votes":5016,"Titles":"","Percentage":41},{"Last Name":"Thomas","First Name":"Dewayne","Party":"JPP","Votes":41,"Titles":"","Percentage":0}]}]},
-  "52":{"Name":"CLARENDON SOUTH EASTERN","Data":[{"Boxes Counted":"144 of 144","Box Counted Percentage":100,"Eligible Voter":46496,"Total Voting":17585,"Voter Turnout%":38,"Margin":1502,"Candidates":[{"Last Name":"Charles Jr","First Name":"Pearnel ","Party":"JLP","Votes":9515,"Titles":"","Percentage":54},{"Last Name":"Barnswell","First Name":"Scean","Party":"PNP","Votes":8013,"Titles":"","Percentage":46},{"Last Name":"Thomas","First Name":"Sion","Party":"JPP","Votes":57,"Titles":"","Percentage":0}]}]},
-  "53":{"Name":"ST. CATHERINE NORTH WESTERN","Data":[{"Boxes Counted":"122 of 122","Box Counted Percentage":100,"Eligible Voter":37295,"Total Voting":12456,"Voter Turnout%":33,"Margin":2725,"Candidates":[{"Last Name":"Crawford","First Name":"Damion","Party":"PNP","Votes":7580,"Titles":"","Percentage":61},{"Last Name":"Amos","First Name":"Newton","Party":"JLP","Votes":4855,"Titles":"","Percentage":39},{"Last Name":"Smith","First Name":"Lloyd","Party":"JPP","Votes":21,"Titles":"","Percentage":0}]}]},
-  "54":{"Name":"ST. CATHERINE SOUTH WESTERN","Data":[{"Boxes Counted":"147 of 147","Box Counted Percentage":100,"Eligible Voter":43851,"Total Voting":19192,"Voter Turnout%":44,"Margin":2119,"Candidates":[{"Last Name":"Warmington","First Name":"Everald","Party":"JLP","Votes":10607,"Titles":"","Percentage":55},{"Last Name":"Waul","First Name":"Kurt ","Party":"PNP","Votes":8488,"Titles":"","Percentage":44},{"Last Name":"Edwards","First Name":"Gilbert","Party":"JPP","Votes":97,"Titles":"","Percentage":1}]}]},
-  "55":{"Name":"ST. CATHERINE SOUTHERN","Data":[{"Boxes Counted":"150 of 150","Box Counted Percentage":100,"Eligible Voter":43810,"Total Voting":15126,"Voter Turnout%":35,"Margin":3055,"Candidates":[{"Last Name":"Jackson","First Name":"Fitz","Party":"PNP","Votes":9025,"Titles":"","Percentage":60},{"Last Name":"Dobney","First Name":"Delroy ","Party":"JLP","Votes":5970,"Titles":"","Percentage":39},{"Last Name":"Morrison","First Name":"Courtney","Party":"JPP","Votes":131,"Titles":"","Percentage":1}]}]},
-  "56":{"Name":"ST. CATHERINE CENTRAL","Data":[{"Boxes Counted":"118 of 118","Box Counted Percentage":100,"Eligible Voter":33527,"Total Voting":11234,"Voter Turnout%":34,"Margin":7200,"Candidates":[{"Last Name":"Grange","First Name":"Olivia","Party":"JLP","Votes":9217,"Titles":"","Percentage":82},{"Last Name":"Lewis","First Name":"Ramoni","Party":"PNP","Votes":2017,"Titles":"","Percentage":18}]}]},
-  "57":{"Name":"ST. CATHERINE SOUTH EASTERN","Data":[{"Boxes Counted":"135 of 135","Box Counted Percentage":100,"Eligible Voter":41273,"Total Voting":15005,"Voter Turnout%":36,"Margin":567,"Candidates":[{"Last Name":"Dawes","First Name":"Alfred","Party":"PNP","Votes":7754,"Titles":"","Percentage":52},{"Last Name":"Miller","First Name":"Robert ","Party":"JLP","Votes":7187,"Titles":"","Percentage":48},{"Last Name":"Radcliffe","First Name":"Kaycian","Party":"JPP","Votes":64,"Titles":"","Percentage":0}]}]},
-  "58":{"Name":"ST. CATHERINE NORTH CENTRAL","Data":[{"Boxes Counted":"108 of 108","Box Counted Percentage":100,"Eligible Voter":33513,"Total Voting":11370,"Voter Turnout%":34,"Margin":2869,"Candidates":[{"Last Name":"Neita-Garvey","First Name":"Natalie","Party":"PNP","Votes":7098,"Titles":"","Percentage":62},{"Last Name":"Powell","First Name":"Neil","Party":"JLP","Votes":4229,"Titles":"","Percentage":37},{"Last Name":"Bartley ","First Name":"Carlton","Party":"JPP","Votes":43,"Titles":"","Percentage":0}]}]},
-  "59":{"Name":"ST. CATHERINE WEST CENTRAL","Data":[{"Boxes Counted":"126 of 126","Box Counted Percentage":100,"Eligible Voter":32368,"Total Voting":10734,"Voter Turnout%":33,"Margin":3222,"Candidates":[{"Last Name":"Tufton","First Name":"Christopher","Party":"JLP","Votes":6940,"Titles":"","Percentage":65},{"Last Name":"Francis","First Name":"Locksley","Party":"PNP","Votes":3718,"Titles":"","Percentage":35},{"Last Name":"Ellison-Hall ","First Name":"Colleen","Party":"JPP","Votes":76,"Titles":"","Percentage":1}]}]},
-  "60":{"Name":"ST. CATHERINE NORTH EASTERN","Data":[{"Boxes Counted":"109 of 109","Box Counted Percentage":100,"Eligible Voter":24877,"Total Voting":10190,"Voter Turnout%":41,"Margin":956,"Candidates":[{"Last Name":"Morrison","First Name":"Kerensia ","Party":"JLP","Votes":5554,"Titles":"","Percentage":55},{"Last Name":"Higgins","First Name":"Andrine","Party":"PNP","Votes":4598,"Titles":"","Percentage":45},{"Last Name":"Rainford","First Name":"Robert","Party":"JPP","Votes":20,"Titles":"","Percentage":0},{"Last Name":"Howell","First Name":"Arthur","Party":"INDB","Votes":18,"Titles":"","Percentage":0}]}]},
-  "61":{"Name":"ST. CATHERINE EASTERN","Data":[{"Boxes Counted":"120 of 120","Box Counted Percentage":100,"Eligible Voter":34746,"Total Voting":11246,"Voter Turnout%":32,"Margin":2345,"Candidates":[{"Last Name":"Daley","First Name":"Joyce Denise","Party":"PNP","Votes":6758,"Titles":"","Percentage":60},{"Last Name":"Peccoo","First Name":"Dwight","Party":"JLP","Votes":4413,"Titles":"","Percentage":39},{"Last Name":"Watson","First Name":"Lance","Party":"JPP","Votes":75,"Titles":"","Percentage":1}]}]},
-  "62":{"Name":"ST. CATHERINE SOUTH CENTRAL","Data":[{"Boxes Counted":"104 of 104","Box Counted Percentage":100,"Eligible Voter":31014,"Total Voting":10607,"Voter Turnout%":34,"Margin":4725,"Candidates":[{"Last Name":"Wheatley","First Name":"Andrew","Party":"JLP","Votes":7630,"Titles":"","Percentage":72},{"Last Name":"Matthews","First Name":"Kurt ","Party":"PNP","Votes":2905,"Titles":"","Percentage":27},{"Last Name":"Hall","First Name":"Lincoln","Party":"JPP","Votes":72,"Titles":"","Percentage":1}]}]},
-  "63":{"Name":"ST. CATHERINE EAST CENTRAL","Data":[{"Boxes Counted":"98 of 98","Box Counted Percentage":100,"Eligible Voter":31041,"Total Voting":11743,"Voter Turnout%":38,"Margin":985,"Candidates":[{"Last Name":"Terrelonge","First Name":"Alando","Party":"JLP","Votes":6364,"Titles":"","Percentage":54},{"Last Name":"Pryce","First Name":"Raymond ","Party":"PNP","Votes":5379,"Titles":"","Percentage":46}]}]}
+/* ============================================================
+   1) Fetch your results JSON from 2025-data.json
+   2) Fetch EOJ constituency GeoJSON (reprojected to WGS84)
+   3) Render: totals, cards, and interactive SVG map
+   ============================================================ */
+
+const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
+const fmt = n => (isFinite(n) ? n.toLocaleString() : '—');
+const els = {
+  grid: document.getElementById('list'),
+  empty: document.getElementById('empty'),
+  totals: document.getElementById('totals'),
+  q: document.getElementById('q'),
+  partyFilter: document.getElementById('partyFilter'),
+  sort: document.getElementById('sort'),
+  reset: document.getElementById('reset'),
+  map: document.getElementById('jmmap'),
+  mapStatus: document.getElementById('mapStatus'),
 };
-</script>
 
-<script>
-/* ---------- Utilities ---------- */
-const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind' };
-const fmt = n => n.toLocaleString();
+const GEOJSON_URL =
+  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27/query' +
+  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAM,OBJECTID&f=geojson&outSR=4326'; // EOJ constituency outlines  [oai_citation:1‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27)
 
+/* ---------- Load data ---------- */
+Promise.all([
+  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); }),
+  fetch(GEOJSON_URL).then(r=>{ if(!r.ok) throw new Error('Failed to load EOJ GeoJSON'); return r.json(); })
+]).then(([raw, geo])=>{
+  const rows = flatten(raw);
+  const nameIndex = indexByName(rows);
+  renderTotals(rows);
+  renderList(rows);
+  renderMap(geo, nameIndex);
+}).catch(err=>{
+  console.error(err);
+  els.mapStatus.textContent = 'Map/data load error.';
+});
+
+/* ---------- Transformers ---------- */
 function flatten(data){
   return Object.entries(data).map(([id, rec])=>{
     const entry = rec.Data?.[0] ?? {};
     const cand = (entry.Candidates||[]).map(c=>({
-      party:c.Party?.trim()||'',
-      first:c["First Name"]?.trim()||'',
-      last:c["Last Name"]?.trim()||'',
+      party:(c.Party||'').trim(),
+      first:(c["First Name"]||'').trim(),
+      last:(c["Last Name"]||'').trim(),
       pct:Number(c.Percentage)||0,
       votes:Number(c.Votes)||0
     }));
@@ -282,60 +275,55 @@ function flatten(data){
     const leadVotes = leader.votes - (runner.votes||0);
     const leadPct = leader.pct - (runner.pct||0);
     return {
-      id, name: rec.Name, boxes: entry["Boxes Counted"], boxesPct: Number(entry["Box Counted Percentage"])||0,
+      id,
+      name: rec.Name,
+      nameKey: normalizeName(rec.Name),
+      boxes: entry["Boxes Counted"],
+      boxesPct: Number(entry["Box Counted Percentage"])||0,
       eligible: Number(entry["Eligible Voter"])||0,
       turnout: Number(entry["Voter Turnout%"])||0,
       totalVotes: Number(entry["Total Voting"])||0,
       marginVotes: Number(entry.Margin)||leadVotes,
       marginPct: Math.max(0, Number((leadPct).toFixed(1))),
-      candidates: cand, leader
+      candidates: cand,
+      leader
     };
   });
 }
+function indexByName(rows){
+  const m = new Map();
+  rows.forEach(r=>m.set(r.nameKey, r));
+  return m;
+}
+function normalizeName(s=''){
+  let t = s.toUpperCase().replace(/\s+/g,' ').trim();
+  // Normalize Saint / St.
+  t = t.replace(/^ST[.\s]/,'SAINT ');
+  t = t.replace(/\./g,''); // remove punctuation for loose match
+  return t;
+}
+function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
+function partyLabel(p){ return p || 'IND'; }
 
+/* ---------- Totals & List ---------- */
 function computeTotals(rows){
-  // seats leading, total votes, turnout average
-  const seats = rows.length;
   const byLead = rows.reduce((acc,r)=>{
-    const p = r.leader.party || 'Other';
-    acc[p] = (acc[p]||0)+1;
+    const p = r.leader.party || 'OTHER';
+    acc[p] = (acc[p]||0) + 1;
     return acc;
   },{});
   const totalVotes = rows.reduce((s,r)=>s + (r.totalVotes||0),0);
   const avgTurnout = (rows.reduce((s,r)=>s + (r.turnout||0),0) / (rows.length||1));
-  return { seats, byLead, totalVotes, avgTurnout: Math.round(avgTurnout) };
+  return { byLead, totalVotes, avgTurnout: Math.round(avgTurnout) };
 }
-
-function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
-function partyLabel(p){ return p || 'IND'; }
-
-/* ---------- Render ---------- */
-const state = {
-  rows: flatten(DATA),
-  q: '',
-  sort: 'name',
-  lead: 'all'
-};
-
-const els = {
-  grid: document.getElementById('grid'),
-  empty: document.getElementById('empty'),
-  totals: document.getElementById('totals'),
-  q: document.getElementById('q'),
-  partyFilter: document.getElementById('partyFilter'),
-  seg: document.querySelector('.seg'),
-  reset: document.getElementById('reset')
-};
-
-function renderTotals(){
-  const {seats, byLead, totalVotes, avgTurnout} = computeTotals(state.rows);
+function renderTotals(rows){
+  const {byLead, totalVotes, avgTurnout} = computeTotals(rows);
   const pnp = byLead.PNP||0, jlp = byLead.JLP||0;
-  const other = Object.keys(byLead).filter(k=>!['PNP','JLP'].includes(k)).reduce((s,k)=>s+byLead[k],0);
-
+  const other = Object.entries(byLead).filter(([k])=>!['PNP','JLP'].includes(k)).reduce((s, [,v])=>s+v,0);
   els.totals.innerHTML = `
-    <div class="t-box" aria-live="polite">
-      <div class="k">Leads: <span class="badge pnp" title="PNP">${pnp}</span> – <span class="badge jlp" title="JLP">${jlp}</span> <span class="subtle">(+${other} other)</span></div>
-      <div class="v">Constituencies</div>
+    <div class="t-box">
+      <div class="k"><span class="badge pnp">PNP</span> ${pnp} • <span class="badge jlp">JLP</span> ${jlp} <span class="subtle">(+${other} other)</span></div>
+      <div class="v">Constituency leads</div>
     </div>
     <div class="t-box">
       <div class="k">${fmt(totalVotes)}</div>
@@ -347,12 +335,10 @@ function renderTotals(){
     </div>
   `;
 }
-
 function rowHTML(r){
   const leader = r.leader;
   const leaderParty = partySlug(leader.party);
   const leaderName = `${leader.first} ${leader.last}`.trim();
-
   const bars = r.candidates.slice(0,4).map(c=>{
     const slug = partySlug(c.party);
     return `
@@ -368,16 +354,15 @@ function rowHTML(r){
       </div>
     `;
   }).join('');
-
   return `
-  <article class="card" data-name="${r.name.toLowerCase()}">
+  <article class="card" id="card-${r.nameKey}">
     <header>
       <div class="ccap">${r.name}</div>
       <div class="boxes">${r.boxes}</div>
     </header>
     <div class="leader">
       <div>
-        <div class="name">${leaderName}</div>
+        <div class="name">${leaderName || '—'}</div>
         <div class="subtle">Leading • <span class="badge ${leaderParty}">${partyLabel(leader.party)}</span></div>
       </div>
       <div class="subtle" title="Vote margin">+${fmt(r.marginVotes)} votes</div>
@@ -387,72 +372,153 @@ function rowHTML(r){
       <div class="kpi">Turnout: <b>${r.turnout}%</b></div>
       <div class="kpi">Total votes: <b>${fmt(r.totalVotes)}</b></div>
       <div class="kpi">Lead: <b>${r.marginPct ? r.marginPct+'%' : '—'}</b></div>
-      <div class="muted">Eligible: ${fmt(r.eligible)}</div>
+      <div class="subtle">Eligible: ${fmt(r.eligible)}</div>
     </div>
   </article>`;
 }
-
+function renderList(rows){
+  const filtered = applyFilters(rows);
+  els.grid.innerHTML = filtered.map(rowHTML).join('');
+  els.empty.hidden = filtered.length>0;
+}
 function applyFilters(rows){
-  const q = state.q.trim().toLowerCase();
-  let filtered = rows.filter(r=>{
+  const q = (els.q.value||'').trim().toLowerCase();
+  const leadSel = els.partyFilter.value;
+  let out = rows.filter(r=>{
     const nameHit = r.name.toLowerCase().includes(q);
     const candHit = r.candidates.some(c => (`${c.first} ${c.last}`.toLowerCase().includes(q)));
-    return nameHit || candHit;
+    return !q || nameHit || candHit;
   });
-  if(state.lead!=='all'){
-    filtered = filtered.filter(r=>{
+  if(leadSel!=='all'){
+    out = out.filter(r=>{
       const p = r.leader.party || 'Other';
-      return state.lead==='Other' ? !['PNP','JLP'].includes(p) : p===state.lead;
+      return leadSel==='Other' ? !['PNP','JLP'].includes(p) : p===leadSel;
     });
   }
-  switch(state.sort){
-    case 'closest':
-      filtered.sort((a,b)=>(a.marginPct - b.marginPct) || (a.marginVotes - b.marginVotes));
-      break;
-    case 'turnout':
-      filtered.sort((a,b)=>b.turnout - a.turnout);
-      break;
-    default:
-      filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  switch(els.sort.value){
+    case 'closest': out.sort((a,b)=>(a.marginPct - b.marginPct) || (a.marginVotes - b.marginVotes)); break;
+    case 'turnout': out.sort((a,b)=>b.turnout - a.turnout); break;
+    default: out.sort((a,b)=>a.name.localeCompare(b.name));
   }
-  return filtered;
+  return out;
 }
 
-function render(){
-  renderTotals();
-  const rows = applyFilters(state.rows);
-  els.grid.innerHTML = rows.map(rowHTML).join('');
-  els.empty.hidden = rows.length>0;
+/* ---------- Map ---------- */
+/* Tiny equirectangular-ish fitter: convert lon/lat to SVG coords by bbox scaling */
+function makeProject(features, viewBoxW=900, viewBoxH=480, pad=10){
+  // collect bbox in lon/lat
+  let minLon= Infinity, minLat= Infinity, maxLon= -Infinity, maxLat= -Infinity;
+  features.forEach(f=>{
+    walkCoords(f.geometry.coordinates, ([lon,lat])=>{
+      if(lon<minLon) minLon=lon;
+      if(lat<minLat) minLat=lat;
+      if(lon>maxLon) maxLon=lon;
+      if(lat>maxLat) maxLat=lat;
+    });
+  });
+  const w = maxLon - minLon;
+  const h = maxLat - minLat;
+  const sx = (viewBoxW - pad*2) / w;
+  const sy = (viewBoxH - pad*2) / h;
+  const s = Math.min(sx, sy);
+  const ox = (viewBoxW - s*w)/2 - s*minLon;
+  const oy = (viewBoxH - s*h)/2 + s*maxLat; // flip Y for SVG
+  return (lon,lat)=>[ s*lon + ox, -s*lat + oy ];
+}
+function walkCoords(coords, cb){
+  // recurse through MultiPolygon/Polygon arrays
+  if(typeof coords[0] === 'number'){ cb(coords); return; }
+  coords.forEach(c=>walkCoords(c, cb));
+}
+function pathFromRings(rings, project){
+  return rings.map(ring=>{
+    return ring.map(([lon,lat],i)=>{
+      const [x,y] = project(lon,lat);
+      return (i?'L':'M') + x.toFixed(2) + ' ' + y.toFixed(2);
+    }).join(' ') + 'Z';
+  }).join(' ');
+}
+function renderMap(geojson, nameIndex){
+  try{
+    const svg = els.map;
+    const features = geojson.features || [];
+    const project = makeProject(features, 900, 480, 8);
+    svg.innerHTML = ''; // clear
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    svg.appendChild(g);
+
+    features.forEach((feat)=>{
+      const cnameRaw = (feat.properties.CONST_NAME || '').toString();
+      const nameKey = normalizeName(cnameRaw);
+      const result = nameIndex.get(nameKey);
+      const party = result?.leader?.party || 'OTHER';
+      const slug = PARTY_COLORS[party] ? partySlug(party) : 'ind';
+      const rings = feat.geometry.type === 'Polygon'
+        ? feat.geometry.coordinates
+        : (feat.geometry.type === 'MultiPolygon'
+            ? feat.geometry.coordinates.flat()
+            : []);
+      const d = pathFromRings(rings, project);
+      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('class', `poly ${slug}`);
+      p.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(`--${slug}`).trim() || '#999');
+      p.setAttribute('d', d);
+      p.setAttribute('data-name', cnameRaw);
+      p.setAttribute('tabindex','0');
+      p.setAttribute('role','img');
+      p.setAttribute('aria-label', `${cnameRaw}: ${result ? partyLabel(result.leader.party) + ' leading' : 'no data'}`);
+
+      // hover title
+      const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+      title.textContent = result
+        ? `${cnameRaw} — ${result.leader.first} ${result.leader.last} (${partyLabel(result.leader.party)})`
+        : `${cnameRaw} — no result data`;
+      p.appendChild(title);
+
+      // Click -> scroll to card, focus
+      p.addEventListener('click', ()=>{
+        const targetId = `card-${nameKey}`;
+        const el = document.getElementById(targetId);
+        if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.focus?.(); }
+      });
+
+      // Keyboard support
+      p.addEventListener('keydown', (e)=>{
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); p.click(); }
+      });
+
+      g.appendChild(p);
+    });
+
+    els.mapStatus.textContent = `Loaded ${features.length} shapes`;
+  }catch(e){
+    console.error(e);
+    els.mapStatus.textContent = 'Map render error';
+  }
 }
 
 /* ---------- Events ---------- */
-els.q.addEventListener('input', ()=>{ state.q = els.q.value; render(); });
-
-els.partyFilter.addEventListener('change', ()=>{
-  state.lead = els.partyFilter.value;
-  render();
+['input','change'].forEach(ev=>{
+  els.q.addEventListener(ev, onFilters);
+  els.partyFilter.addEventListener(ev, onFilters);
+  els.sort.addEventListener(ev, onFilters);
 });
-
-els.seg.addEventListener('click', e=>{
-  const b = e.target.closest('button[data-sort]');
-  if(!b) return;
-  els.seg.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  state.sort = b.dataset.sort;
-  render();
-});
-
 els.reset.addEventListener('click', ()=>{
-  els.q.value=''; state.q='';
-  state.sort='name';
-  els.seg.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
-  els.seg.querySelector('button[data-sort="name"]').classList.add('active');
-  els.partyFilter.value='all'; state.lead='all';
-  render();
+  els.q.value=''; els.partyFilter.value='all'; els.sort.value='name'; onFilters();
 });
-
-/* ---------- Init ---------- */
-render();
+function onFilters(){
+  // Re-render list only; map coloring stays as-is (leaders don’t change with filters)
+  const allRows = Array.from(document.querySelectorAll('[id^="card-"]')).length
+    ? null // already rendered; do nothing here (we need original rows but we don’t store). In a larger app keep a global.
+    : null;
+  // Since we didn’t keep rows globally, easiest is to refetch and rerender list quickly
+  fetch('2025-data.json').then(r=>r.json()).then(raw=>{
+    const rows = flatten(raw);
+    renderList(rows);
+  });
+}
 </script>
+
+<!-- Tiny note: the EOJ has an ArcGIS layer exposing the 63 constituency outlines; we query it as GeoJSON.  [oai_citation:2‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/GE_2020/FeatureServer/27) -->
 </body>
 </html>
