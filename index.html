@@ -41,8 +41,8 @@
 
   .canvas{ position:relative; aspect-ratio: 900 / 520; }
   svg{ width:100%; height:100%; display:block; background:color-mix(in oklab, var(--ink-2) 80%, var(--ink) 20%); }
-  .poly{ stroke: color-mix(in oklab, var(--text) 20%, transparent); stroke-width:.85; cursor:crosshair; }
-  .poly:hover{ filter:brightness(1.07); outline:1px solid var(--accent); }
+  .poly{ stroke: color-mix(in oklab, var(--text) 35%, transparent); stroke-width:.9; cursor:crosshair; }
+  .poly:hover{ filter:brightness(1.08); outline:1px solid var(--accent); }
 
   .pnp{ fill: var(--pnp) } .jlp{ fill: var(--jlp) } .uic{ fill: var(--uic) }
   .jpp{ fill: var(--jpp) } .ind{ fill: var(--ind) }
@@ -58,6 +58,7 @@
   .tip .t{font-weight:800; font-family:"Roboto Condensed",system-ui,sans-serif; margin-bottom:4px}
   .line{display:flex; justify-content:space-between; gap:10px; margin-top:2px}
   .k{color:var(--muted)}
+  .error{ color:#ef4444; }
 </style>
 </head>
 <body>
@@ -72,7 +73,7 @@
       </div>
       <div>
         <h1>Constituencies Map</h1>
-        <div class="subtle">Hover to see the leader and stats • Wheel to zoom • Drag to pan</div>
+        <div class="subtle">Hover to see leader & stats • Wheel to zoom • Drag to pan</div>
       </div>
     </div>
     <a class="subtle" href="./">Back to results</a>
@@ -100,9 +101,11 @@
 <script>
 /* ====================== CONFIG ====================== */
 const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
+
+// ✅ Correct constituency outline layer (63 features)
 const CONSTITUENCY_GEOJSON_URL =
-  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/6/query' +
-  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326';
+  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/4/query' +
+  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326'; // EOJ constituency outline.  [oai_citation:1‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/4)
 
 const fmt = n => (isFinite(n) ? n.toLocaleString() : '—');
 const normalize = s=>{
@@ -139,11 +142,12 @@ Promise.all([
 ]).then(([raw, geo])=>{
   state.rows = flatten(raw);
   state.index = new Map(state.rows.map(r => [normalize(r.name), r]));
+  if(!geo.features || !geo.features.length){ throw new Error('No features returned from EOJ layer'); }
   drawMap(geo);
-  els.status.textContent = `Loaded ${geo.features?.length || 0} constituencies`;
+  els.status.textContent = `Loaded ${geo.features.length} constituencies`;
 }).catch(err=>{
   console.error(err);
-  els.status.textContent = 'Load error';
+  els.status.innerHTML = `<span class="error">Load error:</span> ${err.message}`;
 });
 
 /* ====================== TRANSFORMERS ====================== */
@@ -221,7 +225,7 @@ function drawMap(geo){
 
     // Hover tooltip (results on hover only)
     p.addEventListener('mousemove', (e)=>{
-      if(!row){ hideTip(); return; }
+      if(!row){ showTip(`<div class="t">${cname}</div><div class="line"><span class="k">Data</span><span>—</span></div>`, e); return; }
       const html = `
         <div class="t">${cname}</div>
         <div class="line"><span class="k">Leader</span><span><b>${row.leader.first||''} ${row.leader.last||''}</b> (${row.leader.party||'—'})</span></div>
@@ -264,8 +268,7 @@ function zoomAt(cx, cy, factor){
   const next = Math.max(state.minScale, Math.min(state.maxScale, prev * factor));
   if(next === prev) return;
 
-  // cursor-centric zoom: adjust translation so the point under cursor stays put
-  // convert screen coords to current layer coords:
+  // cursor-centric zoom
   const svgRect = els.svg.getBoundingClientRect();
   const x = cx - svgRect.left, y = cy - svgRect.top;
   state.tx = x - (x - state.tx) * (next/prev);
@@ -299,12 +302,10 @@ els.svg.addEventListener('pointerup', (e)=>{
 });
 els.svg.addEventListener('pointerleave', ()=>{ state.dragging = false; });
 
-// buttons
+// buttons & keys
 els.zoomIn.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1.25));
 els.zoomOut.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1/1.25));
 els.reset.addEventListener('click', resetView);
-
-// keyboard shortcuts
 window.addEventListener('keydown', (e)=>{
   if(e.key === '+') els.zoomIn.click();
   if(e.key === '-') els.zoomOut.click();
