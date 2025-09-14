@@ -7,11 +7,11 @@ export function renderLeaderBoard(rootEl, candidates) {
   const maxVotes = aug[0]?.votes || 1;
   aug.forEach(c => {
     const card = document.createElement('div');
-    card.className = 'leader-card';
+    card.className = 'leader-card party-' + (c.party?.toLowerCase() || 'oth');
     card.setAttribute('role', 'listitem');
     card.innerHTML = `
       <div class="candidate-row">
-        <span class="candidate-name party-${c.party?.toLowerCase() || 'oth'}">${c.name}</span>
+        <span class="candidate-name">${c.name}</span>
         <span class="candidate-votes">${fmtNumber(c.votes)}</span>
       </div>
       <div class="bar-wrap">
@@ -33,12 +33,15 @@ export function renderStateTable(tbody, states, candidatesIndex) {
       party: candidatesIndex[sc.id]?.party || 'OTH'
     })));
     const { leader, marginPct } = leaderAndMargin(aug);
+    const reportingPct = st.reportingPct != null
+      ? st.reportingPct
+      : (st.precinctsReporting && st.precinctsTotal
+          ? (st.precinctsReporting / st.precinctsTotal) * 100
+          : 0);
     row.dataset.state = st.code;
     row.innerHTML = `
       <th scope="row">${st.name}</th>
-      <td>
-        ${fmtPercent(st.reportingPct || (st.precinctsReporting / st.precinctsTotal * 100))}
-      </td>
+      <td>${fmtPercent(reportingPct)}</td>
       <td class="leader party-${leader?.party?.toLowerCase() || 'oth'}">${leader?.name || '—'}</td>
       <td>${leader ? (marginPct >= 0 ? '+' + fmtPercent(marginPct) : fmtPercent(marginPct)) : '—'}</td>
     `;
@@ -57,9 +60,14 @@ export function renderDrilldown(panel, stateObj, candidatesIndex) {
     party: candidatesIndex[c.id]?.party || 'OTH'
   }));
   const total = aug.reduce((s, c) => s + c.votes, 0);
+  const reportingPct = stateObj.reportingPct != null
+    ? stateObj.reportingPct
+    : (stateObj.precinctsReporting && stateObj.precinctsTotal
+        ? (stateObj.precinctsReporting / stateObj.precinctsTotal) * 100
+        : 0);
   panel.innerHTML = `
     <h3>${stateObj.name}</h3>
-    <p>Reporting: ${stateObj.reportingPct ? stateObj.reportingPct.toFixed(1) : ((stateObj.precinctsReporting / stateObj.precinctsTotal) * 100).toFixed(1)}%</p>
+    <p>Reporting: ${reportingPct.toFixed(1)}%</p>
     <ul class="state-candidate-list">
       ${aug.sort((a,b)=>b.votes-a.votes).map(c => `
         <li class="party-${c.party.toLowerCase()}">
