@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 // Only minor tweak: trusts transformed structure (no change needed if you already used earlier version)
 // Included here for completeness in case you need consistent references.
 import { fmtNumber, fmtPercent } from './format.js';
@@ -71,3 +72,110 @@ export function renderDrilldown(panel, stateObj, candidatesIndex) {
     </ul>
   `;
 }
+=======
+import { fmtNumber, fmtPercent } from './format.js';
+import { augmentCandidates, leaderAndMargin } from './compute.js';
+
+function partyClass(party) {
+  if (!party) return 'party-oth';
+  const p = party.toUpperCase();
+  if (p === 'JLP') return 'party-jlp';
+  if (p === 'PNP') return 'party-pnp';
+  if (p === 'JPP') return 'party-jpp';
+  if (p === 'UIC') return 'party-uic';
+  return 'party-oth';
+}
+
+export function renderLeaderBoard(root, candidates) {
+  root.textContent = '';
+  const augmented = augmentCandidates(candidates);
+  const total = augmented.reduce((s, c) => s + c.votes, 0);
+
+  const list = document.createElement('ol');
+  list.className = 'leaderboard-list';
+
+  for (const cand of augmented) {
+    const li = document.createElement('li');
+    li.className = 'leaderboard-item ' + partyClass(cand.party);
+    const barPct = total ? (cand.votes / total) * 100 : 0;
+
+    li.innerHTML = `
+      <div class="candidate-line">
+        <span class="candidate-name">${cand.name}</span>
+        <span class="candidate-votes">${fmtNumber(cand.votes)} (${fmtPercent(cand.percent)})</span>
+      </div>
+      <div class="bar-track" aria-hidden="true">
+        <div class="bar-fill" style="width:${barPct}%;"></div>
+      </div>
+    `;
+    list.appendChild(li);
+  }
+
+  root.appendChild(list);
+}
+
+export function renderStateTable(tbody, states, candidatesIndex) {
+  tbody.textContent = '';
+  for (const st of states) {
+    const row = document.createElement('tr');
+    row.dataset.stateCode = st.code;
+
+    const { leader, marginPct } = leaderAndMargin(
+      st.candidates.map(c => candidatesIndex.get(c.id) || c)
+    );
+
+    row.innerHTML = `
+      <th scope="row">${st.name}</th>
+      <td>${fmtPercent(st.reportingPct)}</td>
+      <td>${leader ? leader.name : '—'}</td>
+      <td>${leader ? fmtNumber(leader.votes) : '—'}</td>
+      <td>${fmtPercent(marginPct)}</td>
+    `;
+
+    row.classList.add('state-row');
+    if (leader) row.classList.add(partyClass(leader.party));
+
+    tbody.appendChild(row);
+  }
+}
+
+export function renderDrilldown(panel, stateObj, candidatesIndex) {
+  panel.textContent = '';
+  if (!stateObj) {
+    panel.innerHTML = `<p>Select a constituency to view detailed candidate results.</p>`;
+    return;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'drilldown-header';
+  header.innerHTML = `
+    <h3 class="drilldown-name">${stateObj.name}</h3>
+    <p class="drilldown-reporting">Reporting: ${fmtPercent(stateObj.reportingPct)}</p>
+  `;
+  panel.appendChild(header);
+
+  const candidateList = document.createElement('ul');
+  candidateList.className = 'drilldown-candidates';
+
+  const augmented = augmentCandidates(
+    stateObj.candidates.map(c => candidatesIndex.get(c.id) || c)
+  );
+
+  for (const cand of augmented) {
+    const li = document.createElement('li');
+    li.className = 'drill-cand ' + partyClass(cand.party);
+    li.innerHTML = `
+      <div class="cand-line">
+        <span class="cand-name">${cand.name} <span class="cand-party">(${cand.party})</span></span>
+        <span class="cand-votes">${fmtNumber(cand.votes)} • ${fmtPercent(cand.percent)}</span>
+      </div>
+      <div class="bar-track" aria-hidden="true">
+        <div class="bar-fill" style="width:${cand.percent}%;"></div>
+      </div>
+    `;
+    candidateList.appendChild(li);
+  }
+
+  panel.appendChild(candidateList);
+}
+>>>>>>> Stashed changes

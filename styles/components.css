@@ -1,0 +1,73 @@
+.leaderboard {
+  display: block;
+}
+
+.leaderboard-item .candidate-line {
+  font-size: .85rem;
+}
+
+.leaderboard-item .candidate-votes {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.drilldown-body {
+  font-size: .85rem;
+}
+
+.drill-cand .cand-votes {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  font-size: .75rem;
+}
+
+.bar-track {
+  position: relative;
+}
+
+.bar-fill {
+  background: linear-gradient(90deg, var(--accent), var(--accent));
+}
+
+.state-row th, .state-row td {
+  font-size: .75rem;
+}
+
+.state-row th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.state-row td:nth-child(2),
+.state-row td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
+}
+
+.state-row td:nth-child(4) {
+  font-variant-numeric: tabular-nums;
+}
+
+.drilldown-panel .drilldown-name {
+  margin: 0 0 .25rem;
+  font-size: 1.05rem;
+}
+
+.drilldown-reporting {
+  margin: 0;
+  font-size: .75rem;
+  color: var(--text-dim);
+}
+
+.status-message.error {
+  background: #fce9e7;
+  padding: .4rem .6rem;
+  border-radius: var(--radius);
+  border: 1px solid #f3c1bc;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-message.error {
+    background: #3a1210;
+    border-color: #5e1e1a;
+  }
+}

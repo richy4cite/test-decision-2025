@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+<<<<<<< Updated upstream
   <title>2025 Election Results</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+=======
+  <title>2025 Parliamentary Results Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+>>>>>>> Stashed changes
   <link rel="preload" href="2025-data.json" as="fetch" crossorigin="anonymous" />
   <link rel="stylesheet" href="styles/base.css" />
   <link rel="stylesheet" href="styles/layout.css" />
@@ -11,6 +17,7 @@
 </head>
 <body>
   <header class="site-header">
+<<<<<<< Updated upstream
     <div class="header-inner">
       <h1 id="race-title">Election Results 2025</h1>
       <div class="meta">
@@ -60,5 +67,73 @@
   <script src="src/compute.js" type="module"></script>
   <script src="src/render.js" type="module"></script>
   <script src="src/app.js" type="module"></script>
+=======
+    <h1>Parliamentary Results 2025</h1>
+    <div id="meta" class="meta">
+      <div><strong>Last Update:</strong> <span id="last-updated">—</span></div>
+      <div><strong>National Reporting:</strong> <span id="national-reporting">—</span></div>
+    </div>
+    <div id="status-message" class="status-message" role="alert" aria-live="polite"></div>
+  </header>
+
+  <main id="app" class="app">
+    <section aria-labelledby="leaderboard-title" class="panel">
+      <h2 id="leaderboard-title">National Leaderboard</h2>
+      <div id="leaderboard" class="leaderboard"></div>
+    </section>
+
+    <section aria-labelledby="table-title" class="panel">
+      <div class="table-header">
+        <h2 id="table-title">Constituencies</h2>
+        <div class="sort-controls" role="group" aria-label="Sort constituencies">
+          <button type="button" data-sort="state" class="sort-btn is-active">Sort: Name</button>
+            <button type="button" data-sort="reporting" class="sort-btn">Reporting %</button>
+            <button type="button" data-sort="margin" class="sort-btn">Margin</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="constituency-table" aria-describedby="table-title">
+          <thead>
+            <tr>
+              <th scope="col">Constituency</th>
+              <th scope="col">Reporting %</th>
+              <th scope="col">Leader</th>
+              <th scope="col">Votes</th>
+              <th scope="col">Margin %</th>
+            </tr>
+          </thead>
+          <tbody id="state-tbody">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="drilldown-title" class="panel drilldown-panel">
+      <h2 id="drilldown-title">Details</h2>
+      <div id="drilldown" aria-live="polite" class="drilldown-body">
+        <p>Select a constituency to view detailed candidate results.</p>
+      </div>
+    </section>
+
+    <section class="panel notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Notes</h2>
+      <ul>
+        <li>Auto-refreshes every 60 seconds (no-store fetch).</li>
+        <li>Percentages shown to one decimal place; national reporting is mean of constituency reporting percentages.</li>
+        <li>Margin is leader's vote % minus runner-up's vote % (0 if not applicable).</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <small>&copy; 2025 Election Dashboard Demo</small>
+  </footer>
+
+  <script type="module" src="src/format.js"></script>
+  <script type="module" src="src/compute.js"></script>
+  <script type="module" src="src/transform.js"></script>
+  <script type="module" src="src/render.js"></script>
+  <script type="module" src="src/app.js"></script>
+>>>>>>> Stashed changes
 </body>
 </html>
