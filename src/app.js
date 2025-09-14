@@ -1,7 +1,8 @@
 import { renderLeaderBoard, renderStateTable, renderDrilldown } from './render.js';
 import { fmtPercent, timeAgo } from './format.js';
+import { transformRaw } from './transform.js';
 
-const DATA_URL = 'main/data/2025-data.json'; // Adjusted path
+const DATA_URL = '2025-data.json'; // Correct root path
 const REFRESH_MS = 60000;
 
 let cache = null;
@@ -31,17 +32,11 @@ function sortStates(states) {
   if (currentSort === 'state') {
     s.sort((a, b) => a.name.localeCompare(b.name));
   } else if (currentSort === 'reporting') {
-    s.sort((a, b) => (b.reportingPct || derivedReporting(b)) - (a.reportingPct || derivedReporting(a)));
+    s.sort((a, b) => (b.reportingPct || 0) - (a.reportingPct || 0));
   } else if (currentSort === 'margin') {
     s.sort((a, b) => computeMargin(b) - computeMargin(a));
   }
   return s;
-}
-
-function derivedReporting(st) {
-  if (st.precinctsReporting && st.precinctsTotal)
-    return (st.precinctsReporting / st.precinctsTotal) * 100;
-  return 0;
 }
 
 function computeMargin(state) {
@@ -53,9 +48,9 @@ function computeMargin(state) {
 
 async function loadData() {
   const res = await fetch(DATA_URL, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch data');
-  const json = await res.json();
-  cache = json;
+  if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
+  const raw = await res.json();
+  cache = transformRaw(raw);
   lastFetch = new Date().toISOString();
   render();
 }
@@ -64,13 +59,9 @@ function render() {
   if (!cache) return;
   const { race, candidates, states } = cache;
   const candidatesIndex = indexCandidates(candidates);
-  els.raceTitle.textContent = race?.office ? `${race.office} Results` : 'Election Results';
+  els.raceTitle.textContent = race?.office || 'Election Results';
   const nationalPct = race?.nationalReportingPct;
-  if (nationalPct != null) {
-    els.reportingSummary.textContent = `${fmtPercent(nationalPct)} reporting`;
-  } else {
-    els.reportingSummary.textContent = '';
-  }
+  els.reportingSummary.textContent = nationalPct != null ? `${fmtPercent(nationalPct)} reporting` : '';
   els.lastUpdated.textContent = `Updated ${timeAgo(race?.lastUpdated || lastFetch)}`;
   renderLeaderBoard(els.leaderRoot, candidates);
   const sortedStates = sortStates(states);
@@ -112,7 +103,7 @@ function startAutoRefresh() {
     await loadData();
     startAutoRefresh();
   } catch (e) {
-    document.getElementById('app').innerHTML = `<p class="error">Failed to load data.</p>`;
+    document.getElementById('app').innerHTML = `<p class="error">Failed to load data. ${e.message}</p>`;
     console.error(e);
   }
 })();
