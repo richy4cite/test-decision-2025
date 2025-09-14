@@ -1,3 +1,5 @@
+// Only minor tweak: trusts transformed structure (no change needed if you already used earlier version)
+// Included here for completeness in case you need consistent references.
 import { fmtNumber, fmtPercent } from './format.js';
 import { augmentCandidates, leaderAndMargin } from './compute.js';
 
@@ -33,15 +35,10 @@ export function renderStateTable(tbody, states, candidatesIndex) {
       party: candidatesIndex[sc.id]?.party || 'OTH'
     })));
     const { leader, marginPct } = leaderAndMargin(aug);
-    const reportingPct = st.reportingPct != null
-      ? st.reportingPct
-      : (st.precinctsReporting && st.precinctsTotal
-          ? (st.precinctsReporting / st.precinctsTotal) * 100
-          : 0);
     row.dataset.state = st.code;
     row.innerHTML = `
       <th scope="row">${st.name}</th>
-      <td>${fmtPercent(reportingPct)}</td>
+      <td>${fmtPercent(st.reportingPct)}</td>
       <td class="leader party-${leader?.party?.toLowerCase() || 'oth'}">${leader?.name || '—'}</td>
       <td>${leader ? (marginPct >= 0 ? '+' + fmtPercent(marginPct) : fmtPercent(marginPct)) : '—'}</td>
     `;
@@ -60,20 +57,15 @@ export function renderDrilldown(panel, stateObj, candidatesIndex) {
     party: candidatesIndex[c.id]?.party || 'OTH'
   }));
   const total = aug.reduce((s, c) => s + c.votes, 0);
-  const reportingPct = stateObj.reportingPct != null
-    ? stateObj.reportingPct
-    : (stateObj.precinctsReporting && stateObj.precinctsTotal
-        ? (stateObj.precinctsReporting / stateObj.precinctsTotal) * 100
-        : 0);
   panel.innerHTML = `
     <h3>${stateObj.name}</h3>
-    <p>Reporting: ${reportingPct.toFixed(1)}%</p>
+    <p>Reporting: ${stateObj.reportingPct.toFixed(1)}%</p>
     <ul class="state-candidate-list">
       ${aug.sort((a,b)=>b.votes-a.votes).map(c => `
         <li class="party-${c.party.toLowerCase()}">
           <span class="nm">${c.name}</span>
-          <span class="votes">${fmtNumber(c.votes)}</span>
-          <span class="pct">${total ? ((c.votes / total) * 100).toFixed(1) : '0.0'}%</span>
+            <span class="votes">${fmtNumber(c.votes)}</span>
+            <span class="pct">${total ? ((c.votes / total) * 100).toFixed(1) : '0.0'}%</span>
         </li>
       `).join('')}
     </ul>
