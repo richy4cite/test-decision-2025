@@ -1,316 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Constituencies Map</title>
-<meta name="color-scheme" content="light dark" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0b0c0f; --panel:#14161b; --muted:#8a90a2; --text:#e8ebf3;
-    --ink:#0b0c0f; --ink-2:#1b1f29; --border:#242836; --accent:#3b82f6;
-    --pnp:#ff7f00; --jlp:#009b3a; --uic:#6d28d9; --jpp:#9aa3b2; --ind:#9ca3af;
-  }
-  @media (prefers-color-scheme: light){
-    :root{ --bg:#f4f6fb; --panel:#fff; --muted:#596079; --text:#0e1320; --ink:#fff; --ink-2:#f7f8fb; --border:#e7e9f2; }
-  }
-  *{box-sizing:border-box}
-  body{ margin:0; background:var(--ink-2); color:var(--text);
-        font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-  header{ position:sticky; top:0; z-index:5; backdrop-filter:blur(10px);
-          background: color-mix(in oklab, var(--ink) 85%, transparent);
-          border-bottom:1px solid var(--border); }
-  .wrap{ max-width:1200px; margin:0 auto; padding:12px 16px; }
-  .mast{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .brand{ display:flex; gap:12px; align-items:center; }
-  .flag{ width:30px; height:30px; border:2px solid color-mix(in oklab, var(--text) 85%, transparent);
-         border-radius:6px; overflow:hidden; }
-  h1{ margin:0; font-family:"Roboto Condensed",system-ui,sans-serif; font-weight:700; letter-spacing:.2px; }
-  .subtle{ color:var(--muted); }
-
-  main{ padding:14px 0 28px; }
-  .map-shell{ background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-  .toolbar{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); }
-  .toolbar .btn{ padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--ink);
-                 color:var(--text); cursor:pointer; }
-  .toolbar .sep{ flex:1 }
-  .status{ font-size:12px; color:var(--muted); }
-
-  .canvas{ position:relative; aspect-ratio: 900 / 520; }
-  svg{ width:100%; height:100%; display:block; background:color-mix(in oklab, var(--ink-2) 80%, var(--ink) 20%); }
-  .poly{ stroke: color-mix(in oklab, var(--text) 35%, transparent); stroke-width:.9; cursor:crosshair; }
-  .poly:hover{ filter:brightness(1.08); outline:1px solid var(--accent); }
-
-  .pnp{ fill: var(--pnp) } .jlp{ fill: var(--jlp) } .uic{ fill: var(--uic) }
-  .jpp{ fill: var(--jpp) } .ind{ fill: var(--ind) }
-
-  /* Tooltip */
-  .tip{
-    position:absolute; inset:auto auto 0 0; transform:translate(-9999px,-9999px);
-    background:color-mix(in oklab, var(--panel) 96%, #000 4%);
-    border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:12px;
-    pointer-events:none; box-shadow:0 6px 24px color-mix(in oklab, #000 35%, transparent);
-    max-width:300px; line-height:1.25;
-  }
-  .tip .t{font-weight:800; font-family:"Roboto Condensed",system-ui,sans-serif; margin-bottom:4px}
-  .line{display:flex; justify-content:space-between; gap:10px; margin-top:2px}
-  .k{color:var(--muted)}
-  .error{ color:#ef4444; }
-</style>
+  <meta charset="UTF-8" />
+  <title>2025 Election Results</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preload" href="data/2025-data.json" as="fetch" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/layout.css" />
+  <link rel="stylesheet" href="styles/components.css" />
 </head>
 <body>
-<header>
-  <div class="wrap mast">
-    <div class="brand">
-      <div class="flag" aria-hidden="true">
-        <svg viewBox="0 0 3 2" aria-hidden="true">
-          <path d="M0 0h3v2H0z" fill="#009B3A"/><path d="M0 0l3 2M3 0L0 2" stroke="#FED100" stroke-width=".35"/>
-          <path d="M0 0h3v.9L0 0zM0 2h3v-.9L0 2z" fill="#000"/>
-        </svg>
-      </div>
-      <div>
-        <h1>Constituencies Map</h1>
-        <div class="subtle">Hover to see leader & stats • Wheel to zoom • Drag to pan</div>
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 id="race-title">Election Results 2025</h1>
+      <div class="meta">
+        <span id="reporting-summary" class="tag"></span>
+        <span id="last-updated" class="last-updated"></span>
       </div>
     </div>
-    <a class="subtle" href="./">Back to results</a>
-  </div>
-</header>
+  </header>
 
-<main class="wrap">
-  <div class="map-shell">
-    <div class="toolbar">
-      <button id="zoomIn" class="btn" title="Zoom in">＋</button>
-      <button id="zoomOut" class="btn" title="Zoom out">－</button>
-      <button id="reset" class="btn" title="Reset view">Reset</button>
-      <div class="sep"></div>
-      <div id="status" class="status">Loading…</div>
-    </div>
-    <div class="canvas" id="canvas">
-      <svg id="map" viewBox="0 0 900 520" role="img" aria-label="Jamaica constituencies map">
-        <g id="layer" transform="translate(0,0) scale(1)"></g>
-      </svg>
-      <div id="tip" class="tip" role="status" aria-live="polite"></div>
-    </div>
-  </div>
-</main>
+  <main id="app" class="app">
+    <section id="leader-board" aria-labelledby="leader-heading">
+      <h2 id="leader-heading" class="section-title">National Overview</h2>
+      <div id="leader-cards" class="leader-cards" role="list"></div>
+    </section>
 
-<script>
-/* ====================== CONFIG ====================== */
-const PARTY_COLORS = { PNP:'pnp', JLP:'jlp', UIC:'uic', JPP:'jpp', INDA:'ind', INDB:'ind', IND:'ind', OTHER:'ind' };
+    <section id="state-table-section" aria-labelledby="states-heading">
+      <h2 id="states-heading" class="section-title">State Breakdown</h2>
+      <div class="table-controls">
+        <button data-sort="state">Sort: State</button>
+        <button data-sort="reporting">Sort: Reporting %</button>
+        <button data-sort="margin">Sort: Margin</button>
+      </div>
+      <table id="state-table" class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">State</th>
+            <th scope="col">Reporting</th>
+            <th scope="col">Leader</th>
+            <th scope="col">Margin</th>
+          </tr>
+        </thead>
+        <tbody id="state-tbody"></tbody>
+      </table>
+      <div id="state-drilldown" class="drilldown" aria-live="polite"></div>
+    </section>
 
-// ✅ Correct constituency outline layer (63 features)
-const CONSTITUENCY_GEOJSON_URL =
-  'https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/ArcGIS/rest/services/ECJWEB_MAP/FeatureServer/4/query' +
-  '?where=1%3D1&outFields=CONST_NAME,PARISH_NAME,OBJECTID&f=geojson&outSR=4326'; // EOJ constituency outline.  [oai_citation:1‡ArcGIS Services](https://services6.arcgis.com/3R3y1KXaPJ9BFnsU/arcgis/rest/services/ECJWEB_MAP/FeatureServer/4)
+    <section id="notes" class="notes">
+      <p>Data is unofficial. Percent reporting reflects percentage of precincts or estimated vote counted.</p>
+    </section>
+  </main>
 
-const fmt = n => (isFinite(n) ? n.toLocaleString() : '—');
-const normalize = s=>{
-  let t = String(s||'').toUpperCase().replace(/\s+/g,' ').trim();
-  t = t.replace(/^ST[.\s]/,'SAINT ');
-  return t.replace(/\./g,'');
-};
+  <footer class="site-footer">
+    <small>&copy; 2025 Election Data. All rights reserved.</small>
+  </footer>
 
-/* ====================== STATE & ELs ====================== */
-const els = {
-  svg: document.getElementById('map'),
-  layer: document.getElementById('layer'),
-  tip: document.getElementById('tip'),
-  status: document.getElementById('status'),
-  canvas: document.getElementById('canvas'),
-  zoomIn: document.getElementById('zoomIn'),
-  zoomOut: document.getElementById('zoomOut'),
-  reset: document.getElementById('reset'),
-};
-const state = {
-  rows: null, index: null,
-  // pan/zoom
-  scale: 1, minScale: .9, maxScale: 12,
-  tx: 0, ty: 0, // translation
-  dragging: false, lastX: 0, lastY: 0,
-  // projection (computed)
-  project: null
-};
-
-/* ====================== LOAD DATA ====================== */
-Promise.all([
-  fetch('2025-data.json').then(r=>{ if(!r.ok) throw new Error('Failed to load 2025-data.json'); return r.json(); }),
-  fetch(CONSTITUENCY_GEOJSON_URL).then(r=>{ if(!r.ok) throw new Error('Failed to load constituency GeoJSON'); return r.json(); })
-]).then(([raw, geo])=>{
-  state.rows = flatten(raw);
-  state.index = new Map(state.rows.map(r => [normalize(r.name), r]));
-  if(!geo.features || !geo.features.length){ throw new Error('No features returned from EOJ layer'); }
-  drawMap(geo);
-  els.status.textContent = `Loaded ${geo.features.length} constituencies`;
-}).catch(err=>{
-  console.error(err);
-  els.status.innerHTML = `<span class="error">Load error:</span> ${err.message}`;
-});
-
-/* ====================== TRANSFORMERS ====================== */
-function flatten(data){
-  return Object.entries(data).map(([id, rec])=>{
-    const entry = rec.Data?.[0] ?? {};
-    const cand = (entry.Candidates||[]).map(c=>({
-      party:(c.Party||'').trim(),
-      first:(c["First Name"]||'').trim(),
-      last:(c["Last Name"]||'').trim(),
-      pct:Number(c.Percentage)||0,
-      votes:Number(c.Votes)||0
-    })).sort((a,b)=>b.pct-a.pct || b.votes-a.votes);
-    const leader = cand[0]||{}, runner = cand[1]||{};
-    const leadVotes = (leader.votes||0) - (runner.votes||0);
-    const leadPct = (leader.pct||0) - (runner.pct||0);
-    return {
-      id, name: rec.Name, nameKey: normalize(rec.Name),
-      boxes: entry["Boxes Counted"], turnout: Number(entry["Voter Turnout%"])||0,
-      totalVotes: Number(entry["Total Voting"])||0,
-      marginVotes: Number(entry.Margin)||leadVotes,
-      marginPct: Math.max(0, Number((leadPct).toFixed(1))),
-      leader, candidates: cand
-    };
-  });
-}
-function partySlug(p){ return PARTY_COLORS[p] ? PARTY_COLORS[p] : 'ind'; }
-
-/* ====================== GEOMETRY HELPERS ====================== */
-function walkCoords(coords, cb){ if(typeof coords[0] === 'number'){ cb(coords); return; } coords.forEach(c=>walkCoords(c, cb)); }
-function bbox(features){
-  let minLon= Infinity, minLat= Infinity, maxLon= -Infinity, maxLat= -Infinity;
-  features.forEach(f=> walkCoords(f.geometry.coordinates, ([lon,lat])=>{
-    if(lon<minLon) minLon=lon; if(lat<minLat) minLat=lat;
-    if(lon>maxLon) maxLon=lon; if(lat>maxLat) maxLat=lat;
-  }));
-  return [minLon,minLat,maxLon,maxLat];
-}
-function makeProject(features, vw=900, vh=520, pad=10){
-  const [minLon,minLat,maxLon,maxLat] = bbox(features);
-  const w = maxLon - minLon, h = maxLat - minLat;
-  const s = Math.min((vw - pad*2)/w, (vh - pad*2)/h);
-  const ox = (vw - s*w)/2 - s*minLon;
-  const oy = (vh - s*h)/2 + s*maxLat;
-  return (lon,lat)=>[ s*lon + ox, -s*lat + oy ];
-}
-function pathFromRings(rings, project){
-  return rings.map(ring=> ring.map(([lon,lat],i)=>{
-    const [x,y] = project(lon,lat); return (i?'L':'M') + x.toFixed(2) + ' ' + y.toFixed(2);
-  }).join(' ') + 'Z').join(' ');
-}
-
-/* ====================== DRAW MAP ====================== */
-function drawMap(geo){
-  const feats = geo.features || [];
-  state.project = makeProject(feats);
-  els.layer.innerHTML = '';
-
-  for(const feat of feats){
-    const props = feat.properties || {};
-    const cname = (props.CONST_NAME || '').toString();
-    const row = state.index.get(normalize(cname));
-    const party = (row?.leader?.party) || 'OTHER';
-    const slug = partySlug(party);
-
-    const rings = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates
-                : feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat()
-                : [];
-    const d = pathFromRings(rings, state.project);
-
-    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-    p.setAttribute('class', `poly ${slug}`);
-    p.setAttribute('d', d);
-    p.dataset.constName = cname;
-
-    // Hover tooltip (results on hover only)
-    p.addEventListener('mousemove', (e)=>{
-      if(!row){ showTip(`<div class="t">${cname}</div><div class="line"><span class="k">Data</span><span>—</span></div>`, e); return; }
-      const html = `
-        <div class="t">${cname}</div>
-        <div class="line"><span class="k">Leader</span><span><b>${row.leader.first||''} ${row.leader.last||''}</b> (${row.leader.party||'—'})</span></div>
-        <div class="line"><span class="k">Lead</span><span>${fmt(row.marginVotes)} votes${row.marginPct?` (${row.marginPct}%)`:''}</span></div>
-        <div class="line"><span class="k">Turnout</span><span>${row.turnout}%</span></div>
-        <div class="line"><span class="k">Boxes</span><span>${row.boxes||'—'}</span></div>
-        <div class="line"><span class="k">Votes</span><span>${fmt(row.totalVotes)}</span></div>
-      `;
-      showTip(html, e);
-    });
-    p.addEventListener('mouseleave', hideTip);
-
-    els.layer.appendChild(p);
-  }
-  resetView();
-}
-
-/* ====================== TOOLTIP ====================== */
-function showTip(html, evt){
-  els.tip.innerHTML = html;
-  const pad = 14;
-  const {clientX:x, clientY:y} = evt;
-  const rect = els.tip.getBoundingClientRect();
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const left = Math.min(vw - rect.width - pad, x + pad);
-  const top  = Math.min(vh - rect.height - pad, y + pad);
-  els.tip.style.transform = `translate(${left}px, ${top}px)`;
-}
-function hideTip(){ els.tip.style.transform = 'translate(-9999px,-9999px)'; }
-
-/* ====================== ZOOM & PAN ====================== */
-function applyTransform(){
-  els.layer.setAttribute('transform', `translate(${state.tx},${state.ty}) scale(${state.scale})`);
-}
-function resetView(){
-  state.scale = 1; state.tx = 0; state.ty = 0; applyTransform();
-}
-function zoomAt(cx, cy, factor){
-  const prev = state.scale;
-  const next = Math.max(state.minScale, Math.min(state.maxScale, prev * factor));
-  if(next === prev) return;
-
-  // cursor-centric zoom
-  const svgRect = els.svg.getBoundingClientRect();
-  const x = cx - svgRect.left, y = cy - svgRect.top;
-  state.tx = x - (x - state.tx) * (next/prev);
-  state.ty = y - (y - state.ty) * (next/prev);
-  state.scale = next;
-  applyTransform();
-}
-
-// wheel zoom
-els.svg.addEventListener('wheel', (e)=>{
-  e.preventDefault();
-  const factor = e.deltaY < 0 ? 1.15 : 1/1.15;
-  zoomAt(e.clientX, e.clientY, factor);
-}, {passive:false});
-
-// drag to pan
-els.svg.addEventListener('pointerdown', (e)=>{
-  state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
-  els.svg.setPointerCapture(e.pointerId);
-});
-els.svg.addEventListener('pointermove', (e)=>{
-  if(!state.dragging) return;
-  const dx = e.clientX - state.lastX, dy = e.clientY - state.lastY;
-  state.lastX = e.clientX; state.lastY = e.clientY;
-  state.tx += dx; state.ty += dy;
-  applyTransform();
-});
-els.svg.addEventListener('pointerup', (e)=>{
-  state.dragging = false;
-  els.svg.releasePointerCapture?.(e.pointerId);
-});
-els.svg.addEventListener('pointerleave', ()=>{ state.dragging = false; });
-
-// buttons & keys
-els.zoomIn.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1.25));
-els.zoomOut.addEventListener('click', ()=> zoomAt(window.innerWidth/2, window.innerHeight/2, 1/1.25));
-els.reset.addEventListener('click', resetView);
-window.addEventListener('keydown', (e)=>{
-  if(e.key === '+') els.zoomIn.click();
-  if(e.key === '-') els.zoomOut.click();
-  if(e.key.toLowerCase() === '0') els.reset.click();
-});
-</script>
+  <script src="src/format.js" type="module"></script>
+  <script src="src/compute.js" type="module"></script>
+  <script src="src/render.js" type="module"></script>
+  <script src="src/app.js" type="module"></script>
 </body>
 </html>
